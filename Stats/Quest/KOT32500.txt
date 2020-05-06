@@ -1,0 +1,2 @@
+
+{'username': 'KOT32500', 'NPC': 'Gabriele', 'description': 'Проверка описания к заданию', 'main_task': 'Стать аниме-девочкой', 'tag': 'main'}

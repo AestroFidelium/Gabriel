@@ -1,0 +1,9 @@
+import time
+testName = "test3.txt"
+lst = list()
+with open(f"test2.py","r") as item:
+    for line in item.readlines():
+        lst.append(f"{line}")
+with open(f"{testName}","w") as item:
+    for line in range(len(lst)):
+        item.write(f"{lst[int(line)]}")
