@@ -10,6 +10,7 @@ from PIL import Image, ImageDraw , ImageFont
 import BotInisializator
 import datetime
 import ast
+import os
 
 Resurses = "./Resurses/"
 StandartURL = "https://pbs.twimg.com/profile_images/589387776740593664/24AVkUCB_400x400.jpg"
@@ -35,6 +36,103 @@ class Error_CreateItem(Error):
 
 class LastItem(Error):
     pass
+
+class Gabriel():
+    """
+    Габриэль.
+
+    Отвечает за всю настройку Габриэль, на сервере
+    """
+    def __init__(self):
+        pass
+    class Config():
+        def __init__(self):
+            pass
+        async def Start(self,server : int,Client : discord.Client()):
+            self.Client = Client
+            self.server = await Client.fetch_guild(server)
+            print(self.server)
+            await self.CreateNewBank()
+        # async def SaveConfig(self):
+        #     with open(f"{self.server}")
+        async def CreateNewBank(self):
+            direct = f"./Servers/{self.server.name}"
+            os.mkdir(direct)
+    class TooManyWords(Error):
+        def Error(self):
+            return "Слишком мало слов я знаю"
+    def Message(self,CountMessages : int):
+        Lines = []
+        with open(f"./Resurses/Words.txt","r") as file:
+            for line in file.readlines():
+                Cannot = [' ','','\n']
+                if line not in Cannot:
+                    CheckMessage_ = CheckMessage(line,"https://")
+                    if CheckMessage_.Start() == None:
+                        Lines.append(str(line))
+        Message = ""
+        Count = 0
+        BadWords = [
+            '\n'
+        ]
+        while Count < CountMessages:
+            try:
+                RandomLine = random.randint(1,len(Lines) - 2)
+                MainLine = list()
+                Words = Lines.pop(RandomLine)
+                MainLine.append(Words.split(" "))
+                for word in MainLine[0]:
+                    Write = randomBool(0,1,1)
+                    if Write == True:
+                        URL = CheckMessage(word,"https://")
+                        URL = URL.Start()
+                        if URL == None:
+                            if word not in BadWords:
+                                try:
+                                    word = word.split("\n")[0]
+                                except: pass
+                                WordSplit = list(); WordSplit.extend(word)
+                                for wordSplit in WordSplit: 
+                                    if wordSplit != ")":
+                                        Message += wordSplit
+                                Message += f" "
+                                Count += 1
+                                # print(f"{Count} {word}")
+                                if Count >= CountMessages:
+                                    return Message
+                    WriteOtherLine = randomBool(0,1,1)
+                    if WriteOtherLine == True:
+                        RandomLine = random.randint(1,len(Lines) - 2)
+                        OtherLine = list()
+                        Words = Lines.pop(RandomLine)
+                        OtherLine.append(Words.split(" "))
+                        for word2 in OtherLine[0]:
+                            Write = randomBool(0,1,1)
+                            if Write == True:
+                                URL = CheckMessage(word,"https://")
+                                URL = URL.Start()
+                                if URL == None:
+                                    if word2 not in BadWords:
+                                        try:
+                                            word2 = word2.split("\n")[0]
+                                        except: pass
+                                        WordSplit = list(); WordSplit.extend(word2)
+                                        for wordSplit in WordSplit: 
+                                            if wordSplit != ")":
+                                                Message += wordSplit
+                                        Message += f" "
+                                        Count += 1
+                                        # print(f"{Count} {word2}")
+                                        if Count >= CountMessages:
+                                            return Message
+            except ValueError:
+                raise self.TooManyWords("Слишком мало слов я знаю")
+
+        return Message
+    def SaveMessage(self):
+        pass
+
+
 
 def AllMVPs():
     """
@@ -609,7 +707,7 @@ def WriteInventor(**objects):
 
     `type` : тип предмета
 
-    `Типы предметов` :  `Предмет`  ,  `Оружие`  ,  `Экиперовка`  ,  `Ингридиент`
+    `Типы предметов` :  `Предмет`  ,  `Оружие`  ,  `Экипировка`  ,  `Ингридиент`
 
     `name` : имя предмета
 
@@ -686,7 +784,7 @@ def WriteInventor(**objects):
     try:
         armor = int(objects.pop("armor"))
     except:
-        if (type_ == "Оружие") or (type_ == "Экиперовка"):
+        if (type_ == "Оружие") or (type_ == "Экипировка"):
             raise Error_CreateItem("armor error")
 
     try:
@@ -700,7 +798,7 @@ def WriteInventor(**objects):
     try:
         protect = int(objects.pop("protect"))
     except:
-        if type_ == "Экиперовка":
+        if type_ == "Экипировка":
             raise Error_CreateItem("protect error")
 
 
@@ -730,7 +828,7 @@ def WriteInventor(**objects):
             "armor" : armor,
             "damage" : damage
         }
-    if type_ == "Экиперовка":
+    if type_ == "Экипировка":
         newItem = {
             "type" : type_,
             "name" : name,
@@ -749,7 +847,7 @@ def WriteInventor(**objects):
             "gold" : gold,
             "count" : count
         }
-    with open(f"./Stats/Main/Inventor_{username}.txt","w") as file:
+    with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
         if str(old) != "":
             file.write(f"{str(old)}\n{str(newItem)}")
         else:
@@ -760,7 +858,7 @@ def ReadInventor(_UserName_ : str):
     Читает инвентарь
     '''
     Inventor = ""
-    with open(f"./Stats/Main/Inventor_{_UserName_}.txt","r") as file:
+    with open(f"./Stats/Inventory/Inventor_{_UserName_}.txt","r") as file:
         for line in file.readlines():
             Inventor += line
         return Inventor
@@ -962,7 +1060,7 @@ def FutureMessageDef(**fields):
     MessageSplit_LN = message.split("\n")
     MessageSplit = message.split()
     RandomLine = random.randint(0,len(MessageSplit_LN) - 1)
-    WordInJump = [',','.',' ','/','"',"'",'<','>','!','%','$','-','=','_','+','`']
+    WordInJump = [',','.',' ','/','"',"'",'%','$','-','=','_','+','`']
     Count = step
     WordNotInJump = ""
     RandomSayOrNo = 0
@@ -1046,24 +1144,33 @@ def WriteEquipment(**fields):
     type_ = fields.pop('type')
     ID = int(fields.pop('ID'))
 
-    ArmorId = 0
-    AttackId = 0
-
     try:
-        with open(f"./Stats/Inventory/{username}","r") as file:
-            ArmorId = int(file.readline())
-            AttackId = int(file.readline())
-    except:
+        with open(f"./Stats/Inventory/{username}.txt","r") as file:
+            Inventor = file.readline()
+            Inventor = StrToDict(str=Inventor)
+            ArmorId = int(Inventor["Armor"])
+            AttackId = int(Inventor["Attack"])
+    except FileNotFoundError:
         with open(f"./Stats/Inventory/{username}.txt","w") as file:
-            file.write("0\n0")
+            NewDict = {
+            "Armor" : 0,
+            "Attack" : 0
+            }
+            file.write(str(NewDict))
+            AttackId = 0
+            ArmorId = 0
             pass
 
     if type_ == "Оружие":
         AttackId = ID
-    if type_ == "Броня":
+    if type_ == "Экипировка":
         ArmorId = ID
     with open(f"./Stats/Inventory/{username}.txt","w") as file:
-        file.write(f"{ArmorId}\n{AttackId}")
+        NewDict = {
+            "Armor" : int(ArmorId),
+            "Attack" : int(AttackId)
+        }
+        file.write(str(NewDict))
     
     pass
 
@@ -1073,7 +1180,7 @@ def ReadEquipment(**fields):
 
     `username` : Имя игрока
 
-    `type` : Оружие , Броня
+    `type` : Оружие , Экипировка
 
     """
 
@@ -1081,22 +1188,12 @@ def ReadEquipment(**fields):
     username = fields.pop('username')
 
     with open(f"./Stats/Inventory/{username}.txt","r") as file:
-        try:
-            Armor_ = file.readline()
-            if Armor_ == "":
-                WriteEquipment(username=username,type="Броня",ID=0)
-        except:
-            pass
-        try:
-            Attacks_ = file.readline()
-            if Attacks_ == "":
-                WriteEquipment(username=username,type="Оружие",ID=0)
-        except:
-            pass
-        if type_ == "Броня":
-            return int(Armor_)
+        Stats = file.readline()
+        Stats = StrToDict(str=Stats)
+        if type_ == "Экипировка":
+            return int(Stats["Armor"])
         if type_ == "Оружие":
-            return int(Attacks_)
+            return int(Stats["Attack"])
         
 
 def CheckParametrsEquipment(**fields):
@@ -1113,10 +1210,10 @@ def CheckParametrsEquipment(**fields):
 
     ID = fields.pop("ID")
 
-    with open(f"./Stats/Main/Inventor_{username}.txt","r") as file:
+    with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
         for item in file.readlines():
             itemDict = StrToDict(str=item)
-            itemID = int(itemDict.pop('ID'))
+            itemID = int(itemDict['ID'])
             if ID == itemID:
                 return itemDict
 
@@ -1129,7 +1226,7 @@ def EditItem(**fields):
 
     `ID` : Индекс предмета
 
-    `type` : тип `Оружие` , `Экиперовка`
+    `type` : тип `Оружие` , `Экипировка`
 
     `armor` : Броня у предмета
 
@@ -1161,7 +1258,7 @@ def EditItem(**fields):
         pass
     
     ListItems = list()
-    with open(f"./Stats/Main/Inventor_{username}.txt","r") as file:
+    with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
         for item in file.readlines():
             itemDict = StrToDict(str=item)
             itemDictStandart = StrToDict(str=item)
@@ -1179,7 +1276,7 @@ def EditItem(**fields):
                         "armor" : armor,
                         "damage" : damage
                     }
-                if type_ == "Экиперовка":
+                if type_ == "Экипировка":
                     newItem = {
                         "type" : type_item,
                         "name" : nameItem,
@@ -1192,7 +1289,7 @@ def EditItem(**fields):
                 ListItems.append(newItem)
             else:
                 ListItems.append(itemDictStandart)
-    with open(f"./Stats/Main/Inventor_{username}.txt","w") as file:
+    with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
         Counts = len(ListItems)
         for ItemIn in ListItems:
             Counts -= 1
@@ -1371,7 +1468,7 @@ def BalansList(**fields):
         }
 
         return NewInfo
-    if type_ == "Экиперовка":
+    if type_ == "Экипировка":
         Armor = 0
         Gold = 0
         Armored = 0
@@ -1758,12 +1855,12 @@ def CreateImageInventor(**fields):
     except: raise Error("Не указан gold")
     try:
         protect = 0
-        if typeItem == "Экиперовка":
+        if typeItem == "Экипировка":
             protect = fields.pop("protect")
     except: raise Error("Не указан protect")
     try:
         armor = 0
-        if (typeItem == "Экиперовка") or (typeItem == "Оружие"):
+        if (typeItem == "Экипировка") or (typeItem == "Оружие"):
             armor = fields.pop("armor")
     except: raise Error("Не указан armor")
     try:
@@ -1819,13 +1916,13 @@ def CreateImageInventor(**fields):
     txt = f"{gold}"
     DrawItem.text(area,txt,font=font,fill=Color)
 
-    if (typeItem == "Экиперовка") or (typeItem == "Оружие"):
+    if (typeItem == "Экипировка") or (typeItem == "Оружие"):
         area = (230,1070)
         Color = (0,0,0)
         font = ImageFont.truetype("arial.ttf",Scaling)
         txt = f"Прочность : {armor}"
         DrawItem.text(area,txt,font=font,fill=Color)
-    if (str(typeItem) == "Экиперовка"):
+    if (str(typeItem) == "Экипировка"):
         area = (230,1300)
         Color = (0,0,0)
         font = ImageFont.truetype("arial.ttf",Scaling)
@@ -1952,7 +2049,7 @@ def SellItem(**fields):
             NewInventor.append(Item)
         pass
 
-    with open(f"./Stats/Main/Inventor_{username}.txt","w") as file:
+    with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
         Counts = len(NewInventor)
         for Item in NewInventor:
             Counts -= 1
@@ -2111,7 +2208,7 @@ class Auction():
                             WriteInventor(username=username,old=Inventor,type=_AuctionsItemType
                             ,name=_AuctionsItemName,classItem=_AuctionsItemClassItem,ID=_AuctionsItemID,
                             gold=_AuctionsItemGold,armor=AuctionsItemArmor,damage=AuctionsItemDamage)
-                        if _AuctionsItemType == "Экиперовка":
+                        if _AuctionsItemType == "Экипировка":
                             Inventor = ReadInventor(username)
                             AuctionsItemArmor = int(_AuctionsDict.pop("armor"))
                             AuctionsItemProtect = int(_AuctionsDict.pop("protect"))
@@ -2192,7 +2289,6 @@ class Quest():
         pass
     pass
 
-
 class CheckText():
     """
     .
@@ -2232,15 +2328,165 @@ class CheckText():
         pass
 
 
+class Room():
+    """
+    Комнаты
+    """
+    class NoRoomName(Error):
+        pass
+    def __init__(self,Player : str):
+        """
+        Player
+        """
+        self.Player = Player
+    def Save(self,RoomName : str):
+        """
+        Сохраняет название комнаты
+        """
+        with open(f"./Stats/Room/{self.Player}.txt","w") as file:
+            file.write(str(RoomName))
+    def Read(self):
+        """
+        Читает название комнаты
+        """
+        try:
+            with open(f"./Stats/Room/{self.Player}.txt","r") as file:
+                self.RoomName = str(file.readline())
+                return self.RoomName
+        except FileNotFoundError:
+            raise self.NoRoomName("Не сохранено имя игрока.")
+
+class Rating():
+    """
+    Рейтинговая система.
+    """
+    def __init__(self):
+        self.main()
+
+    def main(self):
+        self.GetPlayers()
+        self.GetStats()
+        self.ParametrsCheck()
+
+    def ParametrsCheck(self):
+        PlayerDict = list()
+        for GetStats in self.StatsPlayers:
+            Stats = dict(GetStats["stats"])
+            lvl = int(Stats["lvl"])
+            exp = int(Stats["exp"])
+            NewDict = {
+                "player" : str(GetStats["player"]),
+                "lvl" : int(lvl),
+                "exp" : int(exp)
+            }
+            PlayerDict.append(NewDict)
+        PointStats = list()
+        for Player in PlayerDict:
+            Level = int(Player["lvl"])
+            Exp = int(Player["exp"])
+            Point = 0
+            for Player2 in PlayerDict:
+                LevelOther = int(Player2["lvl"])
+                ExpOther = int(Player2["exp"])
+                if Level > LevelOther:
+                    Point += 1
+                if Level == LevelOther:
+                    if Exp > ExpOther:
+                        Point += 1
+            NamePlayer = Player["player"]
+            NewDict = {
+                "Player" : NamePlayer,
+                "Point" : Point
+            }
+            print(NewDict)
+            PointStats.append(NewDict)
+        
+        for Rating_ in PointStats:
+            Point = Rating_["Point"]
+            MVPPoint = 0
+            for Rating_2 in PointStats:
+                Point2 = Rating_2["Point"]
+                if Point >= Point2:
+                    MVPPoint += 1
+            # print(MVPPoint)
+        pass
+
+    def GetStats(self):
+        """
+        Получить статистику игроков
+        """
+        self.StatsPlayers = list()
+        for Player in self.Players:
+            NewDict = {
+                "stats" : ReadMainParametrs(username=Player),
+                "player" : Player
+                }
+            self.StatsPlayers.append(NewDict)
+
+    def GetPlayers(self):
+        """
+        Получить игроков
+        """
+        PlayersDirect = './Stats/Main/'
+        Players = os.listdir(PlayersDirect)
+        self.Players = list()
+        for Player in Players:
+            self.Players.append(Player.split(".txt")[0])
+
+class CheckMessage():
+    """
+    Проверяет сообщение на указанные слова
+    """
+    Find = False
+    def __init__(self,message : str,target : list):
+        self.message = message
+        self.target = target
+    
+    def Start(self):
+        """
+        Начать проверку. Выводит : `True` or `None`
+        """
+        EveryoneWord = list()
+        EveryoneWord.extend(self.message)
+        TargetEveryone = list(); TargetEveryone.extend(self.target) 
+        self.everyoneWord = EveryoneWord
+        self.targetEveryone = TargetEveryone
+        count = 0
+        for word in self.everyoneWord:
+            if word == " ":
+                count = 0
+            else:
+                try:
+                    if word == TargetEveryone[count]:
+                        count += 1
+                        if count == len(self.target):
+                            Find = True
+                            return Find
+                    elif word != TargetEveryone[count]:
+                        count = 0
+                except IndexError:
+                    pass
+def randomBool(_min : int,_max : int,_need : int):
+    """
+    Случайное число , в Bool
+    """
+    _Number = random.randint(_min,_max)
+    if _Number == _need:
+        return True
+    else:
+        return False
+    pass
+
+
 
 
 
 if __name__ == "__main__":
-    description = "Проверка описания к заданию"
-    main_task = "Стать аниме-девочкой"
-    tag = QuestTags.main()
-    NewQuest = Quest(username="KOT32500",NPC="Gabriele",
-    description=description,main_task=main_task,tag=tag)
-    NewQuest.Add()
+    # description = "Проверка описания к заданию"
+    # main_task = "Стать аниме-девочкой"
+    # tag = QuestTags.main()
+    # NewQuest = Quest(username="KOT32500",NPC="Gabriele",
+    # description=description,main_task=main_task,tag=tag)
+    # NewQuest.Add()
     pass
     

@@ -15,8 +15,90 @@ from PIL import Image, ImageDraw , ImageFont
 
 internetWasOff = True
 
+async def Download(self,Name : str,URL : str):
+    """
+    Качает лолей
+    """
+    Lolies = []
+    with open(f"./Resurses/loli/OldLoli.txt","r") as file:
+        for line in file.readlines():
+            if line != "" and line != " " and line != "\n":
+                NameLoli = str(line).split("\n")[0]
+                Lolies.append(str(NameLoli))
+    if Name not in Lolies:
+        Lolies.append(Name)    
+        with open(f"./Resurses/loli/OldLoli.txt","w") as file:
+            for loli in Lolies:
+                file.writelines(f"{loli}\n")
+        DownloadFile = requests.get(URL, stream=True)
+        with open(f"./Resurses/loli/{Name}","bw") as file:
+            for chunk in DownloadFile.iter_content(30720):
+                file.write(chunk)
+                pass
+            pass
+        channel = self.get_channel(578611164016017408)
+        fileLoli = discord.File(f"./Resurses/loli/{Name}",f"./Resurses/loli/{Name}")
+        loliMessage = await channel.send(" ",file=fileLoli)
+        await loliMessage.add_reaction("👍")
+        await loliMessage.add_reaction("👎")
+        os.remove(f"./Resurses/loli/{Name}")
+
+def RepeatURL(GetUrl):
+    URL = f"http://"
+    DoIt = True
+    fstWord = list() ; fstWord.extend(str(GetUrl))
+    for word in fstWord:
+        if word == "/" and DoIt == True:
+            pass
+        else:
+            URL += word
+            DoIt = False
+    return URL
+    
+async def AnimePicturesNet(self):
+    print("AnimePicturesNet activity")
+    url = "https://anime-pictures.net/pictures/view_posts/0?search_tag=Loli&order_by=date&ldate=3&lang=ru"
+    request = requests.get(url)
+    soup = BeautifulSoup(request.content,"html.parser")
+    
+    items = soup.find_all("img", class_ = "img_cp")
+
+    for item in items:
+        GetUrl = item.get("src") ; GetUrl = str(GetUrl)
+        fstWord = list() ; fstWord.extend(str(GetUrl))
+        AnimePicturesNet_URL = f"http://"
+        DoIt = True
+        for word in fstWord:
+            if word == "/" and DoIt == True:
+                pass
+            else:
+                AnimePicturesNet_URL += word
+                DoIt = False
+        Name = str(GetUrl).split("/")[-1]
+        await Download(self,Name,AnimePicturesNet_URL)
+    print("AnimePicturesNet not is activity")
+
+async def wallpaper(self):
+    print("wallpaper activity")
+    WallpaperUrl = "https://www.wallpaperflare.com/search?wallpaper=loli"
+    request = requests.get(WallpaperUrl)
+    soup = BeautifulSoup(request.content,"html.parser")
+    
+    items = soup.find_all("li")
+    for item in items:
+        url = item.find_all("img", class_ = "lazy")
+        for URL in url:
+            Image = URL.get("data-src")
+            Name = str(Image).split("/")[-1]
+            await Download(self,Name,Image)
+        # print(url)
+    print("wallpaper not is activity")
+
+
 async def CheckingVK(self,Urls : list):
     while True:
+        await AnimePicturesNet(self)
+        await wallpaper(self)
         for __url_ in Urls:
             r = requests.get(__url_)
             soup = BeautifulSoup(r.content,"lxml") #html.parser
@@ -68,18 +150,7 @@ async def CheckingVK(self,Urls : list):
                 # except: pass
         time.sleep(15)
 
-# def test(Ulr : str):
-#     response = requests.get(Ulr)
-#     soup = BeautifulSoup(response.content, "html.parser")
-#     items = soup.findAll('div', class_ = "_post post page_block all own post--with-likes deep_active")
-#     print(items)
-#     # for item in items:
-#     #     Title = item.find('span', class_ = "rel_date rel_date_needs_update").get_text(strip=True)
-#     # pass
-# print("start")
-# test("https://vk.com/your.meow")
-# print("end")
-#https://www.youtube.com/watch?v=3DF6Zt2-GLw
+
 def is_internet():
     """
     Query internet using python
@@ -99,7 +170,7 @@ def InternetActive():
 class MyClient(discord.Client):
     pass
     async def on_ready(self):
-        print('Logged on as', self.user)
+        print(f"Logged on as , {self.user} MODULE : botLoli.py")
         urls = [
             "https://vk.com/animelolki",
             "https://vk.com/your.meow",

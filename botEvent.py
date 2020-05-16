@@ -221,7 +221,7 @@ def InternetActive():
     client.run(BazaDate.token)
 class MyClient(discord.Client):
     async def on_ready(self):
-        print('Logged on as', self.user)
+        print(f"Logged on as , {self.user} MODULE : botEvent.py")
         # Functions.CreateNewBoss()
     # async def on_member_join(self,member):
     #     print("DA")
@@ -497,13 +497,13 @@ class MyClient(discord.Client):
 
     async def on_voice_state_update(self,_Player_ : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
         #msg = self.get_channel(627140104988917789)
-        OurServer = await self.fetch_guild(419879599363850251)
+        OurServer = await self.fetch_guild(_Player_.guild.id)
         CurVoice = after.channel
         TextCurVoice = str(CurVoice)
         Roles = OurServer.get_role(623063847497891840)
         EveryOne = OurServer.roles[0]
-        print(before)
-        print(after)
+        # print(before)
+        # print(after)
         
        # print(Roles)
         if TextCurVoice == "Создать комнату":
@@ -515,17 +515,25 @@ class MyClient(discord.Client):
                         await _Player_.send("```fix\nВы не можете создать комнату.\n```")
                     except: pass
                     MusicVoice = await self.fetch_channel(688501395779092572)
-                    await _Player_.move_to(MusicVoice)
+                    await _Player_.move_to(MusicVoice,reason="Невозможность создать комнату")
                     return
-            NewGroup = await OurServer.create_voice_channel(f"{_Player_.name}")
-            await NewGroup.set_permissions(_Player_,manage_channels=True,move_members=True,manage_roles=True)
-            await _Player_.move_to(NewGroup)
+            try:
+                Room = Functions.Room(_Player_.name)
+                NewGroup = await OurServer.create_voice_channel(f"{Room.Read()}",reason="Новая комната")
+            except Room.NoRoomName:
+                NewGroup = await OurServer.create_voice_channel(f"{_Player_.name}",reason="Новая комната")
+            await NewGroup.set_permissions(_Player_,manage_channels=True,move_members=True,manage_roles=True,reason="Новая комната")
+            await _Player_.move_to(NewGroup,reason="Новая комната")
         if TextCurVoice == "Создать комнату (Истинный чат)":
-            NewGroup = await OurServer.create_voice_channel(f"{_Player_.name}")
-            await NewGroup.set_permissions(_Player_,manage_channels=True,move_members=True,manage_roles=True)
-            await NewGroup.set_permissions(Roles,connect=True)
-            await NewGroup.set_permissions(EveryOne,connect=False)
-            await _Player_.move_to(NewGroup)
+            try:
+                Room = Functions.Room(_Player_.name)
+                NewGroup = await OurServer.create_voice_channel(f"{Room.Read()}",reason="Новая комната")
+            except Room.NoRoomName:
+                NewGroup = await OurServer.create_voice_channel(f"{_Player_.name}",reason="Новая комната")
+            await NewGroup.set_permissions(_Player_,manage_channels=True,move_members=True,manage_roles=True,reason="Новая комната")
+            await NewGroup.set_permissions(Roles,connect=True,reason="Новая комната")
+            await NewGroup.set_permissions(EveryOne,connect=False,reason="Новая комната")
+            await _Player_.move_to(NewGroup,reason="Новая комната")
         Textbefore = str(before.channel)
         #await msg.send(f"{Textbefore} и {_Player_.name}")
 
@@ -533,11 +541,17 @@ class MyClient(discord.Client):
             CurGroup = await self.fetch_channel(before.channel.id)
             Members = CurGroup.members
             if (len(Members) == 0) and (Textbefore != "Создать комнату") and (Textbefore != "Резерв") and (Textbefore != "Музыка") and (Textbefore != "Создать комнату (Истинный чат)"):
-                await CurGroup.delete()
+                await CurGroup.delete(reason="В комнате никого нет")
         except Exception:
             pass
 
-
+    async def on_guild_channel_update(self,before,after):
+        MembersBefore = after.members
+        for member in MembersBefore:
+            permiss = after.permissions_for(member)
+            if permiss.manage_channels == True:
+                Room = Functions.Room(member.name)
+                Room.Save(after.name)
 
 InternetActive()
 

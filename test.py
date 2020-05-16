@@ -1,44 +1,66 @@
-class testword():
+import discord
+import BazaDate
+from discord import user
+import urllib
+from urllib.request import urlopen
+import time
+import random
+import datetime
+import os
+from bs4 import BeautifulSoup
+import lxml
+import requests
+import os
+from PIL import Image, ImageDraw , ImageFont
+import botFunctions
+from botFunctions import Gabriel
+import asyncio
+
+internetWasOff = True
+
+async def TEST1(parameter_list):
+    a = 0
+    while a < 100:
+        print(parameter_list)
+        await asyncio.sleep(0.1)
+
+
+def is_internet():
     """
-    .
+    Query internet using python
+    :return:
     """
-    Find = False
-    def __init__(self,message : str,target : list):
-        self.message = message
-        self.target = target
-        # self.Start()
     
-    def Start(self):
-        EveryoneWord = list()
-        EveryoneWord.extend(self.message)
-        TargetEveryone = list(); TargetEveryone.extend(self.target) 
-        self.everyoneWord = EveryoneWord
-        self.targetEveryone = TargetEveryone
-        # print(self.everyoneWord)
-        count = 0
-        for word in self.everyoneWord:
-            if word == " ":
-                count = 0
-            else:
-                try:
-                    if word == TargetEveryone[count]:
-                        count += 1
-                        # print(f"{word} равно")
-                        if count == len(self.target):
-                            print(f"`{self.target}` найдено")
-                            Find = True
-                            return Find
-                    elif word != TargetEveryone[count]:
-                        count = 0
-                        # print(word)
-                except IndexError:
-                    # print("error")
-                    pass
+    try:
+        urlopen('https://www.google.com', timeout=1)
+        
+        return True
+    except urllib.error.URLError as Error:
+        print(Error)
+        return False
+def InternetActive():
+    client = MyClient()
+    client.run(BazaDate.token)
+class MyClient(discord.Client):
+    async def on_ready(self):
+        print(f"Logged on as , {self.user} MODULE : BotTest.py")
+        _Gabriel = Gabriel()
+        Config = _Gabriel.Config()
+        await Config.Start(711132161444675595,self)
+    async def on_message(self,message):
         pass
 
-message = "твоя ава - гачи ты её сам делал? гачи"
-target = "гачи"
-# message = "я был я ться блять тут сука , 10 ебанных секунд блять назад"
-# banWords = ["блять","сука","тут","ничего"]
-tw = testword(message,target)
-print(tw.Start())
+
+
+InternetActive()
+
+while True:
+    time.sleep(1)
+    if is_internet():
+        if(internetWasOff == True):
+            print("Internet is active")
+            InternetActive()
+            internetWasOff = False
+    else:
+        print("Internet disconnected")
+        internetWasOff = True

@@ -377,12 +377,21 @@ def profileEdit(_UserName_):
     # Color = AgentConfig
     font = ImageFont.truetype("arial.ttf",25)
     draw.text(area,_UserName_,font=font,fill=Color)
-
-    area = (161,143)
-    Color = (0,0,0)
-    font = ImageFont.truetype("arial.ttf",8)
-    txt = str("Здоровье : " + str(IntCurHealth) + " ед./ " + str(IntMaxHealth))
-    draw.text(area,txt,font=font,fill=Color)
+    try:
+        Item_ID = Functions.ReadEquipment(username=_UserName_,type="Экипировка")
+        ItemProtect = Functions.CheckParametrsEquipment(username=_UserName_,ID=Item_ID)
+        protect = ItemProtect["protect"]
+        area = (161,143)
+        Color = (0,0,0)
+        font = ImageFont.truetype("arial.ttf",8)
+        txt = str(f"Здоровье : {str(IntCurHealth)} ед./ {str(IntMaxHealth)} ({protect})")
+        draw.text(area,txt,font=font,fill=Color)
+    except FileNotFoundError:
+        area = (161,143)
+        Color = (0,0,0)
+        font = ImageFont.truetype("arial.ttf",8)
+        txt = str(f"Здоровье : {str(IntCurHealth)} ед./ {str(IntMaxHealth)}")
+        draw.text(area,txt,font=font,fill=Color)
 
     area = (161,158)
     Color = (0,0,0)
@@ -602,12 +611,43 @@ def InternetActive():
 class MyClient(discord.Client):
     _VoiceClient = None
     async def on_ready(self):
-        print('Logged on as', self.user)
-        # game = discord.Game("RAID SHADOW LEGENDS")
-        stream = discord.Streaming(name="RAID SHADOW LEGENDS",url="https://vk.com/")
-        # MyActinity = discord.Activity()
-        StatusMy = discord.Status.idle
-        await self.change_presence(status=StatusMy, activity=stream)  
+        print(f"Logged on as , {self.user} MODULE : bot.py")
+        randomStatus = random.randint(0,6)
+        if randomStatus == 0:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.listening, 
+                    name="твои истории"))
+        elif randomStatus == 1:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.listening, 
+                    name="твои проблемы"))
+        elif randomStatus == 2:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching, 
+                    name="в будущее"))
+        elif randomStatus == 3:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching, 
+                    name="в окно"))
+        elif randomStatus == 4:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.listening, 
+                    name="музыку"))
+        elif randomStatus == 5:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching, 
+                    name="как моляться Богам фпса"))
+        elif randomStatus == 6:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching, 
+                    name="на твою историю браузера ;D"))
     async def on_message(self, message):
     # don't respond to ourselves
         UserName_ = message.author.name
@@ -617,7 +657,7 @@ class MyClient(discord.Client):
             UserName__ += word
         UserName_ = str(UserName__)
         _Gabriele_ = await self.fetch_user(656808327954825216)
-        OurServer = await self.fetch_guild(419879599363850251)
+        OurServer = await self.fetch_guild(message.guild.id)
         # print(message.content)
         _Channel_ = None
         _Message_ = discord.message.Message
@@ -742,22 +782,26 @@ class MyClient(discord.Client):
             pass
         
 
-        try:
-            AboutTextThenCommand = msgSP[2]
+        # try:
+        #     AboutTextThenCommand = msgSP[0]
 
-            Commands = ["ABOUT_ME",
-            "UPGRADE_ITEM",
-            "ROLE",
-            "TALANT",
-            "SELL_ITEM","S_I",
-            "AE","AUCTION",
-            ""," "]
+        #     Commands = ["ABOUT_ME",
+        #     "UPGRADE_ITEM","U_I"
+        #     "ROLE",
+        #     "TALANT",
+        #     "SELL_ITEM","S_I",
+        #     "AE","AUCTION",
+        #     ""," "]
 
-            AboutTextThenCommand = str(AboutTextThenCommand).upper()
-            if AboutTextThenCommand not in Commands:
-                return
-        except:
-            pass
+        #     AboutTextThenCommand = str(AboutTextThenCommand).upper()
+        #     if AboutTextThenCommand not in Commands:
+        #         try:
+        #             _AboutTextThenCommand = msgSP[2]
+        #             _AboutTextThenCommand = str(_AboutTextThenCommand).upper()
+        #         except: 
+        #             return
+        # except:
+        #     pass
 
 
         if CurCommand == 'Ы':
@@ -779,14 +823,14 @@ class MyClient(discord.Client):
                     InVoice = True
             if InVoice == False:
                 _VoiceClient = await _ChannelVoice_.connect()
-                RandomInt = random.randint(1,10)
+                RandomInt = random.randint(1,36)
                 RandomSound = f"JoinVoice ({RandomInt}).mp3"
                 _VoiceClient.play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source=f"./Resurses/JoinVoice/{RandomSound}"))
             else:
                 await message.channel.send(f"Не могу проиграть звук",delete_after=1)
 
 
-        if (CurCommand == 'PROFILE') or (CurCommand == 'P') or (CurCommand == 'П') or (CurCommand == 'ПРОФИЛЬ'):
+        if (CurCommand == 'PROFILE'):
             try:
                 await _Message_.delete()
             except:
@@ -802,7 +846,7 @@ class MyClient(discord.Client):
                             file.write(chunk)
                             pass
                         pass
-        if (CurCommand == "ATTACK") or (CurCommand == "A") or (CurCommand == "А") or (CurCommand == "АТАКА") or (CurCommand == "АТАКОВАТЬ") or (CurCommand == "АТАКУЮ"):
+        if (CurCommand == "ATTACK"):
             await _Message_.delete()
             if CurCommandPlayer.lower() == UserName_.lower():
                 await message.channel.send(":no_entry: `Нельзя выбрать в качестве цели самого себя` :no_entry:",delete_after=2)
@@ -847,6 +891,16 @@ class MyClient(discord.Client):
                 GetDamage = random.randint(0,IntMaxDamage + int(DamageItem))
                 strength = Functions.ReadMainParametrs(username=UserName_) ; strength = float(strength.pop("strength"))
                 GetDamage *= strength
+
+                Item_ID = Functions.ReadEquipment(username=CurCommandPlayer,type="Экипировка")
+                ItemProtect = Functions.CheckParametrsEquipment(username=CurCommandPlayer,ID=Item_ID)
+                protect = int(ItemProtect["protect"])
+
+                GetDamage -= protect
+
+                if GetDamage <= 0:
+                    GetDamage = 1
+                
                 EnIntCurHealth -= int(GetDamage)
                 await Functions.EditAttackDamageTwo(self=self,Channel=_Channel_,GetDamage=int(GetDamage),_Player=UserName_,_Target=CurCommandPlayer,CurHealthTarget=EnIntCurHealth)
 
@@ -885,7 +939,7 @@ class MyClient(discord.Client):
                 Functions.WriteMainParametrs(username=CurCommandPlayer,lvl=EnIntCurLvl,maxHealth=EnIntMaxHealth,curHealth=EnIntCurHealth,damage=EnIntMaxDamage)
             except FileNotFoundError:
                 await message.channel.send(":warning: `Профиль не найден, или этого ирока просто не существует` :warning:",delete_after=2)
-        if (CurCommand == 'PROFILE') or (CurCommand == 'P') or (CurCommand == 'П') or (CurCommand == 'ПРОФИЛЬ'):
+        if (CurCommand == 'PROFILE'):
             
             if CurCommandPlayer != "":
                 try:
@@ -1008,7 +1062,7 @@ class MyClient(discord.Client):
                 try:
                     armor = int(ItemDict.pop("armor"))
                 except:
-                    if (type_ == "Оружие") or (type_ == "Экиперовка"):
+                    if (type_ == "Оружие") or (type_ == "Экипировка"):
                         raise Functions.Error_CreateItem("armor error")
 
                 try:
@@ -1021,7 +1075,7 @@ class MyClient(discord.Client):
                 try:
                     protect = int(ItemDict.pop("protect"))
                 except:
-                    if type_ == "Экиперовка":
+                    if type_ == "Экипировка":
                         raise Functions.Error_CreateItem("protect error")
 
 
@@ -1036,7 +1090,7 @@ class MyClient(discord.Client):
                 if type_ == "Оружие":
                     # SendInfo += f"Имя предмета : {name}\nТип предмета : {type_} \nКласс предмета : {classItem} \nID предмета : {ID}\nЗолотых для улучшения : {gold}\nПрочность : {armor}\nУрон : {damage}\n\n"
                     ImageInventor = Functions.CreateImageInventor(username=UserName_,typeItem=type_,name=name,classItem=classItem,ID=ID,gold=gold,armor=armor,damage=damage)
-                if type_ == "Экиперовка":
+                if type_ == "Экипировка":
                     # SendInfo += f"Имя предмета : {name}\nТип предмета : {type_} \nКласс предмета : {classItem} \nID предмета : {ID}\nЗолотых для улучшения : {gold}\nПрочность : {armor}\nЗащита : {protect}\n\n"
                     ImageInventor = Functions.CreateImageInventor(username=UserName_,typeItem=type_,name=name,classItem=classItem,ID=ID,gold=gold,armor=armor,protect=protect)
                 # if type_ == "Ингридиент":
@@ -1073,7 +1127,7 @@ class MyClient(discord.Client):
                 
 
             pass
-        if (CurCommand == "UPGRADE_ITEM") or (CurCommand == "U_I"):
+        if (CurCommand == "UPGRADE_ITEM"):
             await _Message_.delete()
             RolesPlayer = Member_Player.roles
             # try:
@@ -1088,11 +1142,11 @@ class MyClient(discord.Client):
             Inventore = Functions.ReadInventor(UserName_)
             for item in Inventore.split("\n"):
                 itemDict = Functions.StrToDict(str=item)
-                itemID = itemDict.pop('ID')
+                itemID = itemDict['ID']
                 if itemID == IDitem:
-                    type_ = itemDict.pop('type')
-                    classItem = itemDict.pop('classItem')
-                    gold = int(itemDict.pop('gold'))
+                    type_ = itemDict['type']
+                    classItem = itemDict['classItem']
+                    gold = int(itemDict['gold'])
                     gold -= GoldSell
                     if gold <= 0:
                         GoldSell -= gold
@@ -1118,33 +1172,46 @@ class MyClient(discord.Client):
                             Functions.EditItem(username=UserName_,ID=itemID,type=type_,classItem=NewClassItem,armor=NewArmor,gold=NewGold,damage=NewDamage)
                             Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
                             return
+                        if (type_ == "Экипировка"):
+                            NewProtect = NewUpgrade.pop('protect')
+                            NewArmor = NewUpgrade.pop('armor')
+                            NewGold = NewUpgrade.pop('gold')
+                            Functions.EditItem(
+                                username=UserName_,
+                                ID=itemID,
+                                type=type_,
+                                classItem=NewClassItem,
+                                armor=NewArmor,
+                                gold=NewGold,
+                                protect=NewProtect
+                                )
+                            Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
+                            return
 
                     Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
                     if (type_ == "Оружие"):
-                        try:
-                            damage = itemDict.pop('damage')
-                        except: pass
-                        try:
-                            armor = itemDict.pop('armor')
-                        except: pass
+                        damage = itemDict['damage']
+                        armor = itemDict['armor']
                         Functions.EditItem(username=UserName_,ID=itemID,type=type_,classItem=classItem,armor=armor,damage=damage,gold=gold)
-                    if type_ == "Экиперовка":
-                        try:
-                            protect = itemDict.pop('protect')
-                        except: pass
-                        try:
-                            armor = itemDict.pop('armor')
-                        except: pass
-                        Functions.EditItem(username=UserName_,ID=itemID,type=type_,classItem=classItem,protect=protect,armor=armor,gold=gold)
-                    
-                    
+                    elif type_ == "Экипировка":
+                        protect = itemDict['protect']
+                        armor = itemDict['armor']
+                        Functions.EditItem(
+                            username=UserName_,
+                            ID=itemID,
+                            type=type_,
+                            classItem=classItem,
+                            protect=protect,
+                            armor=armor,
+                            gold=gold
+                            )
                 pass
             # except:
             #     await message.channel.send(f"Ошибка в команде")
             
 
             # Functions.EditItem(username=UserName_)
-        if (CurCommand == "SELL_ITEM") or (CurCommand == "S_I"):
+        if (CurCommand == "SELL_ITEM"):
             await _Message_.delete()
             IDitem = int(CurCommandPlayer)
             Inventore = Functions.ReadInventor(UserName_)
@@ -1162,44 +1229,43 @@ class MyClient(discord.Client):
             pass
 
     
-        if CurCommand == "ROLE":
-            try:
-                RoleMentions = _Message_.raw_role_mentions[0]
-                RoleMentions = OurServer.get_role(RoleMentions)
-                MentionPlayer = await OurServer.fetch_member(_Mention_.id)
+        # if CurCommand == "ROLE":
+        #     try:
+        #         RoleMentions = _Message_.raw_role_mentions[0]
+        #         RoleMentions = OurServer.get_role(RoleMentions)
+        #         MentionPlayer = await OurServer.fetch_member(_Mention_.id)
 
-                Can = [578514082252980234,626028536305811487,578514024782626837,691209621968519188,692917601076248657,688482228962983968,578517475042394113,610078093260095488,622412934391267378,625966754769928202,632180542070325248,686553299641827331,688015318396043317,691735620346970123,623063847497891840,419879599363850251]
+        #         Can = [578514082252980234,626028536305811487,578514024782626837,691209621968519188,692917601076248657,688482228962983968,578517475042394113,610078093260095488,622412934391267378,625966754769928202,632180542070325248,686553299641827331,688015318396043317,691735620346970123,623063847497891840,419879599363850251]
 
-                if RoleMentions.id not in Can:
-                    await MentionPlayer.add_roles(RoleMentions)
-                    # print(f"{MentionPlayer} {type(MentionPlayer)} {_Mention_.id} {_Mention_.name}")
-                    await message.channel.send(f"{_Mention_.mention} повысили до {RoleMentions.mention}")
-                else:
-                    await message.channel.send(f"{_Mention_.mention} нельзя повысить до {RoleMentions.mention}")
+        #         if RoleMentions.id not in Can:
+        #             await MentionPlayer.add_roles(RoleMentions)
+        #             # print(f"{MentionPlayer} {type(MentionPlayer)} {_Mention_.id} {_Mention_.name}")
+        #             await message.channel.send(f"{_Mention_.mention} повысили до {RoleMentions.mention}")
+        #         else:
+        #             await message.channel.send(f"{_Mention_.mention} нельзя повысить до {RoleMentions.mention}")
                 
-                pass
-            except:
-                await message.channel.send(f"Ошибка в команде",delete_after=5)
+        #         pass
+        #     except:
+        #         await message.channel.send(f"Ошибка в команде",delete_after=5)
 
 
-        if CurCommand == "GUILD":
-            EveryOne = OurServer.get_role(419879599363850251)
-            CreatorGuild = OurServer.get_role(692917601076248657)
-            Member = await OurServer.fetch_member(message.author.id)
-            await Member.add_roles(CreatorGuild)
-            # await Functions.GetPermissions(self)
-            perms = discord.Permissions(267910976)
-            color = discord.colour.Colour(2123412)
-            Guard = await OurServer.create_role(name=f"Стража Гильдии ({UserName_})",permissions=perms,colour=color)
-            Permissions = {
-                EveryOne: discord.PermissionOverwrite(read_messages=False,send_messages=False,read_message_history=False),
-                Guard: discord.PermissionOverwrite(read_messages=True,send_messages=True,read_message_history=True),
-                message.author: discord.PermissionOverwrite(read_messages=True,send_messages=True,read_message_history=True,manage_channels=True)
-            }
-            newGuild = await OurServer.create_category(name="Гильдия",overwrites=Permissions)
-            Info = await OurServer.create_text_channel(name="Информация",category=newGuild,overwrites=Permissions)
-            await Info.send(f"**Поздравляю вас с покупкой новой Гильдии**\n**Сейчас я объясню, что и как делать. А после, вы уже сможете сделать полноценную Гильдию** \n**Первое что вы можете сделать сразу же, так это настроить Гильдию. Все правила которая устанавливает Гильдия, должны следоваться исключительно в Гильдии. Максимальное наказание за нарушение правил Гильдий, является исключением из её. Советую вам сделать справку, в которой вы опишите все, что происходит на сервере, и какие там есть правила. Вторым этапом, является зазывание игроков, но как их зазывать, если вы здесь только один?. С помощью команды** `role`**, вы можете выдать 2 роли, и сами назначить им их задачи. Из их дополнительный возможностях есть. \nПервая роль : Стража Гильдии ({UserName_}) , эта роль требуется, чтобы войти в Гильдию. Выдается она как и другие роли, через команду** `role`\n**Вторая роль : Модератор Гильдии. Это уже тот пользователь, который является неким смотрителем правил. В его обязанности входит сделить за выполнениям требований(правил) Гильдии. Если их нет - собственно, он может ничего не делать. В его возможности входят многие способности, но работать они будут только в пределах Гильдии**")
-            pass
+        # if CurCommand == "GUILD":
+        #     EveryOne = OurServer.get_role(419879599363850251)
+        #     CreatorGuild = OurServer.get_role(692917601076248657)
+        #     Member = await OurServer.fetch_member(message.author.id)
+        #     await Member.add_roles(CreatorGuild)
+        #     # await Functions.GetPermissions(self)
+        #     perms = discord.Permissions(267910976)
+        #     color = discord.colour.Colour(2123412)
+        #     Guard = await OurServer.create_role(name=f"Стража Гильдии ({UserName_})",permissions=perms,colour=color)
+        #     Permissions = {
+        #         EveryOne: discord.PermissionOverwrite(read_messages=False,send_messages=False,read_message_history=False),
+        #         Guard: discord.PermissionOverwrite(read_messages=True,send_messages=True,read_message_history=True),
+        #         message.author: discord.PermissionOverwrite(read_messages=True,send_messages=True,read_message_history=True,manage_channels=True)
+        #     }
+        #     newGuild = await OurServer.create_category(name="Гильдия",overwrites=Permissions)
+        #     Info = await OurServer.create_text_channel(name="Информация",category=newGuild,overwrites=Permissions)
+        #     pass
         
         time.sleep(0.1)
         if (CurCommand == "TALANT") or (CurCommand == "ТАЛАНТ"):
@@ -1298,7 +1364,7 @@ class MyClient(discord.Client):
                         ItemArmor = int(AuctionDict.pop("armor"))
                         ItemDamage = int(AuctionDict.pop("damage"))
                         await message.channel.send(f"Владелец : {Owner}\nИндекс предмета : {ItemID}\nСтоимость торга : {goldAuction}\nТип предмета : {ItemType}\nИмя предмета : {ItemName}\nКласс предмета : {ClassItem}\nЗолото в предмете : {ItemGold}\nПрочность : {ItemArmor}\nУрон : {ItemDamage}")
-                    if ItemType == "Экиперовка":
+                    if ItemType == "Экипировка":
                         ItemArmor = int(AuctionDict.pop("armor"))
                         ItemProtect = int(AuctionDict.pop("protect"))
                         await message.channel.send(f"Владелец : {Owner}\nИндекс предмета : {ItemID}\nСтоимость торга : {goldAuction}\nТип предмета : {ItemType}\nИмя предмета : {ItemName}\nКласс предмета : {ClassItem}\nЗолото в предмете : {ItemGold}\nПрочность : {ItemArmor}\nЗащита : {ItemProtect}")
@@ -1314,9 +1380,11 @@ class MyClient(discord.Client):
 
 
     async def on_member_join(self,member : discord.member.Member):
-        OurServer = await self.fetch_guild(419879599363850251)
-        StartRole = OurServer.get_role(691735620346970123)
-        await member.add_roles(StartRole,reason="Впервые зашел на сервер")
+        try:
+            OurServer = await self.fetch_guild(419879599363850251)
+            StartRole = OurServer.get_role(691735620346970123)
+            await member.add_roles(StartRole,reason="Впервые зашел на сервер")
+        except: pass
 
 InternetActive()
 

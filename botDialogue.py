@@ -33,7 +33,7 @@ Step = 3
 Functions.FutureMessageDef(message=messages,step=Step)
 class MyClient(discord.Client):
     async def on_ready(self):
-        print('Logged on as', self.user)
+        print(f"Logged on as , {self.user} MODULE : botDialogue.py")
     async def on_message(self, message):
     # don't respond to ourselves
         if message.author == self.user:
@@ -122,23 +122,24 @@ class MyClient(discord.Client):
 
         if CurCommand == "G":
             await _Message_.delete()
-            messages = Functions.ReadWords()
+            # messages = Functions.ReadWords()
             Step = int(CurCommandPlayer)
-            msg = Functions.FutureMessageDef(message=messages,step=Step)
+            # msg = Functions.FutureMessageDef(message=messages,step=Step)
+            Gabriel = Functions.Gabriel()
+            try:
+                msg = Gabriel.Message(Step)
+            except Gabriel.TooManyWords:
+                await message.channel.send("Столько слов я не знаю ;c",delete_after=5)
+                return
             # print(f"message : {msg} \nreadWords : {messages}")
             try:
                 await message.channel.send(msg)
-            except:
-                while msg == "":
-                    try:
-                        msg = Functions.FutureMessageDef(message=messages,step=Step)
-                        try: await message.channel.send(msg)
-                        except: pass
-                    except:
-                        pass
+            except discord.errors.HTTPException:
+                await message.channel.send(f"Столько слов я не могу отправить ;c",delete_after=5)
             
         else:
-            if (_Channel_.id != 661869019845885962) and (_Channel_.id != 578611164016017408) and (_Channel_.id != 591886466372730909) and (_Channel_.id != 629267102070472714):
+            ChannelPossible = [696928662045458452,419879599363850253,686553674394239053]
+            if _Channel_.id in ChannelPossible:
                 Commands = ['PROFILE','ПРОФИЛЬ','P','П',
                 'Ы',
                 'ATTACK','A','АТАКА','АТКОВАТЬ','АТАКУЮ',

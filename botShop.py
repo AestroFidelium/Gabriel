@@ -54,7 +54,7 @@ def InternetActive():
     client.run(BazaDate.token)
 class MyClient(discord.Client):
     async def on_ready(self):
-        print('Logged on as', self.user)
+        print(f"Logged on as , {self.user} MODULE : botShop.py")
     async def on_message(self, message):
     # don't respond to ourselves
         time.sleep(1)
