@@ -24,6 +24,28 @@ async def TEST1(parameter_list):
         print(parameter_list)
         await asyncio.sleep(0.1)
 
+async def ConfigOpen(self,Setting : dict):
+    Main = Image.open(f"./Resurses/Configs/Main2.png")
+    Okay = Image.open(f"./Resurses/Configs/Okay.png")
+    Save = f"./Resurses/Configs/ConfigSettings.png"
+    Chat = str(Setting["Chat"])
+    Game = str(Setting["Game"])
+    Rooms = str(Setting["Rooms"])
+    if Chat == "ONLINE":
+        area = (648,180)
+        Main.paste(Okay.convert('RGB'), area, Okay)
+    if Game == "ONLINE":
+        area = (648,423)
+        Main.paste(Okay.convert('RGB'), area, Okay)
+    if Rooms == "ONLINE":
+        area = (648,677)
+        Main.paste(Okay.convert('RGB'), area, Okay)
+    Main = Main.save(Save)
+    file = discord.File(Save,Save)
+    return file
+
+async def OnMessage(self,message):
+    print(message)
 
 def is_internet():
     """
@@ -43,12 +65,14 @@ def InternetActive():
     client.run(BazaDate.token)
 class MyClient(discord.Client):
     async def on_ready(self):
-        print(f"Logged on as , {self.user} MODULE : BotTest.py")
-        _Gabriel = Gabriel()
-        Config = _Gabriel.Config()
-        await Config.Start(711132161444675595,self)
+        print(f"Logged on as , {self.user} MODULE : test.py")
+
     async def on_message(self,message):
-        pass
+        if message.author == self.user:
+            return
+        task1 = asyncio.create_task(OnMessage(self,message))
+        task2 = asyncio.create_task(TEST1("ara"))
+        asyncio.gather(task1,task2)
 
 
 

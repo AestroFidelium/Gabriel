@@ -46,30 +46,6 @@ class MyClient(discord.Client):
         except:
             pass
 
-        # try:
-        #     banWords = ["https","gachi"]
-        #     for BanWord in banWords:
-        #         BanWordlower = str.lower(BanWord)
-        #         Ban_Message = str.lower(_Message_.content)
-
-        #         PossibleZnacks = [',','.','/','-',' ','=','+','_','<','>','?','"',"'",';',':','[',']','{','}','!','@','#','$','%','^','&','*','(',')']
-
-        #         BanWord = False
-
-        #         for Znack in PossibleZnacks:
-        #             MessageSplit = Ban_Message.split(Znack)
-        #             for _BanWord in MessageSplit:
-        #                 if (Counter(_BanWord) == (Counter(BanWordlower))):
-        #                     BanWord = True
-        #                     await _Message_.delete()
-        #                     return
-        #                 if (Counter(_BanWord) == (Counter("gachi"))):
-        #                     await _Message_.delete()
-        #                     await message.channel.send(f"a {message.author.name}",delete_after=3)
-        #                     return
-                
-        # except:
-        #     pass
         try:
             messageLower = str(message.contect).lower()
             gachi = Functions.CheckText(messageLower,"gachi")
@@ -81,7 +57,6 @@ class MyClient(discord.Client):
             pass
         
         msg =  message.content
-        #print(msg)
         msgSP = msg.split()
         CurCommand = ""
 
@@ -93,15 +68,11 @@ class MyClient(discord.Client):
         
         CurCommandPlayer = "" ; print(CurCommandPlayer,end="")
         UserName_ = message.author.name
-       # UserName_ = message.author.name
         UserName_ = str.split(UserName_)
         UserName__ = str()
         for word in UserName_:
             UserName__ += word
         UserName_ = str(UserName__)
-
-        #HttpsCheck = TestURL.CheckMessageIn(str.upper("https://."),str.upper(msg))
-
         try:
             CurCommandPlayer = msgSP[1]
             pass
@@ -157,7 +128,8 @@ class MyClient(discord.Client):
                 'TALANT',"ТАЛАНТ",
                 "SELL_ITEM","S_I",
                 "EVENT","E","Е","ИВЕНТ",
-                "AU","AUCTION","АУКЦИОН"]
+                "AU","AUCTION","АУКЦИОН",
+                "Gabriel_Config"]
                 if CurCommand not in Commands:
                     Functions.SaveWords(msg)
         #Команды Администрации

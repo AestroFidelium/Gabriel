@@ -680,6 +680,111 @@ class MyClient(discord.Client):
         # sf = discord.File("AVATAR ME.webp","AVATAR ME.webp")
         # await message.channel.send(" ",file=sf)
 
+        Message = message.content
+        _Gabriel = Functions.Gabriel()
+        self.Config = _Gabriel.Config()
+        await self.Config.Start(message.guild.id,self)
+        Setting = self.Config.Read()
+        Guild = await self.fetch_guild(message.guild.id)
+        Member = await Guild.fetch_member(message.author.id)
+        Administrator = False
+        for role in Member.roles:
+            RolePermission = role.permissions
+            if RolePermission.administrator == True:
+                Administrator = True
+        Command = str(Message).split(" ")[0].upper()
+        if Administrator == True:
+            if Command == "GABRIEL_CONFIG":
+                file = await _Gabriel.Config.ConfigOpen(self,Setting)
+                await message.channel.send(f" ",file=file)
+            if Command == "Gabriel_Config_Edit".upper():
+                Config = str(Message).split(" ")[1].upper()
+                if Config == "Chat".upper():
+                    OnlineOrOffline = str(Message).split(" ")[2].upper()
+                    try:
+                        self.Config.Write(Chat=OnlineOrOffline)
+                        await message.channel.send(f"Текущее состояние : {OnlineOrOffline}")
+                    except Functions.Gabriel.Config.NotOnlineOrOffline:
+                        AddOrRemove = str(Message).split(" ")[2].upper()
+                        Possibles = ['ADD','REMOVE',"CHANNELS","GENERAL","PRIVATE"]
+                        Chat = _Gabriel.Chat(self.Config.server,self.Config.Client)
+                        if AddOrRemove in Possibles:
+                            if AddOrRemove == "ADD".upper():
+                                Index = str(Message).split(" ")[3] ; Index = int(Index)
+                                try:
+                                    GetChannel = await self.fetch_channel(Index)
+                                    Chat.LoadChat(Index)
+                                    await message.channel.send(f"{GetChannel.name}, добавлен.")
+                                except discord.errors.NotFound:
+                                    await message.channel.send(f"Канал не может быть добавлен, так как его не существует")
+                            if AddOrRemove == "REMOVE".upper():
+                                Index = str(Message).split(" ")[3] ; Index = int(Index)
+                                try:
+                                    GetChannel = await self.fetch_channel(Index)
+                                    Chat.RemoveChat(Index)
+                                    await message.channel.send(f"{GetChannel.name}, убран")
+                                except discord.errors.NotFound:
+                                    await message.channel.send(f"Канал не может быть убран, так как его уже не существует")
+                            if AddOrRemove == "CHANNELS".upper():
+                                Channels = Chat.SavedChat()
+                                Answer = "Сохраненные каналы : "
+                                ChannelsList = Channels["Activity"]
+                                for _Channel in ChannelsList:
+                                    GetChannel = await self.fetch_channel(_Channel)
+                                    Answer += f"\n{GetChannel.name} ({_Channel})"
+                                await message.channel.send(f"{Answer}")
+                            if AddOrRemove == "GENERAL".upper():
+                                
+                                pass
+
+                        else:
+                            await message.channel.send(f"Доступные вариатны ответа : \nOnline / Offline \nADD ID/ REMOVE ID \nGeneral / Private")
+                
+                elif Config == "Game".upper():
+                    OnlineOrOffline = str(Message).split(" ")[2].upper()
+                    try:
+                        self.Config.Write(Game=OnlineOrOffline)
+                        await message.channel.send(f"Текущее состояние : {OnlineOrOffline}")
+                    except Functions.Gabriel.Config.NotOnlineOrOffline:
+                        await message.channel.send(f"Доступные вариатны ответа : Online / Offline")
+
+                elif Config == "Rooms".upper():
+                    OnlineOrOffline = str(Message).split(" ")[2].upper()
+                    try:
+                        self.Config.Write(Rooms=OnlineOrOffline)
+                        await message.channel.send(f"Текущее состояние : {OnlineOrOffline}")
+                    except Functions.Gabriel.Config.NotOnlineOrOffline:
+                        AddOrRemove = str(Message).split(" ")[2].upper()
+                        Possibles = ['ADD','REMOVE',"CHANNELS"]
+                        Rooms = _Gabriel.Rooms(self.Config.server,self.Config.Client)
+                        if AddOrRemove in Possibles:
+                            if AddOrRemove == "ADD".upper():
+                                Index = str(Message).split(" ")[3] ; Index = int(Index)
+                                try:
+                                    GetChannel = await self.fetch_channel(Index)
+                                    Rooms.LoadRooms(Index)
+                                    await message.channel.send(f"{GetChannel.name}, добавлен.")
+                                except discord.errors.NotFound:
+                                    await message.channel.send(f"Канал не может быть добавлен, так как его не существует")
+                            if AddOrRemove == "REMOVE".upper():
+                                    Index = str(Message).split(" ")[3] ; Index = int(Index)
+                                    try:
+                                        GetChannel = await self.fetch_channel(Index)
+                                        Rooms.RemoveRooms(Index)
+                                        await message.channel.send(f"{GetChannel.name}, убран")
+                                    except discord.errors.NotFound:
+                                        await message.channel.send(f"Канал не может быть убран, так как его уже не существует")
+                            if AddOrRemove == "CHANNELS".upper():
+                                Channels = Rooms.SavedRooms()
+                                Answer = "Сохраненные каналы : "
+                                ChannelsList = Channels["Activity"]
+                                for _Channel in ChannelsList:
+                                    GetChannel = await self.fetch_channel(_Channel)
+                                    Answer += f"\n{GetChannel.name} ({_Channel})"
+                                await message.channel.send(f"{Answer}")
+                        else:
+                            await message.channel.send(f"Доступные вариатны ответа : \nOnline / Offline \nADD ID/ REMOVE ID")
+
 
 
         if _Channel_.id == 691750825030320218 and message.author != self.user:

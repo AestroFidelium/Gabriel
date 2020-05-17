@@ -11,6 +11,7 @@ import os
 import wget
 from PIL import Image, ImageDraw , ImageFont
 import botFunctions as Functions
+from botFunctions import Gabriel
 
 MiniGameID = 629267102070472714 
 
@@ -497,6 +498,15 @@ class MyClient(discord.Client):
 
     async def on_voice_state_update(self,_Player_ : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
         #msg = self.get_channel(627140104988917789)
+        _Gabriel = Gabriel()
+        Confige = _Gabriel.Config()
+        await Confige.Start(_Player_.guild.id,self)
+        Modules = Confige.Read()
+
+        print(Modules)
+        RoomModule = Modules["Rooms"]
+        if RoomModule != "ONLINE":
+            return
         OurServer = await self.fetch_guild(_Player_.guild.id)
         CurVoice = after.channel
         TextCurVoice = str(CurVoice)
@@ -540,8 +550,14 @@ class MyClient(discord.Client):
         try:
             CurGroup = await self.fetch_channel(before.channel.id)
             Members = CurGroup.members
+            Guild = await self.fetch_guild(before.channel.guild.id)
+            Config = _Gabriel.Rooms(Guild,self)
+            Saved = Config.SavedRooms()
+            #Activity
+            SavedID = Saved["Activity"]
             if (len(Members) == 0) and (Textbefore != "Создать комнату") and (Textbefore != "Резерв") and (Textbefore != "Музыка") and (Textbefore != "Создать комнату (Истинный чат)"):
-                await CurGroup.delete(reason="В комнате никого нет")
+                if CurGroup.id not in SavedID:
+                    await CurGroup.delete(reason="В комнате никого нет")
         except Exception:
             pass
 

@@ -47,17 +47,206 @@ class Gabriel():
         pass
     class Config():
         def __init__(self):
+            self.Online = "Online"
+            self.Offline = "Offline"
+        async def ConfigOpen(self,Setting : dict):
+            Main = Image.open(f"./Resurses/Configs/Main2.png")
+            Okay = Image.open(f"./Resurses/Configs/Okay.png")
+            Save = f"./Resurses/Configs/ConfigSettings.png"
+            Chat = str(Setting["Chat"])
+            Game = str(Setting["Game"])
+            Rooms = str(Setting["Rooms"])
+            if Chat == "ONLINE":
+                area = (648,180)
+                Main.paste(Okay.convert('RGB'), area, Okay)
+            if Game == "ONLINE":
+                area = (648,423)
+                Main.paste(Okay.convert('RGB'), area, Okay)
+            if Rooms == "ONLINE":
+                area = (648,677)
+                Main.paste(Okay.convert('RGB'), area, Okay)
+            Main = Main.save(Save)
+            file = discord.File(Save,Save)
+            return file
+        class NotOnlineOrOffline(Error):
             pass
-        async def Start(self,server : int,Client : discord.Client()):
+        async def Start(self,server : int,Client):
             self.Client = Client
             self.server = await Client.fetch_guild(server)
-            print(self.server)
-            await self.CreateNewBank()
-        # async def SaveConfig(self):
-        #     with open(f"{self.server}")
-        async def CreateNewBank(self):
-            direct = f"./Servers/{self.server.name}"
-            os.mkdir(direct)
+            self.direct = f"./Servers/{self.server.name}"
+            try:
+                self.CreateServer()
+                with open(f"{self.direct}/ChatConfig.txt","w") as file:
+                    file.write(str("{'Activity': []}"))
+                with open(f"{self.direct}/RoomsConfig.txt","w") as file:
+                    file.write(str("{'Activity': []}"))
+            except FileExistsError:
+                pass #Старый сервер
+        def Read(self):
+            try:
+                with open(f"{self.direct}/Config.txt","r") as file:
+                    return StrToDict(str=str(file.readline()))
+            except FileNotFoundError:
+                Modules = {
+                    "CHAT" : "ONLINE",
+                    "GAME" : "ONLINE",
+                    "ROOMS" : "ONLINE"
+                }
+                return Modules
+        
+        def _CheckModule(self,name,fields):
+            Possible = ["ONLINE","OFFLINE"]
+            try:
+                Module = str(fields[name])
+                if Module not in Possible:
+                    raise self.NotOnlineOrOffline("Не правильный ответ")
+                else:
+                    return Module
+            except KeyError:
+                Module = self.Read()
+                return str(Module[name])
+        
+        def Write(self,**fields):
+            """
+            Записать в конфиг сервера.
+
+            `Chat` : `ONLINE` / `OFFLINE`
+
+            `Game` : `ONLINE` / `OFFLINE`
+
+            `Rooms` : `ONLINE` / `OFFLINE`
+            """
+
+            Chat = self._CheckModule("Chat",fields)
+            Game = self._CheckModule("Game",fields)
+            Rooms = self._CheckModule("Rooms",fields)
+            
+            with open(f"{self.direct}/Config.txt","w") as file:
+                Modules = {
+                    "Chat" : Chat,
+                    "Game" : Game,
+                    "Rooms" : Rooms
+                }
+                file.write(str(Modules))
+
+        def CreateServer(self):
+            os.mkdir(self.direct)
+            with open(f"{self.direct}/ServerConfig.txt","w") as file:
+                newDict = {
+                    "name" : self.server.name,
+                    "ID" : self.server.id
+                }
+                file.write(str(newDict))
+            self.Write(Chat="ONLINE",Game="ONLINE",Rooms="ONLINE")
+    class Rooms(Config):
+        """
+        Настройка комнат
+        """
+        def __init__(self,server,Client):
+            self.Client = Client
+            self.server = server
+            self.direct = f"./Servers/{self.server.name}"
+        def SavedRooms(self):
+            self.File = True
+            try:
+                with open(f"{self.direct}/RoomsConfig.txt","r") as file:
+                    return StrToDict(str=str(file.readline()))
+            except FileNotFoundError:
+                self.File = False
+                return 
+        
+        def LoadRooms(self,Channel : int):
+            Rooms = self.SavedRooms()
+            if self.File == True:
+                Channels = list(Rooms["Activity"])
+                NewDict = {
+                    "Activity" : [
+                        Channel, 
+                        *Channels
+                    ]
+                }
+            else:
+                NewDict = {
+                    "Activity" : [
+                        Channel
+                    ]
+                }
+            with open(f"{self.direct}/RoomsConfig.txt","w") as file:
+                file.write(str(NewDict))
+
+        def RemoveRooms(self,Channel : int):
+            Rooms = self.SavedRooms()
+            if self.File == True:
+                ChannelsDelete = list(Rooms["Activity"])
+                Channels = list()
+                for _Channel in ChannelsDelete:
+                    if int(_Channel) != Channel:
+                        Channels.append(_Channel)
+                NewDict = {
+                    "Activity" : [
+                        *Channels
+                    ]
+                }
+                with open(f"{self.direct}/RoomsConfig.txt","w") as file:
+                    file.write(str(NewDict))
+    class Chat(Config):
+        """
+        Настройка чата.
+        """
+        def __init__(self,server,Client):
+            self.Client = Client
+            self.server = server
+            self.direct = f"./Servers/{self.server.name}"
+        def SavedChat(self):
+            self.File = True
+            try:
+                with open(f"{self.direct}/ChatConfig.txt","r") as file:
+                    return StrToDict(str=str(file.readline()))
+            except FileNotFoundError:
+                self.File = False
+                return 
+        
+        def LoadChat(self,Channel : int):
+            Chats = self.SavedChat()
+            if self.File == True:
+                Channels = list(Chats["Activity"])
+                NewDict = {
+                    "Activity" : [
+                        Channel, 
+                        *Channels
+                    ],
+                    "Status" : "Private"
+                }
+            else:
+                NewDict = {
+                    "Activity" : [
+                        Channel
+                    ],
+                    "Status" : "Private"
+                }
+            with open(f"{self.direct}/ChatConfig.txt","w") as file:
+                file.write(str(NewDict))
+
+        def RemoveChat(self,Channel : int):
+            Chats = self.SavedChat()
+            if self.File == True:
+                ChannelsDelete = list(Chats["Activity"])
+                Channels = list()
+                for _Channel in ChannelsDelete:
+                    if int(_Channel) != Channel:
+                        Channels.append(_Channel)
+                NewDict = {
+                    "Activity" : [
+                        *Channels
+                    ],
+                    "Status" : "Private"
+                }
+                with open(f"{self.direct}/ChatConfig.txt","w") as file:
+                    file.write(str(NewDict))
+
+        
+        pass
+    
     class TooManyWords(Error):
         def Error(self):
             return "Слишком мало слов я знаю"
