@@ -21,6 +21,8 @@ import ast
 from bs4 import BeautifulSoup
 import lxml
 import requests
+import datetime
+import asyncio
  
 #matplotlib
 
@@ -114,6 +116,195 @@ def AllMVPs():
    # lst.clear()
    # LvlMvpList.clear()
     return sortPlayers , PlayerList , LvlMvpList
+
+def Create_quotes(Who : str,Msg : str,Date : str):
+    MainMsage = Image.new(mode="RGB",size = (2000 , 1000),color = (0,0,0))
+
+    draw = ImageDraw.Draw(MainMsage)
+    
+    Avatar = Image.open(f"./Resurses/{Who}.png")
+    Avatar = Avatar.resize((500,500))
+    area = (100,300)
+    MainMsage.paste(Avatar,area)
+
+    area = (700,200)
+    Color = (255,255,255)
+    font = ImageFont.truetype("arial.ttf",72)
+    txt = str(f"{Msg}")
+    Latters = list() ; Latters.extend(txt)
+    txt = ""
+    counts = 0
+    #NoIt = ["-","_","=","+","[","]","{","}","'",";",",",".","/",'"']
+    countsAll = 0
+    for Latt in Latters:
+        counts += 1
+        if countsAll != 5:
+            if counts == 35:
+                txt += f"\n{Latt}"
+                counts = 0
+                countsAll += 1
+            else:
+                txt += f"{Latt}"
+        else:
+            txt += f"."
+        
+
+    draw.text(area,txt,font=font,fill=Color)
+    area = (800,800)
+    Color = (255,255,255)
+    font = ImageFont.truetype("arial.ttf",72)
+    #Date = Date.split("-")
+    #Year = Date[0]
+    txt = str(f"(C) {Who} \n({Date})")
+    draw.text(area,txt,font=font,fill=Color)
+
+    nameSave = "Create_quotes.png"
+    MainMsage.save(nameSave)
+    df = discord.File(nameSave,nameSave)
+    return df
+
+def _RemoveMoney(_UserName_,Count):
+    with open(f"./Stats/Shop/{str(_UserName_)}.txt","r") as file:
+        Msages = int(file.readline())
+        Gold = int(file.readline())
+    Gold -= Count
+    with open(f"./Stats/Shop/{str(_UserName_)}.txt","w") as file:
+        file.writelines(f"{Msages}\n")
+        file.writelines(f"{Gold}")
+def _SetMoney(_UserName_,Count):
+    with open(f"./Stats/Shop/{str(_UserName_)}.txt","r") as file:
+        Msages = int(file.readline())
+        Gold = int(file.readline())
+    Gold = Count
+    with open(f"./Stats/Shop/{str(_UserName_)}.txt","w") as file:
+        file.writelines(f"{Msages}\n")
+        file.writelines(f"{Gold}")
+
+def WriteLastMessage(Who : str,Msg : str,Date : str):
+    with open(f"./Configs/LastMessage.txt","w") as file:
+        file.writelines(Who)
+        file.writelines(f"\n{Msg}")
+        file.writelines(f"\n{str(Date)}")
+def ReadLastMessage():
+    with open(f"./Configs/LastMessage.txt","r") as file:
+        Who = file.readline()
+        Msg = file.readline()
+        Date = file.readline()
+    return Who , Msg , Date
+def ProfileBoss(*Stats):
+    NowTime = datetime.datetime.today()
+    today = Stats[0]
+    Boss_MaxHealth = Stats[1]
+    Boss_CurHealth = Stats[2]
+    Boss_GetGold = Stats[3]
+    Boss_Dead = str(Stats[4])
+   # print(Boss_Dead)
+   # Boss_DeadSplit = Boss_Dead.split()
+   # print(Boss_DeadSplit)
+   # print(Boss_DeadSplit[0])
+    today = today.split("-")
+
+    Time_between_dates_day = int(today[2])
+    Time_between_dates_hour = int(today[3])
+    Time_between_dates_mins = int(today[4])
+
+    Time_between_dates_day -= NowTime.day
+    Time_between_dates_hour -= NowTime.hour
+    Time_between_dates_mins -= NowTime.minute
+
+    Time_between_dates_mins *= -1
+    Time_between_dates_mins = 20 - Time_between_dates_mins
+
+    StatsBoss = Functions.ReadBossStats()
+    NameBoss = StatsBoss.pop("nameFile")
+    BackGround = Image.open(f"./Resurses/Bosses/{NameBoss}.png")
+    BackGround = BackGround.resize((800,600))
+    BackGroundDraw = ImageDraw.Draw(BackGround)
+
+    nameSave = "TheBoss.png"
+
+
+    if Boss_Dead == "No":
+        area = (270,230)
+        font = ImageFont.truetype("arial.ttf",35)
+        Color = (42,0,0)
+        BackGroundDraw.text(area,f"{str(Boss_GetGold)} золотых",font=font,fill=Color)
+
+        StartX = 100
+        StartY = 275
+
+        EndX = (((Boss_CurHealth * 100) / Boss_MaxHealth) * 7)
+        EndY = 374
+        RedRand = random.randint(0,255)
+        GreenRand = random.randint(0,255)
+        BlueRand = random.randint(0,255)
+        ColorSlider = ( RedRand , GreenRand , BlueRand )
+        for XPos in range(int(EndX - StartX)):
+            for YPos in range(int(EndY - StartY)):
+                BackGround.putpixel((StartX + XPos,StartY + YPos),ColorSlider)
+
+        area = (105,300)
+        font = ImageFont.truetype("arial.ttf",40)
+        Color = (42,0,0)
+        BackGroundDraw.text(area,f"{str(Boss_CurHealth)} / {str(Boss_MaxHealth)} ед. здоровья",font=font,fill=Color)
+        Color = (0,0,0)
+        area = [(99,274),(701,274)]
+        BackGroundDraw.line(area,fill=Color,width=1)
+        area = [(701,274),((701,375))]
+        BackGroundDraw.line(area,fill=Color,width=1)
+        area = [(701,375),((99,375))]
+        BackGroundDraw.line(area,fill=Color,width=1)
+        area = [(99,375),((99,274))]
+        BackGroundDraw.line(area,fill=Color,width=1)
+
+        pass
+
+
+    if Boss_Dead == "Yes":
+        area = (50,280)
+        font = ImageFont.truetype("arial.ttf",80)
+        Color = (84,0,0)
+        BackGroundDraw.text(area,f"БОСС ПОВЕРЖЕН",font=font,fill=Color)
+
+        area = (100,230)
+        font = ImageFont.truetype("arial.ttf",35)
+        Color = (42,0,0)
+        killer = StatsBoss.pop("killer")
+        BackGroundDraw.text(area,f"{str(killer)} нанёс последний удар",font=font,fill=Color)
+
+    area = (500,400)
+    font = ImageFont.truetype("arial.ttf",20)
+    Color = (115,100,150)
+    BackGroundDraw.text(area,f"Осталось : {Time_between_dates_day}D:{Time_between_dates_hour}H:{Time_between_dates_mins}M",font=font,fill=Color)
+
+
+    BackGround.save(nameSave)
+
+    discordFile = discord.File(nameSave,nameSave)
+
+    return discordFile
+def WriteNewMessage(_UserName_,_Message_,_NowTime_):
+    _NowTime_DateWrite = _NowTime_.split(",")
+    _OldMessage_ = str()
+    try:
+        with open(f"./Resurses/Messages/{_NowTime_DateWrite[0]}.txt","r") as file:
+            for line in file.readlines():
+                _OldMessage_ += line
+        pass
+    except Exception:
+        _OldMessage_ = "Начало нового дня."
+    with open(f"./Resurses/Messages/{_NowTime_DateWrite[0]}.txt","w") as file:
+        file.writelines(_OldMessage_)
+        file.writelines(f"\n{_UserName_}[{_NowTime_DateWrite[1]}] : {_Message_}")
+        pass
+    pass
+def _WriteMainStats(_UserName_,*age):
+    f = open("./Stats/Main/" + _UserName_ + ".txt","w")
+    for target_list in range(len(age)):
+        f.writelines(str(age[target_list] + "\n"))
+    f.close()
+
+
 
 def FixText(text):
     """
@@ -592,6 +783,33 @@ def RatingSystem():
 
     return sf
 
+def _BuyItem(_Cost_,_CurGold_,_Count_):
+    """
+    Покупаем предмет
+    
+        Вход :
+            _Cost_ = Стоимость предмета
+            _CurGold_ = Текущее количество золота, у игрока
+            _Count_ = Количество предметов, которых нужно купить
+        Выход :
+            Количество покупок
+            Сообщение в str форме. Разрез делать по (^)
+            Текущее количество золота.
+    """
+    CountBuy = 0
+    returnStr = ""
+    for target_list in range(int(_Count_)):
+        if _CurGold_ >= _Cost_:
+            CountBuy += 1
+            _CurGold_ -= _Cost_
+        if target_list < 0:
+            returnStr += ("Количество не может быть меньше 1")
+    if _CurGold_ < _Cost_:
+        returnStr += ("У вас недостаточно золота. \nВсего количесто предметов : " + str(CountBuy))
+    else:
+        returnStr += ("Все предметы, были успешно куплены")
+    return CountBuy , returnStr , _CurGold_
+
 _VoiceClient = None
 def is_internet():
     """
@@ -610,6 +828,98 @@ def InternetActive():
     client.run(BazaDate.token)
 class MyClient(discord.Client):
     _VoiceClient = None
+    async def Dialog(self,message):
+
+        _Channel_ = discord.channel.TextChannel
+        _Message_ = discord.message.Message
+        try:
+            _Channel_ = await self.fetch_channel(message.channel.id)
+            _Message_ = await _Channel_.fetch_message(message.id)
+        except:
+            pass
+
+        RandomSaying = random.randint(0,3)
+
+        msg =  message.content
+        msgSP = msg.split()
+        CurCommand = ""
+
+        try:
+            CurCommand = msgSP[0]
+            CurCommand = str.upper(CurCommand)
+        except IndexError:
+            pass
+        
+        CurCommandPlayer = "" ; print(CurCommandPlayer,end="")
+        UserName_ = message.author.name
+        UserName_ = str.split(UserName_)
+        UserName__ = str()
+        for word in UserName_:
+            UserName__ += word
+        UserName_ = str(UserName__)
+        try:
+            CurCommandPlayer = msgSP[1]
+            pass
+        except IndexError:
+            pass
+
+        if RandomSaying == 1:
+            messages = Functions.ReadWords()
+            try:
+                Step = int(CurCommandPlayer)
+                await message.channel.send(Functions.FutureMessageDef(message=messages,step=Step))
+            except:
+                pass
+
+        if CurCommand == "G":
+            await _Message_.delete()
+            # messages = Functions.ReadWords()
+            Step = int(CurCommandPlayer)
+            # msg = Functions.FutureMessageDef(message=messages,step=Step)
+            Gabriel = Functions.Gabriel()
+            try:
+                msg = Gabriel.Message(Step)
+            except Gabriel.TooManyWords:
+                await message.channel.send("Столько слов я не знаю ;c",delete_after=5)
+                return
+            # print(f"message : {msg} \nreadWords : {messages}")
+            try:
+                await message.channel.send(msg)
+            except discord.errors.HTTPException:
+                await message.channel.send(f"Столько слов я не могу отправить ;c",delete_after=5)
+            
+        else:
+            ChannelPossible = [696928662045458452,419879599363850253,686553674394239053]
+            if _Channel_.id in ChannelPossible:
+                Commands = ['PROFILE','ПРОФИЛЬ','P','П',
+                'Ы',
+                'ATTACK','A','АТАКА','АТКОВАТЬ','АТАКУЮ',
+                'ABOUT_ME',
+                'NEW_AVATAR',
+                'NEW_BACKGROUND',
+                'DELETEINFO',
+                'TOP',
+                'INV',
+                'WEAR',
+                'UPGRADE_ITEM',
+                'G','GABRIELE',
+                'ГАБРИЭЛЬ',
+                'КУПИТЬ','BUY','К','B',
+                'TALANT',"ТАЛАНТ",
+                "SELL_ITEM","S_I",
+                "EVENT","E","Е","ИВЕНТ",
+                "AU","AUCTION","АУКЦИОН",
+                "Gabriel_Config"]
+                if CurCommand not in Commands:
+                    Functions.SaveWords(msg)
+        #Команды Администрации
+        if message.author.name == "KOT32500":
+            if CurCommand == "GDDF": #Gabriel Delete Data File
+                await _Message_.delete()
+                Emb = discord.Embed( title = 'Стирание сохраненных слов')
+                Emb.add_field(name = "Все сообщения, которые могла использовать Габриэль",value = "Были стёрты")
+                await message.channel.send(embed = Emb,delete_after=10)
+                Functions.ClearWords()
     async def on_ready(self):
         print(f"Logged on as , {self.user} MODULE : bot.py")
         randomStatus = random.randint(0,6)
@@ -648,8 +958,275 @@ class MyClient(discord.Client):
                 activity=discord.Activity(
                     type=discord.ActivityType.watching, 
                     name="на твою историю браузера ;D"))
-    async def on_message(self, message):
-    # don't respond to ourselves
+    
+    async def botEvent(self,message):
+        MiniGame = self.get_channel(629267102070472714 )
+        _Channel_ = None
+        _Message_ = None
+        try:
+            _Channel_ = await self.fetch_channel(message.channel.id)
+            _Message_ = await _Channel_.fetch_message(message.id)
+        except:
+            pass
+       # _Player_ = await self.fetch_user(message.author.id)
+       # OurServer = await self.fetch_guild(419879599363850251)
+        #PLAYER = self.get_user(message.author.id)
+        if message.author == self.user:
+            pass
+        msg = message.content
+        #print(msg)
+        msgSP = str(message.content).split(" ")
+        CurCommand = ""
+        
+
+        CurCountForCasino = ""
+
+        try:
+            CurCommand = msgSP[0]
+            CurCommand = str.upper(CurCommand)
+        except IndexError:
+            pass
+        
+        CurCommandEvent = ""
+
+        try:
+            CurCommandEvent = msgSP[1]
+            CurCommandEvent = str.upper(CurCommandEvent)
+        except IndexError:
+            pass
+
+        try:
+            CurCountForCasino = msgSP[2]
+            CurCountForCasino = str.upper(CurCountForCasino)
+        except IndexError:
+            pass
+
+        UserName_ = message.author.name
+      #  UserName_ = message.author.name
+        UserName_ = str.split(UserName_)
+        UserName__ = str()
+        for word in UserName_:
+            UserName__ += word
+        UserName_ = str(UserName__)
+        NowTime = datetime.datetime.today()
+
+        MainStats = Functions.ReadMainParametrs(username=UserName_)
+        IntMaxDamage = int(MainStats.pop("damage"))
+        GoldPlayer = int(MainStats.pop("money"))
+        BossStats = Functions.ReadBossStats()
+        today = BossStats.pop("data")
+        Boss_MaxHealth = int(BossStats.pop("maxHealth"))
+        Boss_CurHealth = int(BossStats.pop("curHealth"))
+        Boss_GetGold = int(BossStats.pop("getGold"))
+        Boss_Dead = BossStats.pop("dead")
+
+        SplitToDay = today.split("-")
+
+        Time_between_dates_day = int(SplitToDay[2])
+        Time_between_dates_hour = int(SplitToDay[3])
+        Time_between_dates_mins = int(SplitToDay[4])
+
+        Time_between_dates_day -= NowTime.day
+        Time_between_dates_hour -= NowTime.hour
+        Time_between_dates_mins -= NowTime.minute
+
+        time.sleep(0.02)
+
+        _ReadLastMessage = ReadLastMessage()
+
+
+        WriteNewMessage(UserName_,msg,NowTime.strftime("%Y-%m-%d,%H:%M:%S"))
+
+
+
+        if (Time_between_dates_mins <= -20) or (Time_between_dates_hour <= -1) or (Time_between_dates_day <= -1):
+                Functions.CreateNewBoss()
+                Boss_Dead = "No"
+                await MiniGame.send("Создан новый босс")
+                return
+
+                # SplitToDay = today.split("-")
+
+                # Time_between_dates_day = int(SplitToDay[2])
+                # Time_between_dates_hour = int(SplitToDay[3])
+                # Time_between_dates_mins = int(SplitToDay[4])
+
+                # Time_between_dates_day -= NowTime.day
+                # Time_between_dates_hour -= NowTime.hour
+                # Time_between_dates_mins -= NowTime.minute
+        if (CurCommand == "EVENT") or (CurCommand == "E") or (CurCommand == "Е"):
+            await _Message_.delete()
+            if (CurCommandEvent == "A") or (CurCommandEvent == "А") or (CurCommandEvent == "ATTACK"):
+                try:
+                    DmgItemID = Functions.ReadEquipment(username=UserName_,type="Оружие")
+                    Item = Functions.CheckParametrsEquipment(username=UserName_,ID=DmgItemID)
+                    DamageItem = Item.pop('damage')
+                except:
+                    DamageItem = 0
+                try:
+                    Inventores = Functions.ReadInventor(UserName_)
+                    for items in Inventores.split("\n"):
+                        itemsDict = Functions.StrToDict(str=items)
+                        IDitem = itemsDict.pop("ID")
+                        if DmgItemID == IDitem:
+                            armorItem = int(itemsDict.pop("armor"))
+                            damageOld = int(itemsDict.pop("damage"))
+                            NameItem = itemsDict.pop("name")
+
+                    armorItem -= 1
+                    if armorItem < 0:
+                        armorItem = 0
+                    Functions.EditItem(username=UserName_,ID=DmgItemID,armor=armorItem,type="Оружие",damage=damageOld,classItem="Сломанный")
+                    if armorItem == 0:
+                        await message.channel.send(f"{UserName_} предмет [{NameItem}] сломался")
+                        Functions.WriteEquipment(username=UserName_,type="Оружие",ID=0)
+                except:
+                    pass
+                YourDamage = random.randint(1,IntMaxDamage + DamageItem)
+
+                Boss_CurHealth -= YourDamage
+
+                if (Boss_CurHealth <= 0) and (Boss_Dead == "No"):
+                    await message.channel.send(f"{UserName_} убил босса, и получил {Boss_GetGold} зототых")
+                    Inventor = Functions.ReadInventor(UserName_)
+                    RandomID = random.randint(1,999999)
+                    Classes = ['Обычный','Редкий','Эпический','Первоначальный']
+                    randomClasses = random.randint(0,3)
+                    Classes = Classes[randomClasses]
+
+                    Boss_Dead = "Yes"
+                    with open(f"./Stats/EventBoss.txt","w") as file:
+                        NewDict = {
+                            "data": str(today),
+                            "maxHealth":0,
+                            "curHealth":0,
+                            "getGold":str(Boss_GetGold),
+                            "dead":"Yes",
+                            "nameFile":str(BossStats.pop("nameFile")),
+                            "killer":str(message.author.name)
+                        }
+                        file.writelines(f"{str(NewDict)}")
+
+
+                    GoldPlayer += Boss_GetGold
+                    
+                    Functions.WriteMainParametrs(username=UserName_,money=GoldPlayer)
+
+                    if Classes == "Обычный":
+                        TypeTheItem = "Оружие"
+                        NameForItem = ['Медное копье','Медный лук','Медный кинжал','Медный нож','Медная рапира']
+                        NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                        BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                        BalansListDamageItem = BalansListItem.pop('damage')
+                        BalansListGoldItem = BalansListItem.pop('gold')
+                        Functions.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                    if Classes == "Редкий":
+                        TypeTheItem = "Оружие"
+                        NameForItem = ['Редкое железное копье','Редкий лук','Редкий железный кинжал','Редкий железный нож','Редкая железная рапира','Редкий железный меч.']
+                        NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                        BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                        BalansListDamageItem = BalansListItem.pop('damage')
+                        BalansListGoldItem = BalansListItem.pop('gold')
+                        Functions.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                    if Classes == "Эпический":
+                        TypeTheItem = "Оружие"
+                        NameForItem = ['Эпическое копье','Эльфийский лук','Кинжал тени','Два топора','Секира',"Сияющий меч","Посох","Платиновый меч","Длинный меч"]
+                        NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                        BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                        BalansListDamageItem = BalansListItem.pop('damage')
+                        BalansListGoldItem = BalansListItem.pop('gold')
+                        Functions.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                    if Classes == "Первоначальный":
+                        TypeTheItem = "Оружие"
+                        NameForItem = ['Палка','Дубинка','Перчатки','Тяжелая палка','Острый камень']
+                        NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                        BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                        BalansListDamageItem = BalansListItem.pop('damage')
+                        BalansListGoldItem = BalansListItem.pop('gold')
+                        Functions.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                    
+
+                    pass
+            if (CurCommandEvent == "C_N_B") and (UserName_ == "KOT32500"):
+                Functions.CreateNewBoss()
+                await MiniGame.send(f"{UserName_} создал нового босса")
+                return
+            if (CurCommandEvent == "BONUS") or (CurCommandEvent == "B") or (CurCommandEvent == "Б") or (CurCommandEvent == "БОНУС"):
+                try:
+                    with open(f"./Stats/EveryDay/{UserName_}.txt","r") as file:
+                        NowDayForUser = file.readline()
+                        EarlierTakeGem = file.readline()
+                        if int(NowDayForUser) != NowTime.day:
+                            RandomAddMoney = random.randint(5,100)
+                            GoldPlayer += RandomAddMoney
+                            Functions.WriteMainParametrs(username=UserName_,money=GoldPlayer)
+                            await message.channel.send(f"{UserName_} взял(а) ежедневный бонус, в {RandomAddMoney}:moneybag:")
+                            with open(f"./Stats/EveryDay/{UserName_}.txt","w") as fileTwo:
+                                fileTwo.writelines(str(NowTime.day))
+                                fileTwo.writelines(f"\n{str(RandomAddMoney)}")
+                        else:
+                            await message.channel.send(f"{UserName_}, вы уже брали ежедневный бонус в размере {EarlierTakeGem}:moneybag:")
+                        
+                except FileNotFoundError:
+                    with open(f"./Stats/EveryDay/{UserName_}.txt","w") as file:
+                        file.writelines(str(NowTime.day))
+                        RandomAddMoney = random.randint(5,100)
+                        file.writelines(f"\n{str(RandomAddMoney)}")
+                        GoldPlayer += RandomAddMoney
+                        Functions.WriteMainParametrs(username=UserName_,money=GoldPlayer)
+                        await message.channel.send(f"{UserName_} взял(а) ежедневный бонус, в {RandomAddMoney}:moneybag:")
+            time.sleep(0.01)
+            if (CurCommandEvent == "CASINO") or (CurCommandEvent == "C"):
+                MainStats = Functions.ReadMainParametrs(username=UserName_)
+                Money = MainStats.pop("money")
+                try:
+                    CurCountForCasino = int(CurCountForCasino)
+                except ValueError:
+                    await message.channel.send(f":negative_squared_cross_mark:`Нужно указать число` :negative_squared_cross_mark:")
+                    return
+                
+                try:
+                   # oldMoney = Money
+                    if CurCountForCasino > Money:
+                        CurCountForCasino = Money
+                    if CurCountForCasino < 0:
+                        await message.channel.send(f"Нельзя указать < 0")
+                        return
+                    Money -= CurCountForCasino
+
+                   # GetMoney = int(CurCountForCasino * (random.random() * 2))
+                    rnd = random.random()
+                    rnd *= 2
+                    GetMoney = int(CurCountForCasino * rnd)
+                    Money += GetMoney
+                   # GetMoney = 1
+                    #GetMoney
+                   # print(GetMoney)
+                    await message.channel.send(f"Коэффициент : {rnd}%. \nСтавка : {CurCountForCasino} золотых.\nПолученно золотых : {GetMoney}.\nТекущее количество золотых : {Money} золотых.")
+
+                    #_AddMoney(UserName_,GetMoney)
+                    # _SetMoney(UserName_,Money)
+                    Functions.WriteMainParametrs(username=UserName_,money=Money)
+
+
+
+                    pass
+                except ValueError:
+                    await message.channel.send(f"Ошибка : проверьте правильность написания команды")
+                
+
+
+            if (CurCommandEvent == "P") or (CurCommandEvent == "П") or (CurCommandEvent == "Р") or (CurCommandEvent == "ПРОФИЛЬ") or (CurCommandEvent == "PROFILE"):
+                await message.channel.send(f" ",file = ProfileBoss(today,Boss_MaxHealth,Boss_CurHealth,Boss_GetGold,Boss_Dead))
+        if (CurCommand == "ЦИТАТА"):
+            await _Message_.delete()
+            NickNameLastMessage = _ReadLastMessage[0] ; NickNameLastMessage = NickNameLastMessage.split() ; NickNameLastMessage = NickNameLastMessage[0]
+            await message.channel.send(f" ",file=Create_quotes(NickNameLastMessage,_ReadLastMessage[1],_ReadLastMessage[2]))
+        
+        Year = NowTime.strftime("%Y-%m-%d,%H:%M")
+        WriteLastMessage(UserName_,msg,Year)
+        Functions.WriteBossStats(data=today,maxHealth=Boss_MaxHealth,curHealth=Boss_CurHealth,getGold=Boss_GetGold,dead=Boss_Dead)
+    async def botStandart(self,message):
         UserName_ = message.author.name
         UserName_ = str.split(UserName_)
         UserName__ = str()
@@ -784,9 +1361,7 @@ class MyClient(discord.Client):
                                 await message.channel.send(f"{Answer}")
                         else:
                             await message.channel.send(f"Доступные вариатны ответа : \nOnline / Offline \nADD ID/ REMOVE ID")
-
-
-
+        
         if _Channel_.id == 691750825030320218 and message.author != self.user:
             MessageContent = message.content
             MessageContent = str.lower(MessageContent)
@@ -1480,9 +2055,258 @@ class MyClient(discord.Client):
         
 
         pass
+    async def botShop(self,message):
+        time.sleep(1)
+        if message.author == self.user:
+            pass
+        _Channel_ = None
+        _Message_ = None
+        try:
+            _Channel_ = await self.fetch_channel(message.channel.id)
+            _Message_ = await _Channel_.fetch_message(message.id)
+        except:
+            pass
+        msg =  message.content
+        #print(msg)
+        msgSP = msg.split()
+        CurCommand = ""
+
+        CurCountBuyItem = ""
+
+        try:
+            CurCommand = msgSP[0]
+            CurCommand = str.upper(CurCommand)
+        except IndexError:
+            pass
+        
+        CurBuyItem = ""
+
+        try:
+            CurBuyItem = msgSP[1]
+            CurBuyItem = str.upper(CurBuyItem)
+        except IndexError:
+            pass
+
+        try:
+            CurCountBuyItem = msgSP[2]
+            CurCountBuyItem = str.upper(CurCountBuyItem)
+        except IndexError:
+            pass
+
+        UserName_ = message.author.name
+       # UserName_ = message.author.name
+        UserName_ = str.split(UserName_)
+        UserName__ = str()
+        for word in UserName_:
+            UserName__ += word
+        UserName_ = str(UserName__)
+
+        MainStats = Functions.ReadMainParametrs(username=UserName_)
+        Msages = int(MainStats.pop("messages"))
+        Gold = int(MainStats.pop("money"))
+        
+        Msages += 1
+
+        if Msages >= 5:
+            Gold += 1
+            Msages = 0
+
+        MainStats = Functions.ReadMainParametrs(username=UserName_)
+        IntCurExp = int(MainStats.pop("exp"))
+        IntCurLvl = int(MainStats.pop("lvl"))
+        IntMaxHealth = int(MainStats.pop("maxHealth"))
+        IntCurHealth = int(MainStats.pop("curHealth"))
+        IntMaxDamage = int(MainStats.pop("damage"))
+
+        if (CurCommand == "BUY") or (CurCommand == "B") or (CurCommand == "Б") or (CurCommand == "КУПИТЬ") or (CurCommand == "К"):
+            #Начало
+            await _Message_.delete()
+            if CurBuyItem == "ЛЕЧЕНИЕ":
+                if CurCountBuyItem != "":
+                    BuyItem = _BuyItem(5,Gold,CurCountBuyItem)
+                    _CountBuy = BuyItem[0]
+                    str1 = BuyItem[1]
+                    _Gold_ = BuyItem[2]
+                    Gold = _Gold_
+                    for target_list in range(int(_CountBuy)):
+                        IntCurHealth += 500
+                        if IntCurHealth > IntMaxHealth:
+                            IntCurHealth = IntMaxHealth
+                        if target_list < 0:
+                            print("ERROR")
+                    await message.channel.send(str1)
+                else:
+                    await message.channel.send("Количеств не указано",delete_after=2)
+            #Конец
+            #Начало
+            elif CurBuyItem == "УРОН":
+                if CurCountBuyItem != "":
+                    BuyItem = _BuyItem(35,Gold,CurCountBuyItem)
+                    _CountBuy = BuyItem[0]
+                    str1 = BuyItem[1]
+                    _Gold_ = BuyItem[2]
+                    Gold = _Gold_
+                    for target_list in range(int(_CountBuy)):
+                        IntMaxDamage += random.randint(5,35)
+                        if target_list < 0:
+                            print("ERROR")
+                    await message.channel.send(str1)
+                else:
+                    await message.channel.send("Количеств не указано",delete_after=2)
+            #Конец
+            #Начало
+            elif CurBuyItem == "ЗДОРОВЬЕ":
+                if CurCountBuyItem != "":
+                    BuyItem = _BuyItem(8,Gold,CurCountBuyItem)
+                    _CountBuy = BuyItem[0]
+                    str1 = BuyItem[1]
+                    _Gold_ = BuyItem[2]
+                    Gold = _Gold_
+                    for target_list in range(int(_CountBuy)):
+                        IntMaxHealth += random.randint(50,80)
+                        if target_list < 0:
+                            print("ERROR")
+                    await message.channel.send(str1)
+                else:
+                    await message.channel.send("Количеств не указано",delete_after=2)
+            #Конец
+            #Начало
+            elif CurBuyItem == "ОПЫТ":
+                if CurCountBuyItem != "":
+                    time.sleep(1)
+                    BuyItem = _BuyItem(25,Gold,CurCountBuyItem)
+                    _CountBuy = BuyItem[0]
+                    str1 = BuyItem[1]
+                    _Gold_ = BuyItem[2]
+                    Gold = _Gold_
+                    for target_list in range(int(_CountBuy)):
+                        IntCurExp += random.randint(1000,2000)
+                        while IntCurExp >= IntCurLvl * 5:
+                            WasExpNeed = IntCurLvl * 5
+                            IntCurLvl += 1
+                            IntMaxHealth += 10
+                            IntCurHealth += 10
+                            IntMaxDamage += random.randint(1,35)
+                            if ((IntCurHealth + 5) < (IntMaxHealth)):
+                                IntCurHealth += 5
+                            else:
+                                IntCurHealth = IntMaxHealth
+                            IntCurExp -= WasExpNeed
+                        if target_list < 0:
+                            print("ERROR")
+                    await message.channel.send(str1)
+                else:
+                    await message.channel.send("Количеств не указано",delete_after=2)
+            #Конец
+            #Начало
+            elif CurBuyItem == "УРОВЕНЬ":
+                if CurCountBuyItem != "":
+                    BuyItem = _BuyItem(50,Gold,CurCountBuyItem)
+                    _CountBuy = BuyItem[0]
+                    str1 = BuyItem[1]
+                    _Gold_ = BuyItem[2]
+                    Gold = _Gold_
+                    for target_list in range(int(_CountBuy)):
+                        rnd = random.randint(5,15)
+                        IntCurLvl += rnd
+                        for target_list in range(int(rnd)):
+                            IntMaxHealth += 10
+                            IntCurHealth += 10
+                            IntMaxDamage += random.randint(1,35)
+                            if ((IntCurHealth + 5) < (IntMaxHealth)):
+                                IntCurHealth += 5
+                            else:
+                                IntCurHealth = IntMaxHealth
+                        if target_list < 0:
+                            print("ERROR")
+                    await message.channel.send(str1)
+                else:
+                    await message.channel.send("Количеств не указано",delete_after=2)
+            #Конец
+            else:
+                await message.channel.send("Такого предмета нет",delete_after=2)
+
+        Functions.WriteMainParametrs(username=UserName_,exp=IntCurExp,lvl=IntCurLvl,maxHealth=IntMaxHealth,curHealth=IntCurHealth,damage=IntMaxDamage,money=Gold,messages=Msages)
+    async def on_message(self, message):
+    # don't respond to ourselves
+        Dialog = asyncio.create_task(self.Dialog(message))
+        botEvent = asyncio.create_task(self.botEvent(message))
+        botStandart = asyncio.create_task(self.botStandart(message))
+        botShop = asyncio.create_task(self.botShop(message))
+        asyncio.gather(Dialog,botEvent,botStandart,botShop)
 
 
+    async def on_voice_state_update(self,_Player_ : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
+        #msg = self.get_channel(627140104988917789)
+        _Gabriel = Functions.Gabriel()
+        Confige = _Gabriel.Config()
+        await Confige.Start(_Player_.guild.id,self)
+        Modules = Confige.Read()
 
+        RoomModule = Modules["Rooms"]
+        if RoomModule != "ONLINE":
+            return
+        OurServer = await self.fetch_guild(_Player_.guild.id)
+        CurVoice = after.channel
+        TextCurVoice = str(CurVoice)
+        Roles = OurServer.get_role(623063847497891840)
+        EveryOne = OurServer.roles[0]
+        # print(before)
+        # print(after)
+        
+       # print(Roles)
+        if TextCurVoice == "Создать комнату":
+            RolesThisPlayer = _Player_.roles
+            for role in RolesThisPlayer:
+                if role.id == 700036252317122628:
+                    # print("Невозможно создать комнату, из за того что на вас весит запрет")
+                    try:
+                        await _Player_.send("```fix\nВы не можете создать комнату.\n```")
+                    except: pass
+                    MusicVoice = await self.fetch_channel(688501395779092572)
+                    await _Player_.move_to(MusicVoice,reason="Невозможность создать комнату")
+                    return
+            try:
+                Room = Functions.Room(_Player_.name)
+                NewGroup = await OurServer.create_voice_channel(f"{Room.Read()}",reason="Новая комната")
+            except Room.NoRoomName:
+                NewGroup = await OurServer.create_voice_channel(f"{_Player_.name}",reason="Новая комната")
+            await NewGroup.set_permissions(_Player_,manage_channels=True,move_members=True,manage_roles=True,reason="Новая комната")
+            await _Player_.move_to(NewGroup,reason="Новая комната")
+        if TextCurVoice == "Создать комнату (Истинный чат)":
+            try:
+                Room = Functions.Room(_Player_.name)
+                NewGroup = await OurServer.create_voice_channel(f"{Room.Read()}",reason="Новая комната")
+            except Room.NoRoomName:
+                NewGroup = await OurServer.create_voice_channel(f"{_Player_.name}",reason="Новая комната")
+            await NewGroup.set_permissions(_Player_,manage_channels=True,move_members=True,manage_roles=True,reason="Новая комната")
+            await NewGroup.set_permissions(Roles,connect=True,reason="Новая комната")
+            await NewGroup.set_permissions(EveryOne,connect=False,reason="Новая комната")
+            await _Player_.move_to(NewGroup,reason="Новая комната")
+        Textbefore = str(before.channel)
+        #await msg.send(f"{Textbefore} и {_Player_.name}")
+
+        try:
+            CurGroup = await self.fetch_channel(before.channel.id)
+            Members = CurGroup.members
+            Guild = await self.fetch_guild(before.channel.guild.id)
+            Config = _Gabriel.Rooms(Guild,self)
+            Saved = Config.SavedRooms()
+            #Activity
+            SavedID = Saved["Activity"]
+            if (len(Members) == 0) and (Textbefore != "Создать комнату") and (Textbefore != "Резерв") and (Textbefore != "Музыка") and (Textbefore != "Создать комнату (Истинный чат)"):
+                if CurGroup.id not in SavedID:
+                    await CurGroup.delete(reason="В комнате никого нет")
+        except Exception:
+            pass
+
+    async def on_guild_channel_update(self,before,after):
+        MembersBefore = after.members
+        for member in MembersBefore:
+            permiss = after.permissions_for(member)
+            if permiss.manage_channels == True:
+                Room = Functions.Room(member.name)
+                Room.Save(after.name)
 
     async def on_member_join(self,member : discord.member.Member):
         try:
