@@ -9,7 +9,6 @@
 {'type': 'Ёкипировка', 'name': 'Ўл€па', 'classItem': 'ќбычный', 'ID': 469853, 'gold': 1155, 'armor': 100, 'protect': 741, 'magic': {}}
 {'type': 'ќружие', 'name': '“€жела€ палка', 'classItem': 'ѕервоначальный', 'ID': 382747, 'gold': 19, 'armor': 100, 'damage': 454, 'magic': {}}
 {'type': 'Ёкипировка', 'name': 'Ўл€па', 'classItem': 'ќбычный', 'ID': 241435, 'gold': 1343, 'armor': 100, 'protect': 496, 'magic': {}}
-{'type': 'Ёкипировка', 'name': '√ероическа€ душа', 'classItem': 'Ёпический', 'ID': 260431, 'gold': 7473, 'armor': 100, 'protect': 5567, 'magic': {}}
 {'type': 'Ёкипировка', 'name': ' уртка', 'classItem': 'ќбычный', 'ID': 118634, 'gold': 1244, 'armor': 100, 'protect': 545, 'magic': {}}
 {'type': 'ќружие', 'name': 'ќстрый камень', 'classItem': 'ƒемонический', 'ID': 875860, 'gold': 27372778, 'armor': 100000000, 'damage': 90657452, 'magic': {}}
 {'type': 'ќружие', 'name': 'ѕерчатки', 'classItem': 'ѕервоначальный', 'ID': 932583, 'gold': 7, 'armor': 100, 'damage': 154, 'magic': {}}
