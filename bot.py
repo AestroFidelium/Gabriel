@@ -17,14 +17,15 @@ import youtube_dl
 import os
 from os import path
 import botFunctions as Functions
+from botFunctions import PlayerInventor
+from botFunctions import BossForMoney
+from botFunctions import PlayerClass
 import ast
 from bs4 import BeautifulSoup
 import lxml
 import requests
 import datetime
 import asyncio
- 
-#matplotlib
 
 Resurses = "./Resurses/"
 StandartURL = "https://pbs.twimg.com/profile_images/589387776740593664/24AVkUCB_400x400.jpg"
@@ -577,7 +578,7 @@ def profileEdit(_UserName_):
         font = ImageFont.truetype("arial.ttf",8)
         txt = str(f"Здоровье : {str(IntCurHealth)} ед./ {str(IntMaxHealth)} ({protect})")
         draw.text(area,txt,font=font,fill=Color)
-    except FileNotFoundError:
+    except:
         area = (161,143)
         Color = (0,0,0)
         font = ImageFont.truetype("arial.ttf",8)
@@ -829,7 +830,8 @@ def InternetActive():
 class MyClient(discord.Client):
     _VoiceClient = None
     async def Dialog(self,message):
-
+        if message.author == self.user:
+            return
         _Channel_ = discord.channel.TextChannel
         _Message_ = discord.message.Message
         try:
@@ -864,7 +866,9 @@ class MyClient(discord.Client):
             pass
 
         if RandomSaying == 1:
-            messages = Functions.ReadWords()
+            SavedChat = self.Chat.SavedChat()
+            Status = SavedChat["Status"]
+            messages = Functions.ReadWords(message.channel.guild.name,Status)
             try:
                 Step = int(CurCommandPlayer)
                 await message.channel.send(Functions.FutureMessageDef(message=messages,step=Step))
@@ -873,13 +877,14 @@ class MyClient(discord.Client):
 
         if CurCommand == "G":
             await _Message_.delete()
-            # messages = Functions.ReadWords()
             Step = int(CurCommandPlayer)
-            # msg = Functions.FutureMessageDef(message=messages,step=Step)
-            Gabriel = Functions.Gabriel()
             try:
-                msg = Gabriel.Message(Step)
-            except Gabriel.TooManyWords:
+                Status = []
+                Chat = self.Chat
+                SavedChat = Chat.SavedChat()
+                Status = SavedChat["Status"]
+                msg = self.Gabriel.Message(Step,message.channel.guild.name,Status)
+            except self.Gabriel.TooManyWords:
                 await message.channel.send("Столько слов я не знаю ;c",delete_after=5)
                 return
             # print(f"message : {msg} \nreadWords : {messages}")
@@ -889,7 +894,8 @@ class MyClient(discord.Client):
                 await message.channel.send(f"Столько слов я не могу отправить ;c",delete_after=5)
             
         else:
-            ChannelPossible = [696928662045458452,419879599363850253,686553674394239053]
+            SavedChat = self.Chat.SavedChat()
+            ChannelPossible = SavedChat["Activity"]
             if _Channel_.id in ChannelPossible:
                 Commands = ['PROFILE','ПРОФИЛЬ','P','П',
                 'Ы',
@@ -909,9 +915,12 @@ class MyClient(discord.Client):
                 "SELL_ITEM","S_I",
                 "EVENT","E","Е","ИВЕНТ",
                 "AU","AUCTION","АУКЦИОН",
-                "Gabriel_Config"]
+                "GABRIEL_CONFIG","GABRIEL_CONFIG_EDIT",
+                "CREATEHARDBOSS","HARDBOSS_ATTACK","SHOWHARDBOSS"]
                 if CurCommand not in Commands:
-                    Functions.SaveWords(msg)
+                    SavedChat = self.Chat.SavedChat()
+                    Status = SavedChat["Status"]
+                    Functions.SaveWords(msg,message.channel.guild.name,Status)
         #Команды Администрации
         if message.author.name == "KOT32500":
             if CurCommand == "GDDF": #Gabriel Delete Data File
@@ -920,9 +929,17 @@ class MyClient(discord.Client):
                 Emb.add_field(name = "Все сообщения, которые могла использовать Габриэль",value = "Были стёрты")
                 await message.channel.send(embed = Emb,delete_after=10)
                 Functions.ClearWords()
+    
+
+    
+
+        
+
+        pass
+    
     async def on_ready(self):
         print(f"Logged on as , {self.user} MODULE : bot.py")
-        randomStatus = random.randint(0,6)
+        randomStatus = random.randint(0,7)
         if randomStatus == 0:
             await self.change_presence(
                 activity=discord.Activity(
@@ -958,7 +975,13 @@ class MyClient(discord.Client):
                 activity=discord.Activity(
                     type=discord.ActivityType.watching, 
                     name="на твою историю браузера ;D"))
-    
+        elif randomStatus == 7:
+            await self.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching, 
+                    name="в даль"))
+        RegenerationBoss = asyncio.create_task(self.BossesRegeneration())
+        asyncio.gather(RegenerationBoss)
     async def botEvent(self,message):
         MiniGame = self.get_channel(629267102070472714 )
         _Channel_ = None
@@ -1034,9 +1057,9 @@ class MyClient(discord.Client):
 
         _ReadLastMessage = ReadLastMessage()
 
-
-        WriteNewMessage(UserName_,msg,NowTime.strftime("%Y-%m-%d,%H:%M:%S"))
-
+        try:
+            WriteNewMessage(UserName_,msg,NowTime.strftime("%Y-%m-%d,%H:%M:%S"))
+        except: pass
 
 
         if (Time_between_dates_mins <= -20) or (Time_between_dates_hour <= -1) or (Time_between_dates_day <= -1):
@@ -1044,18 +1067,8 @@ class MyClient(discord.Client):
                 Boss_Dead = "No"
                 await MiniGame.send("Создан новый босс")
                 return
-
-                # SplitToDay = today.split("-")
-
-                # Time_between_dates_day = int(SplitToDay[2])
-                # Time_between_dates_hour = int(SplitToDay[3])
-                # Time_between_dates_mins = int(SplitToDay[4])
-
-                # Time_between_dates_day -= NowTime.day
-                # Time_between_dates_hour -= NowTime.hour
-                # Time_between_dates_mins -= NowTime.minute
         if (CurCommand == "EVENT") or (CurCommand == "E") or (CurCommand == "Е"):
-            await _Message_.delete()
+            # await _Message_.delete()
             if (CurCommandEvent == "A") or (CurCommandEvent == "А") or (CurCommandEvent == "ATTACK"):
                 try:
                     DmgItemID = Functions.ReadEquipment(username=UserName_,type="Оружие")
@@ -1064,7 +1077,8 @@ class MyClient(discord.Client):
                 except:
                     DamageItem = 0
                 try:
-                    Inventores = Functions.ReadInventor(UserName_)
+                    PlayerInventor = Functions.PlayerInventor(UserName_)
+                    Inventores = PlayerInventor.ReadInventor()
                     for items in Inventores.split("\n"):
                         itemsDict = Functions.StrToDict(str=items)
                         IDitem = itemsDict.pop("ID")
@@ -1076,7 +1090,8 @@ class MyClient(discord.Client):
                     armorItem -= 1
                     if armorItem < 0:
                         armorItem = 0
-                    Functions.EditItem(username=UserName_,ID=DmgItemID,armor=armorItem,type="Оружие",damage=damageOld,classItem="Сломанный")
+                        _PlayerInventor = Functions.PlayerInventor(UserName_)
+                        _PlayerInventor.EditItem(username=UserName_,ID=DmgItemID,armor=armorItem,type="Оружие",damage=damageOld,classItem="Сломанный")
                     if armorItem == 0:
                         await message.channel.send(f"{UserName_} предмет [{NameItem}] сломался")
                         Functions.WriteEquipment(username=UserName_,type="Оружие",ID=0)
@@ -1088,7 +1103,8 @@ class MyClient(discord.Client):
 
                 if (Boss_CurHealth <= 0) and (Boss_Dead == "No"):
                     await message.channel.send(f"{UserName_} убил босса, и получил {Boss_GetGold} зототых")
-                    Inventor = Functions.ReadInventor(UserName_)
+                    PlayerInventor = Functions.PlayerInventor(UserName_)
+                    Inventor = PlayerInventor.ReadInventor()
                     RandomID = random.randint(1,999999)
                     Classes = ['Обычный','Редкий','Эпический','Первоначальный']
                     randomClasses = random.randint(0,3)
@@ -1113,29 +1129,92 @@ class MyClient(discord.Client):
                     Functions.WriteMainParametrs(username=UserName_,money=GoldPlayer)
 
                     if Classes == "Обычный":
-                        TypeTheItem = "Оружие"
-                        NameForItem = ['Медное копье','Медный лук','Медный кинжал','Медный нож','Медная рапира']
-                        NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
-                        BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
-                        BalansListDamageItem = BalansListItem.pop('damage')
-                        BalansListGoldItem = BalansListItem.pop('gold')
-                        Functions.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                        SwordOrShiel = Functions.randomBool(0,1,1)
+                        if SwordOrShiel == True:
+                            TypeTheItem = "Оружие"
+                            NameForItem = ['Медное копье','Медный лук','Медный кинжал','Медный нож','Медная рапира']
+                            NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                            BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                            BalansListDamageItem = BalansListItem.pop('damage')
+                            BalansListGoldItem = BalansListItem.pop('gold')
+                            PlayerInventor = Functions.PlayerInventor(UserName_)
+                            PlayerInventor.WriteInventor(
+                                username=UserName_,
+                                old=Inventor,
+                                type="Оружие",
+                                name=NameForItem,
+                                classItem=Classes,
+                                ID=RandomID,
+                                armor=100,
+                                damage=BalansListDamageItem,gold=BalansListGoldItem
+                                )
+                        else:
+                            TypeTheItem = "Экипировка"
+                            NameForItem = ['Сандали','Порванный носок','Шляпа','Майка','Куртка']
+                            NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                            BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                            BalansListDamageItem = BalansListItem.pop('protect')
+                            BalansListGoldItem = BalansListItem.pop('gold')
+                            PlayerInventor = Functions.PlayerInventor(UserName_)
+                            PlayerInventor.WriteInventor(
+                                username=UserName_,
+                                old=Inventor,
+                                type="Экипировка",
+                                name=NameForItem,
+                                classItem=Classes,
+                                ID=RandomID,
+                                armor=100,
+                                protect=BalansListDamageItem,gold=BalansListGoldItem
+                                )
                     if Classes == "Редкий":
-                        TypeTheItem = "Оружие"
-                        NameForItem = ['Редкое железное копье','Редкий лук','Редкий железный кинжал','Редкий железный нож','Редкая железная рапира','Редкий железный меч.']
-                        NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
-                        BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
-                        BalansListDamageItem = BalansListItem.pop('damage')
-                        BalansListGoldItem = BalansListItem.pop('gold')
-                        Functions.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                        SwordOrShiel = Functions.randomBool(0,1,1)
+                        if SwordOrShiel == True:
+                            TypeTheItem = "Экипировка"
+                            NameForItem = ['Кожанная броня','Шляпа путешествинека','Броня стражника','Перчатки']
+                            NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                            BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                            BalansListDamageItem = BalansListItem.pop('damage')
+                            BalansListGoldItem = BalansListItem.pop('gold')
+                            PlayerInventor = Functions.PlayerInventor(UserName_)
+                            PlayerInventor.WriteInventor(username=UserName_,old=Inventor,type="Экипировка",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                        else:
+                            TypeTheItem = "Оружие"
+                            NameForItem = ['Редкое железное копье','Редкий лук','Редкий железный кинжал','Редкий железный нож','Редкая железная рапира','Редкий железный меч.']
+                            NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                            BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                            BalansListDamageItem = BalansListItem.pop('protect')
+                            BalansListGoldItem = BalansListItem.pop('gold')
+                            PlayerInventor = Functions.PlayerInventor(UserName_)
+                            PlayerInventor.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,protect=BalansListDamageItem,gold=BalansListGoldItem)
                     if Classes == "Эпический":
-                        TypeTheItem = "Оружие"
-                        NameForItem = ['Эпическое копье','Эльфийский лук','Кинжал тени','Два топора','Секира',"Сияющий меч","Посох","Платиновый меч","Длинный меч"]
-                        NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
-                        BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
-                        BalansListDamageItem = BalansListItem.pop('damage')
-                        BalansListGoldItem = BalansListItem.pop('gold')
-                        Functions.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                        SwordOrShiel = Functions.randomBool(0,1,1)
+                        if SwordOrShiel == True:
+                            TypeTheItem = "Оружие"
+                            NameForItem = ['Эпическое копье','Эльфийский лук','Кинжал тени','Два топора','Секира',"Сияющий меч","Посох","Платиновый меч","Длинный меч"]
+                            NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                            BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                            BalansListDamageItem = BalansListItem.pop('damage')
+                            BalansListGoldItem = BalansListItem.pop('gold')
+                            PlayerInventor = Functions.PlayerInventor(UserName_)
+                            PlayerInventor.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                        else:
+                            TypeTheItem = "Экипировка"
+                            NameForItem = ['Кристальный барьер','Броня Героя','Броня из камня','Духовное покровительство','Героическая душа',"Домашние тапочки","Магический барьер","Эльфийские доспехи"]
+                            NameForItem = NameForItem[random.randint(0,len(NameForItem) - 1)]
+                            BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
+                            BalansListDamageItem = BalansListItem.pop('protect')
+                            BalansListGoldItem = BalansListItem.pop('gold')
+                            PlayerInventor = Functions.PlayerInventor(UserName_)
+                            PlayerInventor.WriteInventor(
+                                username=UserName_,
+                                old=Inventor,
+                                type="Экипировка",
+                                name=NameForItem,
+                                classItem=Classes,
+                                ID=RandomID,
+                                armor=100,
+                                protect=BalansListDamageItem,
+                                gold=BalansListGoldItem)
                     if Classes == "Первоначальный":
                         TypeTheItem = "Оружие"
                         NameForItem = ['Палка','Дубинка','Перчатки','Тяжелая палка','Острый камень']
@@ -1143,7 +1222,8 @@ class MyClient(discord.Client):
                         BalansListItem = Functions.BalansList(type=TypeTheItem,classItem=Classes)
                         BalansListDamageItem = BalansListItem.pop('damage')
                         BalansListGoldItem = BalansListItem.pop('gold')
-                        Functions.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
+                        PlayerInventor = Functions.PlayerInventor(UserName_)
+                        PlayerInventor.WriteInventor(username=UserName_,old=Inventor,type="Оружие",name=NameForItem,classItem=Classes,ID=RandomID,armor=100,damage=BalansListDamageItem,gold=BalansListGoldItem)
                     
 
                     pass
@@ -1196,7 +1276,7 @@ class MyClient(discord.Client):
 
                    # GetMoney = int(CurCountForCasino * (random.random() * 2))
                     rnd = random.random()
-                    rnd *= 2
+                    rnd *= 1.85
                     GetMoney = int(CurCountForCasino * rnd)
                     Money += GetMoney
                    # GetMoney = 1
@@ -1247,21 +1327,8 @@ class MyClient(discord.Client):
             _Message_ = await _Channel_.fetch_message(message.id)
         except:
             pass
-        # print(_Player_.avatar_url)
-        # DownloadFile = requests.get(_Player_.avatar_url, stream=True)
-        # with open("AVATAR ME.webp","bw") as file:
-        #     for chunk in DownloadFile.iter_content(15360):
-        #         file.write(chunk)
-        #         pass
-        #     pass
-        # sf = discord.File("AVATAR ME.webp","AVATAR ME.webp")
-        # await message.channel.send(" ",file=sf)
 
         Message = message.content
-        _Gabriel = Functions.Gabriel()
-        self.Config = _Gabriel.Config()
-        await self.Config.Start(message.guild.id,self)
-        Setting = self.Config.Read()
         Guild = await self.fetch_guild(message.guild.id)
         Member = await Guild.fetch_member(message.author.id)
         Administrator = False
@@ -1271,9 +1338,10 @@ class MyClient(discord.Client):
                 Administrator = True
         Command = str(Message).split(" ")[0].upper()
         if Administrator == True:
-            if Command == "GABRIEL_CONFIG":
-                file = await _Gabriel.Config.ConfigOpen(self,Setting)
+            if Command == "GABRIEL_CONFIG".upper():
+                file = await self.Gabriel.Config.ConfigOpen(self,self.Setting)
                 await message.channel.send(f" ",file=file)
+                await message.delete()
             if Command == "Gabriel_Config_Edit".upper():
                 Config = str(Message).split(" ")[1].upper()
                 if Config == "Chat".upper():
@@ -1283,8 +1351,8 @@ class MyClient(discord.Client):
                         await message.channel.send(f"Текущее состояние : {OnlineOrOffline}")
                     except Functions.Gabriel.Config.NotOnlineOrOffline:
                         AddOrRemove = str(Message).split(" ")[2].upper()
-                        Possibles = ['ADD','REMOVE',"CHANNELS","GENERAL","PRIVATE"]
-                        Chat = _Gabriel.Chat(self.Config.server,self.Config.Client)
+                        Possibles = ['ADD','REMOVE',"CHANNELS","GENERAL","PRIVATE","STATUS"]
+                        Chat = self.Chat
                         if AddOrRemove in Possibles:
                             if AddOrRemove == "ADD".upper():
                                 Index = str(Message).split(" ")[3] ; Index = int(Index)
@@ -1294,7 +1362,7 @@ class MyClient(discord.Client):
                                     await message.channel.send(f"{GetChannel.name}, добавлен.")
                                 except discord.errors.NotFound:
                                     await message.channel.send(f"Канал не может быть добавлен, так как его не существует")
-                            if AddOrRemove == "REMOVE".upper():
+                            elif AddOrRemove == "REMOVE".upper():
                                 Index = str(Message).split(" ")[3] ; Index = int(Index)
                                 try:
                                     GetChannel = await self.fetch_channel(Index)
@@ -1302,7 +1370,7 @@ class MyClient(discord.Client):
                                     await message.channel.send(f"{GetChannel.name}, убран")
                                 except discord.errors.NotFound:
                                     await message.channel.send(f"Канал не может быть убран, так как его уже не существует")
-                            if AddOrRemove == "CHANNELS".upper():
+                            elif AddOrRemove == "CHANNELS".upper():
                                 Channels = Chat.SavedChat()
                                 Answer = "Сохраненные каналы : "
                                 ChannelsList = Channels["Activity"]
@@ -1310,12 +1378,25 @@ class MyClient(discord.Client):
                                     GetChannel = await self.fetch_channel(_Channel)
                                     Answer += f"\n{GetChannel.name} ({_Channel})"
                                 await message.channel.send(f"{Answer}")
-                            if AddOrRemove == "GENERAL".upper():
-                                
-                                pass
+                            elif AddOrRemove == "GENERAL".upper():
+                                Chat.StatusEdit("GENERAL".upper())
+                                await message.channel.send(f"Теперь чат всеобщий. \nЭто означает, что Габриэль будет брать слова со всех серверов, на которых включен этот режим, и отправлять сообщения.")
+                            elif AddOrRemove == "PRIVATE".upper():
+                                Chat.StatusEdit("PRIVATE")
+                                await message.channel.send(f"Теперь чат частный. \nЭто означает, что Габриэль будет брать слова только с этого сервера, и отправлять сообщения.")
+                            elif AddOrRemove == "STATUS".upper():
+                                SavedChat = Chat.SavedChat()
+                                Status = str(SavedChat["Status"])
+                                if Status == "GENERAL":
+                                    Description = "Это означает, что Габриэль будет общаться используя словарный запас, со всех серверов, на которых включена данная фукнция"
+                                else:
+                                    Description = "Это означает, что Габриэль будет общаться, используя словарный запас сервера"
+                                await message.channel.send(f"Текущее состояние : {Status} \n{Description}")
+                            else:
+                                await message.channel.send(f"Для модуля чата, доступные варианты настроек : \nOnline / Offline \nADD ID/ REMOVE ID \nGeneral / Private")
 
                         else:
-                            await message.channel.send(f"Доступные вариатны ответа : \nOnline / Offline \nADD ID/ REMOVE ID \nGeneral / Private")
+                            await message.channel.send(f"Для модуля чата, доступные варианты настроек : \nOnline / Offline \nADD ID/ REMOVE ID \nGeneral / Private")
                 
                 elif Config == "Game".upper():
                     OnlineOrOffline = str(Message).split(" ")[2].upper()
@@ -1333,7 +1414,7 @@ class MyClient(discord.Client):
                     except Functions.Gabriel.Config.NotOnlineOrOffline:
                         AddOrRemove = str(Message).split(" ")[2].upper()
                         Possibles = ['ADD','REMOVE',"CHANNELS"]
-                        Rooms = _Gabriel.Rooms(self.Config.server,self.Config.Client)
+                        Rooms = self.Gabriel.Rooms(self.Config.server,self.Config.Client)
                         if AddOrRemove in Possibles:
                             if AddOrRemove == "ADD".upper():
                                 Index = str(Message).split(" ")[3] ; Index = int(Index)
@@ -1361,7 +1442,7 @@ class MyClient(discord.Client):
                                 await message.channel.send(f"{Answer}")
                         else:
                             await message.channel.send(f"Доступные вариатны ответа : \nOnline / Offline \nADD ID/ REMOVE ID")
-        
+                await message.delete()
         if _Channel_.id == 691750825030320218 and message.author != self.user:
             MessageContent = message.content
             MessageContent = str.lower(MessageContent)
@@ -1490,25 +1571,27 @@ class MyClient(discord.Client):
         if CurCommand == "ГАБРИЭЛЬ":
             await _Message_.add_reaction("🇵") ; await _Message_.add_reaction("🇷") ; await _Message_.add_reaction("🇦") ; await _Message_.add_reaction("🇮") ; await _Message_.add_reaction("🇸") ; await _Message_.add_reaction("🇪")
             pass
-        if CurCommand == "GS":
-            try:
-                await _Message_.delete()
-            except:
-                pass
-            
-            _ChannelVoice_ = await self.fetch_channel(message.author.voice.channel.id)
-            InVoice = False
-            for member in _ChannelVoice_.members:
-                if member == _Gabriele_:
-                    InVoice = True
-            if InVoice == False:
-                _VoiceClient = await _ChannelVoice_.connect()
-                RandomInt = random.randint(1,36)
-                RandomSound = f"JoinVoice ({RandomInt}).mp3"
-                _VoiceClient.play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source=f"./Resurses/JoinVoice/{RandomSound}"))
-            else:
-                await message.channel.send(f"Не могу проиграть звук",delete_after=1)
-
+        try:
+            if CurCommand == "GS":
+                try:
+                    await _Message_.delete()
+                except:
+                    pass
+                
+                _ChannelVoice_ = await self.fetch_channel(message.author.voice.channel.id)
+                InVoice = False
+                for member in _ChannelVoice_.members:
+                    if member == _Gabriele_:
+                        InVoice = True
+                if InVoice == False:
+                    _VoiceClient = await _ChannelVoice_.connect()
+                    RandomInt = random.randint(1,36)
+                    RandomSound = f"JoinVoice ({RandomInt}).mp3"
+                    _VoiceClient.play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source=f"./Resurses/JoinVoice/{RandomSound}"))
+                else:
+                    await message.channel.send(f"Не могу проиграть звук",delete_after=1)
+        except AttributeError:
+            pass
 
         if (CurCommand == 'PROFILE'):
             try:
@@ -1532,6 +1615,47 @@ class MyClient(discord.Client):
                 await message.channel.send(":no_entry: `Нельзя выбрать в качестве цели самого себя` :no_entry:",delete_after=2)
                 return
             try:
+                ThisItem = Functions.ReadEquipment(username=UserName_,type="Оружие")
+                ThisItem = Functions.CheckParametrsEquipment(username=UserName_,ID=ThisItem)
+                _magic = ThisItem["magic"]
+                Damage = int(ThisItem["damage"])
+                Player_ = Functions.ReadMainParametrs(username=UserName_)
+                Health = int(Player_["curHealth"])
+                maxHealth = int(Player_["maxHealth"])
+                _magic = _magic['Parametrs']
+                _magic = _magic[0]
+                Keys = _magic.keys()
+                for key in Keys:
+                    key = str(key)
+                    Spell = _magic[key]
+                    # KeysSpell = Spell.keys()
+                    # print(key)
+                    # print(Spell)
+                    if key == "Poison":
+                        Time = int(Spell["Time"])
+                        Damage = int(Spell["Damage"])
+                        _PlayerClass = PlayerClass(UserName_,self)
+                        await _PlayerClass.Poison(CurCommandPlayer,Time,Damage)
+                    if key == "Vampirism":
+                        Heal = int(Spell["Heal"])
+                        Health += Heal
+                        if Health >= maxHealth:
+                            Health = 0
+                        Functions.WriteMainParametrs(username=UserName_,curHealth=Health)
+
+                    await asyncio.sleep(0.1)
+                    
+                    # Name = Spell.pop('name')
+                    # KeysSpell = Spell.keys()
+                    # txt += f"{Name} "
+                    # for Key in KeysSpell:
+                    #     key = str(Key)
+                    #     if key != "Description":
+                    #         Stat = Spell[key]
+                    #         txt += f"{Stat}"
+                    # txt += '\n'
+
+
                 StatsEnemy = Functions.ReadMainParametrs(username=CurCommandPlayer)
                 EnIntCurLvl = int(StatsEnemy.pop("lvl"))
                 EnIntMaxHealth = int(StatsEnemy.pop("maxHealth"))
@@ -1550,7 +1674,8 @@ class MyClient(discord.Client):
                 except:
                     DamageItem = 0
                 try:
-                    Inventores = Functions.ReadInventor(UserName_)
+                    PlayerInventor = Functions.PlayerInventor(UserName_)
+                    Inventores = PlayerInventor.ReadInventor()
                     for items in Inventores.split("\n"):
                         itemsDict = Functions.StrToDict(str=items)
                         IDitem = itemsDict.pop("ID")
@@ -1562,7 +1687,8 @@ class MyClient(discord.Client):
                     armorItem -= 1
                     if armorItem < 0:
                         armorItem = 0
-                    Functions.EditItem(username=UserName_,ID=DmgItemID,armor=armorItem,type="Оружие",damage=damageOld,classItem="Сломанный")
+                    _PlayerInventor = Functions.PlayerInventor(UserName_)
+                    _PlayerInventor.EditItem(username=UserName_,ID=DmgItemID,armor=armorItem,type="Оружие",damage=damageOld,classItem="Сломанный")
                     if armorItem == 0:
                         await message.channel.send(f"{UserName_} предмет [{NameItem}] сломался")
                         Functions.WriteEquipment(username=UserName_,type="Оружие",ID=0)
@@ -1571,13 +1697,13 @@ class MyClient(discord.Client):
                 GetDamage = random.randint(0,IntMaxDamage + int(DamageItem))
                 strength = Functions.ReadMainParametrs(username=UserName_) ; strength = float(strength.pop("strength"))
                 GetDamage *= strength
+                try:
+                    Item_ID = Functions.ReadEquipment(username=CurCommandPlayer,type="Экипировка")
+                    ItemProtect = Functions.CheckParametrsEquipment(username=CurCommandPlayer,ID=Item_ID)
+                    protect = int(ItemProtect["protect"])
 
-                Item_ID = Functions.ReadEquipment(username=CurCommandPlayer,type="Экипировка")
-                ItemProtect = Functions.CheckParametrsEquipment(username=CurCommandPlayer,ID=Item_ID)
-                protect = int(ItemProtect["protect"])
-
-                GetDamage -= protect
-
+                    GetDamage -= protect
+                except: pass
                 if GetDamage <= 0:
                     GetDamage = 1
                 
@@ -1618,7 +1744,7 @@ class MyClient(discord.Client):
                     EnIntCurHealth = EnIntMaxHealth
                 Functions.WriteMainParametrs(username=CurCommandPlayer,lvl=EnIntCurLvl,maxHealth=EnIntMaxHealth,curHealth=EnIntCurHealth,damage=EnIntMaxDamage)
             except FileNotFoundError:
-                await message.channel.send(":warning: `Профиль не найден, или этого ирока просто не существует` :warning:",delete_after=2)
+                await message.channel.send(":warning: `Профиль не найден, или этого игрока просто не существует` :warning:",delete_after=2)
         if (CurCommand == 'PROFILE'):
             
             if CurCommandPlayer != "":
@@ -1688,7 +1814,8 @@ class MyClient(discord.Client):
         
         if CurCommand == "INV":
             try:
-                old = Functions.ReadInventor(UserName_)
+                PlayerInventor = Functions.PlayerInventor(UserName_)
+                old = PlayerInventor.ReadInventor()
                 oldList = old.split("\n")
                 ItemList = list()
                 for line in oldList:
@@ -1696,7 +1823,8 @@ class MyClient(discord.Client):
                     ItemList.append(str(NwDict))
             except:
                 IDrandom = random.randint(1,99999999)
-                Functions.WriteInventor(username=UserName_,old="",type="Оружие",name="Ржавый сломанный ножик",classItem="Первоначальный",ID=IDrandom,armor=1000,damage=5,gold=100)
+                PlayerInventor = Functions.PlayerInventor(UserName_)
+                PlayerInventor.WriteInventor(username=UserName_,old="",type="Оружие",name="Ржавый сломанный ножик",classItem="Первоначальный",ID=IDrandom,armor=1000,damage=5,gold=100)
                 StandartImageItem = "./Resurses/Inventor/StandartItem.png"
                 DF = discord.File(StandartImageItem,StandartImageItem)
                 await message.channel.send(f" ",file=DF)
@@ -1779,7 +1907,8 @@ class MyClient(discord.Client):
             pass
         if CurCommand == "WEAR":
             await _Message_.delete()
-            old = Functions.ReadInventor(UserName_)
+            PlayerInventor = Functions.PlayerInventor(UserName_)
+            old = PlayerInventor.ReadInventor()
             oldList = old.split("\n")
             ItemList = list()
             for line in oldList:
@@ -1819,7 +1948,8 @@ class MyClient(discord.Client):
             if GoldSell <= 0:
                 await message.channel.send(f"Золото не может быть ниже 1")
                 return
-            Inventore = Functions.ReadInventor(UserName_)
+            PlayerInventor = Functions.PlayerInventor(UserName_)
+            Inventore = PlayerInventor.ReadInventor()
             for item in Inventore.split("\n"):
                 itemDict = Functions.StrToDict(str=item)
                 itemID = itemDict['ID']
@@ -1849,14 +1979,18 @@ class MyClient(discord.Client):
                             NewDamage = NewUpgrade.pop('damage')
                             NewArmor = NewUpgrade.pop('armor')
                             NewGold = NewUpgrade.pop('gold')
-                            Functions.EditItem(username=UserName_,ID=itemID,type=type_,classItem=NewClassItem,armor=NewArmor,gold=NewGold,damage=NewDamage)
+                            _PlayerInventor = Functions.PlayerInventor(UserName_)
+                            _PlayerInventor.EditItem(username=UserName_,ID=itemID,type=type_,classItem=NewClassItem,armor=NewArmor,gold=NewGold,damage=NewDamage)
                             Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
+                            await message.channel.send(f"Урон : {NewDamage}\nПрочность : {NewArmor}\nНужно золотых : {NewGold} \nID : {itemID}")
                             return
                         if (type_ == "Экипировка"):
                             NewProtect = NewUpgrade.pop('protect')
                             NewArmor = NewUpgrade.pop('armor')
                             NewGold = NewUpgrade.pop('gold')
-                            Functions.EditItem(
+                            _PlayerInventor = Functions.PlayerInventor(UserName_)
+
+                            _PlayerInventor.EditItem(
                                 username=UserName_,
                                 ID=itemID,
                                 type=type_,
@@ -1866,17 +2000,20 @@ class MyClient(discord.Client):
                                 protect=NewProtect
                                 )
                             Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
+                            await message.channel.send(f"Защиты : {NewProtect}\nПрочность : {NewArmor}\nНужно золотых : {NewGold} \nID : {itemID}")
                             return
 
                     Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
                     if (type_ == "Оружие"):
                         damage = itemDict['damage']
                         armor = itemDict['armor']
-                        Functions.EditItem(username=UserName_,ID=itemID,type=type_,classItem=classItem,armor=armor,damage=damage,gold=gold)
+                        _PlayerInventor = Functions.PlayerInventor(UserName_)
+                        _PlayerInventor.EditItem(username=UserName_,ID=itemID,type=type_,classItem=classItem,armor=armor,damage=damage,gold=gold)
                     elif type_ == "Экипировка":
                         protect = itemDict['protect']
                         armor = itemDict['armor']
-                        Functions.EditItem(
+                        _PlayerInventor = Functions.PlayerInventor(UserName_)
+                        _PlayerInventor.EditItem(
                             username=UserName_,
                             ID=itemID,
                             type=type_,
@@ -1894,14 +2031,15 @@ class MyClient(discord.Client):
         if (CurCommand == "SELL_ITEM"):
             await _Message_.delete()
             IDitem = int(CurCommandPlayer)
-            Inventore = Functions.ReadInventor(UserName_)
+            PlayerInventor = Functions.PlayerInventor(UserName_)
+            Inventore = PlayerInventor.ReadInventor()
             for item in Inventore.split("\n"):
                 itemDict = Functions.StrToDict(str=item)
                 itemID = itemDict.pop('ID')
                 if itemID == IDitem:
                     name = itemDict.pop("name")
                     try:
-                        MoneyEnd = Functions.SellItem(username=UserName_,ID=IDitem)
+                        MoneyEnd = PlayerInventor.SellItem(username=UserName_,ID=IDitem)
                         await message.channel.send(f"Вы продаете предмет : {name} \nЗа {MoneyEnd} золотых")
                     except Functions.LastItem:
                         await message.channel.send(f"Вы не можете продать единственный предмет, в инвентаре")
@@ -2227,13 +2365,87 @@ class MyClient(discord.Client):
                 await message.channel.send("Такого предмета нет",delete_after=2)
 
         Functions.WriteMainParametrs(username=UserName_,exp=IntCurExp,lvl=IntCurLvl,maxHealth=IntMaxHealth,curHealth=IntCurHealth,damage=IntMaxDamage,money=Gold,messages=Msages)
+    async def BossesRegeneration(self):
+        Servers = os.listdir("./Servers/")
+        AliveBossed = []
+        for Server in Servers:
+            try:
+                Boss = BossForMoney(Server)
+                StatsBoss = Boss.Read()
+                BossAlive = str(StatsBoss["Status"])
+                if BossAlive == "Life":
+                    AliveBossed.append(Boss)
+            except: pass
+        while True:
+            for AliveBoss in AliveBossed:
+                StatsBoss = AliveBoss.Read()
+                Health = int(StatsBoss["Health"])
+                Status = StatsBoss["Status"]
+                if Status == "Life":
+                    Health += random.randint(300000,500000)
+                    MaxHealth = int(StatsBoss["MaxHealth"])
+                    if Health > MaxHealth:
+                        Health = MaxHealth
+                    if Health <= 0:
+                        Health = 0
+                    AliveBoss.Write(Health=Health)
+            await asyncio.sleep(0.1) 
+        pass
+    async def SuperBoss(self,message):
+        Command = str(message.content).split(" ")[0].upper()
+        Boss = BossForMoney(message.channel.guild.name)
+        HaveBoss = False
+        try:
+            Stats = Boss.Read()
+            HaveBoss = True
+        except:
+            pass
+        UserName_ = message.author.name
+        UserName_ = str.split(UserName_)
+        UserName__ = str()
+        for word in UserName_:
+            UserName__ += word
+        UserName_ = str(UserName__)
+        if HaveBoss == True:
+            Health = int(Stats["Health"])
+            MaxHealth = int(Stats["MaxHealth"])
+            Damage = int(Stats["Damage"])
+            Armor = int(Stats["Armor"])
+
+            if Command == "CreateHardBoss".upper():
+                Index = str(message.content).split(" ")[1].upper()
+                Boss.Create(int(Index)) 
+            if Command == "ShowHardBoss".upper():
+                await message.channel.send(f"Текущее здоровье : {Health}\nМаксимальное здоровье : {MaxHealth}\nВозможный урон : {Damage}\nБроня : {Armor}")
+            if Command == "HardBoss_attack".upper():
+                Item = Functions.ReadEquipment(username=UserName_,type="Оружие")
+                Item = Functions.CheckParametrsEquipment(username=UserName_,ID=Item)
+                ItemDamage = int(Item["damage"])
+                HeroStats = Functions.ReadMainParametrs(username=UserName_)
+                DamageHero = int(HeroStats["damage"])
+                GetDamage = random.randint(1,DamageHero + ItemDamage)
+                GetDamage -= Armor
+                if GetDamage <= 0: GetDamage = 1
+                Health -= GetDamage
+                if Health <= 0:
+                    Boss.Write(Health=Health,Status="Dead")
+                    await message.channel.send(f"Наелся и спит")
+                else:
+                    Boss.Write(Health=Health,Status="Life")
+                    await message.channel.send(f"Текущее здоровье : {Health}\nМаксимальное здоровье : {MaxHealth}\nВозможный урон : {Damage}\nБроня : {Armor}")
     async def on_message(self, message):
-    # don't respond to ourselves
+        self.Gabriel = Functions.Gabriel()
+        Guild = await self.fetch_guild(message.channel.guild.id)
+        self.Config = self.Gabriel.Config()
+        await self.Config.Start(Guild.id,self)
+        self.Chat = self.Gabriel.Chat(Guild,self)
+        self.Setting = self.Config.Read(message.channel.guild.name)
         Dialog = asyncio.create_task(self.Dialog(message))
         botEvent = asyncio.create_task(self.botEvent(message))
         botStandart = asyncio.create_task(self.botStandart(message))
         botShop = asyncio.create_task(self.botShop(message))
-        asyncio.gather(Dialog,botEvent,botStandart,botShop)
+        SuperBoss = asyncio.create_task(self.SuperBoss(message))
+        asyncio.gather(Dialog,botEvent,botStandart,botShop,SuperBoss)
 
 
     async def on_voice_state_update(self,_Player_ : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
@@ -2241,7 +2453,7 @@ class MyClient(discord.Client):
         _Gabriel = Functions.Gabriel()
         Confige = _Gabriel.Config()
         await Confige.Start(_Player_.guild.id,self)
-        Modules = Confige.Read()
+        Modules = Confige.Read(_Player_.guild.name)
 
         RoomModule = Modules["Rooms"]
         if RoomModule != "ONLINE":

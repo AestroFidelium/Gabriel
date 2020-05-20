@@ -14,38 +14,10 @@ import os
 from PIL import Image, ImageDraw , ImageFont
 import botFunctions
 from botFunctions import Gabriel
+from botFunctions import BossForMoney
 import asyncio
 
 internetWasOff = True
-
-async def TEST1(parameter_list):
-    a = 0
-    while a < 100:
-        print(parameter_list)
-        await asyncio.sleep(0.1)
-
-async def ConfigOpen(self,Setting : dict):
-    Main = Image.open(f"./Resurses/Configs/Main2.png")
-    Okay = Image.open(f"./Resurses/Configs/Okay.png")
-    Save = f"./Resurses/Configs/ConfigSettings.png"
-    Chat = str(Setting["Chat"])
-    Game = str(Setting["Game"])
-    Rooms = str(Setting["Rooms"])
-    if Chat == "ONLINE":
-        area = (648,180)
-        Main.paste(Okay.convert('RGB'), area, Okay)
-    if Game == "ONLINE":
-        area = (648,423)
-        Main.paste(Okay.convert('RGB'), area, Okay)
-    if Rooms == "ONLINE":
-        area = (648,677)
-        Main.paste(Okay.convert('RGB'), area, Okay)
-    Main = Main.save(Save)
-    file = discord.File(Save,Save)
-    return file
-
-async def OnMessage(self,message):
-    print(message)
 
 def is_internet():
     """
@@ -64,15 +36,47 @@ def InternetActive():
     client = MyClient()
     client.run(BazaDate.token)
 class MyClient(discord.Client):
+
+    async def OnMessage(self,message):
+        pass
+    
+    async def AttackTheBoss(self,message):
+        Command = str(message.content).split(" ")[0].upper()
+        if Command == "SuperBossKill".upper():
+            BossStats = self.Bossed.Read()
+            Health = int(BossStats["Health"])
+        
+            Message = await message.channel.send(f"Текущее здоровье босса : (Много)")
+            while True:
+                BossStats = self.Bossed.Read()
+                Health = int(BossStats["Health"])
+                Health -= 10000
+                await Message.edit(content=f"Текущее здоровье босса : {Health}")
+                self.Bossed.Write(Health=Health)
+                await asyncio.sleep(0.1)
+
+    async def testSpam(self,Spam):
+        a = 0
+        while True:
+            a += 1
+            print(Spam)
+            await asyncio.sleep(0.1)
+
     async def on_ready(self):
         print(f"Logged on as , {self.user} MODULE : test.py")
+        Task2 = asyncio.create_task(self.testSpam("DADADADA"))
+        asyncio.gather(Task2)
 
     async def on_message(self,message):
         if message.author == self.user:
             return
-        task1 = asyncio.create_task(OnMessage(self,message))
-        task2 = asyncio.create_task(TEST1("ara"))
+        self.Bossed = BossForMoney(message.channel.guild.name)
+        # Bossed.Create(1000000)
+        task1 = asyncio.create_task(self.OnMessage(message))
+        task2 = asyncio.create_task(self.AttackTheBoss(message))
+        print("Работает")
         asyncio.gather(task1,task2)
+        
 
 
 

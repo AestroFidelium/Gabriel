@@ -11,6 +11,7 @@ import BotInisializator
 import datetime
 import ast
 import os
+import asyncio
 
 Resurses = "./Resurses/"
 StandartURL = "https://pbs.twimg.com/profile_images/589387776740593664/24AVkUCB_400x400.jpg"
@@ -71,20 +72,32 @@ class Gabriel():
         class NotOnlineOrOffline(Error):
             pass
         async def Start(self,server : int,Client):
+            """
+            Прогреть конфиг
+            """
             self.Client = Client
             self.server = await Client.fetch_guild(server)
             self.direct = f"./Servers/{self.server.name}"
             try:
                 self.CreateServer()
                 with open(f"{self.direct}/ChatConfig.txt","w") as file:
-                    file.write(str("{'Activity': []}"))
+                    NewDict = {
+                        "Activity" : [],
+                        "Status" : "PRIVATE"
+                    }
+                    file.write(str(NewDict))
                 with open(f"{self.direct}/RoomsConfig.txt","w") as file:
-                    file.write(str("{'Activity': []}"))
+                    NewDict = {
+                        "Activity" : []
+                    }
+                    file.write(str(NewDict))
+                with open(f"{self.direct}/Words.txt","w") as file:
+                    file.write("")
             except FileExistsError:
                 pass #Старый сервер
-        def Read(self):
+        def Read(self,serverName : str):
             try:
-                with open(f"{self.direct}/Config.txt","r") as file:
+                with open(f"./Servers/{serverName}/Config.txt","r") as file:
                     return StrToDict(str=str(file.readline()))
             except FileNotFoundError:
                 Modules = {
@@ -103,7 +116,7 @@ class Gabriel():
                 else:
                     return Module
             except KeyError:
-                Module = self.Read()
+                Module = self.Read(self.server.name)
                 return str(Module[name])
         
         def Write(self,**fields):
@@ -198,6 +211,13 @@ class Gabriel():
             self.server = server
             self.direct = f"./Servers/{self.server.name}"
         def SavedChat(self):
+            """
+            Сохраненные настройки чата
+
+            Activity = каналы
+
+            Status = статус
+            """
             self.File = True
             try:
                 with open(f"{self.direct}/ChatConfig.txt","r") as file:
@@ -206,16 +226,40 @@ class Gabriel():
                 self.File = False
                 return 
         
-        def LoadChat(self,Channel : int):
+        def StatusEdit(self,Status : str):
+            """
+            Редактировать статус чата
+            """
             Chats = self.SavedChat()
             if self.File == True:
                 Channels = list(Chats["Activity"])
                 NewDict = {
                     "Activity" : [
+                        *Channels
+                    ],
+                    "Status" : Status
+                }
+            else:
+                NewDict = {
+                    "Activity" : [],
+                    "Status" : "Private"
+                }
+            with open(f"{self.direct}/ChatConfig.txt","w") as file:
+                file.write(str(NewDict))
+        def LoadChat(self,Channel : int):
+            """
+            Загрузить новые настройки чата
+            """
+            Chats = self.SavedChat()
+            if self.File == True:
+                Channels = list(Chats["Activity"])
+                Status = str(Chats["Status"])
+                NewDict = {
+                    "Activity" : [
                         Channel, 
                         *Channels
                     ],
-                    "Status" : "Private"
+                    "Status" : Status
                 }
             else:
                 NewDict = {
@@ -228,6 +272,9 @@ class Gabriel():
                 file.write(str(NewDict))
 
         def RemoveChat(self,Channel : int):
+            """
+            Удалить настойку чата
+            """
             Chats = self.SavedChat()
             if self.File == True:
                 ChannelsDelete = list(Chats["Activity"])
@@ -250,15 +297,25 @@ class Gabriel():
     class TooManyWords(Error):
         def Error(self):
             return "Слишком мало слов я знаю"
-    def Message(self,CountMessages : int):
+    class GENERAL(): pass
+    def Message(self,CountMessages : int,ServerName : str,Status : GENERAL):
         Lines = []
-        with open(f"./Resurses/Words.txt","r") as file:
-            for line in file.readlines():
-                Cannot = [' ','','\n']
-                if line not in Cannot:
-                    CheckMessage_ = CheckMessage(line,"https://")
-                    if CheckMessage_.Start() == None:
-                        Lines.append(str(line))
+        if Status == "GENERAL":
+            with open(f"./Resurses/Words.txt","r") as file:
+                for line in file.readlines():
+                    Cannot = [' ','','\n']
+                    if line not in Cannot:
+                        CheckMessage_ = CheckMessage(line,"https://")
+                        if CheckMessage_.Start() == None:
+                            Lines.append(str(line))
+        else:
+            with open(f"./Servers/{ServerName}/Words.txt","r") as file:
+                for line in file.readlines():
+                    Cannot = [' ','','\n']
+                    if line not in Cannot:
+                        CheckMessage_ = CheckMessage(line,"https://")
+                        if CheckMessage_.Start() == None:
+                            Lines.append(str(line))
         Message = ""
         Count = 0
         BadWords = [
@@ -392,67 +449,47 @@ def AllMVPs():
    # LvlMvpList.clear()
     return sortPlayers , PlayerList , LvlMvpList
 
-def Attack(_UserName_ : str,_Target_ : str):
-    with open(f"./Stats/Main/{_UserName_}.txt","r") as file:
-        IntCurExp = int(file.readline())
-        IntCurLvl = int(file.readline())
-        IntMaxHealth = int(file.readline())
-        IntCurHealth = int(file.readline())
-        IntMaxDamage = int(file.readline())
-        Description = str(file.readline())
-    with open(f"./Stats/Main/{_Target_}.txt","r") as file:
-        EnIntCurExp = int(file.readline())
-        EnIntCurLvl = int(file.readline())
-        EnIntMaxHealth = int(file.readline())
-        EnIntCurHealth = int(file.readline())
-        EnIntMaxDamage = int(file.readline())
-        EnDescription = str(file.readline())
-    GetDamage = random.randint(0,IntMaxDamage)
+def Attack(_UserName_ : str,_Target_ : str,Damage):
+    pass
+    # Player = ReadMainParametrs(username=_UserName_)
+    # Target = ReadMainParametrs(username=_Target_)
+    # TargetHealth = int(Target["curHealth"])
+    # GetDamage = random.randint(1,Damage)
 
-    EnIntCurHealth -= GetDamage
+    # TargetHealth -= GetDamage
 
-    FreeLvlHA = EnIntCurLvl / 5
+    # FreeLvlHA = EnIntCurLvl / 5
 
-    if EnIntCurHealth <= 0:
-        EnIntCurHealth = EnIntMaxHealth
-        EnIntCurLvl -= int(FreeLvlHA)
-        IntCurLvl += int(FreeLvlHA)
-        time.sleep(0.1)
+    # if TargetHealth <= 0:
+    #     TargetHealth = EnIntMaxHealth
+    #     TargetHealth -= int(FreeLvlHA)
+    #     IntCurLvl += int(FreeLvlHA)
+    #     time.sleep(0.1)
 
-
-        Emb = discord.Embed( title = _Target_ + " убит(а)")
-        Emb.add_field(name = 'Потерял(а) могущество : ',value = str(int(FreeLvlHA)) + " лвл.")
-        if IntCurLvl == 4:
-            Emb.add_field(name = 'Минимальный уровень',value =  "4",inline = True)
-        Emb.add_field(name = 'Здоровье : ',value = str(EnIntCurHealth) + " ед. / " + str(EnIntMaxHealth) + " ед.",inline = False)
-        Emb.add_field(name = 'Получил(а) урона : ',value = str(GetDamage) + " ед.",inline = True)
-
-        #await message.channel.send(embed = Emb)
-
-        IntMaxHealth += 10 * int(FreeLvlHA)
-        IntCurHealth += 10 * int(FreeLvlHA)
-        IntMaxDamage += random.randint(1,35) * int(FreeLvlHA)
-        if ((IntCurHealth + 5 * int(FreeLvlHA)) < (IntMaxHealth)):
-            IntCurHealth += 5 * int(FreeLvlHA)
-        else:
-            IntCurHealth = IntMaxHealth
+    #     IntMaxHealth += 10 * int(FreeLvlHA)
+    #     IntCurHealth += 10 * int(FreeLvlHA)
+    #     IntMaxDamage += random.randint(1,35) * int(FreeLvlHA)
+    #     if ((IntCurHealth + 5 * int(FreeLvlHA)) < (IntMaxHealth)):
+    #         IntCurHealth += 5 * int(FreeLvlHA)
+    #     else:
+    #         IntCurHealth = IntMaxHealth
         
-        EnIntMaxHealth -= 10 * int(FreeLvlHA)
-        EnIntMaxDamage -= random.randint(1,35) * int(FreeLvlHA)
-        EnIntCurHealth = EnIntMaxHealth
-    with open(f"./Stats/Main/{_UserName_}.txt","w") as file:
-        file.writelines(str(IntCurExp))
-        file.writelines(str(IntCurLvl))
-        file.writelines(str(IntMaxHealth))
-        file.writelines(str(IntCurHealth))
-        file.writelines(str(Description))
-    with open(f"./Stats/Main/{_Target_}.txt","w") as file:
-        file.writelines(str(EnIntCurExp))
-        file.writelines(str(EnIntCurLvl))
-        file.writelines(str(EnIntMaxHealth))
-        file.writelines(str(EnIntCurHealth))
-        file.writelines(str(EnDescription))
-    return Emb
+    #     EnIntMaxHealth -= 10 * int(FreeLvlHA)
+    #     EnIntMaxDamage -= random.randint(1,35) * int(FreeLvlHA)
+    #     EnIntCurHealth = EnIntMaxHealth
+    # with open(f"./Stats/Main/{_UserName_}.txt","w") as file:
+    #     file.writelines(str(IntCurExp))
+    #     file.writelines(str(IntCurLvl))
+    #     file.writelines(str(IntMaxHealth))
+    #     file.writelines(str(IntCurHealth))
+    #     file.writelines(str(Description))
+    # with open(f"./Stats/Main/{_Target_}.txt","w") as file:
+    #     file.writelines(str(EnIntCurExp))
+    #     file.writelines(str(EnIntCurLvl))
+    #     file.writelines(str(EnIntMaxHealth))
+    #     file.writelines(str(EnIntCurHealth))
+    #     file.writelines(str(EnDescription))
+    # return Emb
     
 
 def nullWrite(_UserName_,new_Client : bool):
@@ -884,173 +921,7 @@ def RatingSystem():
     
 
     return sf
-def WriteInventor(**objects):
-    """
-    Записать в инвентарь.
 
-    `------------------- Обязательные -----------------`
-
-    `username` : ник игрока, чей инвентарь мы изменяем 
-    
-    `old` : изначальный инвентарь
-
-    `type` : тип предмета
-
-    `Типы предметов` :  `Предмет`  ,  `Оружие`  ,  `Экипировка`  ,  `Ингридиент`
-
-    `name` : имя предмета
-
-    `classItem` : Класс предмета
-
-    `Классы` : Сломанный -> Первоначальный -> Обычный -> Редкий -> Эпический -> Легендарный -> Мифический -> Демонический = Божественный -> Уникальный
-
-    `ID` : это персональный номер у предмета, к которому нужно будет отссылаться, дабы взаимодействовать с ним
-
-    `gold` : Количество золотых, которые нужно потратить, для улучшения предмета
-
-    `------------------- Для предметов ----------------`
-
-    `duration` : длительность эффекта
-
-    `------------------- Для оружия -------------------`
-
-    `armor` : прочность оружия
-
-    `damage` : Урон от оружия
-
-    `------------------- Для экиперовки ---------------`
-
-    `armor` : прочность брони
-
-    `protect` : Уровень защиты
-    
-    `------------------- Для ингридиентов -------------`
-
-    `count` : количество ингридиентов
-
-    """
-
-    try:
-        username = str(objects.pop('username'))
-    except: raise Error_CreateItem("username error")
-
-
-    try:
-        old = objects.pop('old')
-    except: raise Error_CreateItem("old error")
-
-
-    try:
-        type_ = str(objects.pop('type'))
-    except: raise Error_CreateItem("type error")
-
-
-    try:
-        name = str(objects.pop('name'))
-    except: raise Error_CreateItem("name error")
-
-
-    try:
-        classItem = str(objects.pop('classItem'))
-    except: raise Error_CreateItem("classItem error")
-
-
-    try:
-        ID = int(objects.pop("ID"))
-    except: raise Error_CreateItem("ID error")
-
-    try:
-        gold = int(objects.pop("gold"))
-    except: raise Error_CreateItem("gold error")
-
-    try:
-        duration = int(objects.pop("duration"))
-    except:
-        if type_ == "Предмет":
-            raise Error_CreateItem("duration error")
-
-
-    try:
-        armor = int(objects.pop("armor"))
-    except:
-        if (type_ == "Оружие") or (type_ == "Экипировка"):
-            raise Error_CreateItem("armor error")
-
-    try:
-        damage = int(objects.pop("damage"))
-    except:
-        if type_ == "Оружие":
-            raise Error_CreateItem("damage error")
-
-
-
-    try:
-        protect = int(objects.pop("protect"))
-    except:
-        if type_ == "Экипировка":
-            raise Error_CreateItem("protect error")
-
-
-    try:
-        count = int(objects.pop("count"))
-    except:
-        if type_ == "Ингридиент":
-            raise Error_CreateItem("count error")
-
-    newItem = {}
-    if type_ == "Предмет":
-        newItem = {
-            "type" : type_,
-            "name" : name,
-            "classItem" : classItem,
-            "ID" : ID,
-            "duration" : duration,
-            "gold" : gold
-        }
-    if type_ == "Оружие":
-        newItem = {
-            "type" : type_,
-            "name" : name,
-            "classItem" : classItem,
-            "ID" : ID,
-            "gold" : gold,
-            "armor" : armor,
-            "damage" : damage
-        }
-    if type_ == "Экипировка":
-        newItem = {
-            "type" : type_,
-            "name" : name,
-            "classItem" : classItem,
-            "ID" : ID,
-            "gold" : gold,
-            "armor" : armor,
-            "protect" : protect
-        }
-    if type_ == "Ингридиент":
-        newItem = {
-            "type" : type_,
-            "name" : name,
-            "classItem" : classItem,
-            "ID" : ID,
-            "gold" : gold,
-            "count" : count
-        }
-    with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
-        if str(old) != "":
-            file.write(f"{str(old)}\n{str(newItem)}")
-        else:
-            file.write(f"{str(newItem)}")
-    pass
-def ReadInventor(_UserName_ : str):
-    '''
-    Читает инвентарь
-    '''
-    Inventor = ""
-    with open(f"./Stats/Inventory/Inventor_{_UserName_}.txt","r") as file:
-        for line in file.readlines():
-            Inventor += line
-        return Inventor
 async def EditAttackDamageTwo(self,Channel : discord.channel.TextChannel,GetDamage : int,_Player : str,_Target : str,CurHealthTarget : int):
     today = datetime.datetime.today()
     try:
@@ -1287,24 +1158,41 @@ def FutureMessageDef(**fields):
 
     return NewMessage
 
-def ReadWords(**fields):
+def ReadWords(Server : str,Status : str):
     AllWords = str()
-    with open(f"./Resurses/Words.txt","r") as file:
-        try:
-            for line in file.readlines():
-                AllWords += line
-        except:
-            pass
-    return AllWords
+    if Status != "PRIVATE":
+        with open(f"./Resurses/Words.txt","r") as file:
+            try:
+                for line in file.readlines():
+                    AllWords += line
+            except:
+                pass
+        return AllWords
+    else:
+        with open(f"./Servers/{Server}/Words.txt","r") as file:
+            try:
+                for line in file.readlines():
+                    AllWords += line
+            except:
+                pass
+        return AllWords
 
 
-def SaveWords(msg : str):
-    Oldmsg = ReadWords()
-    with open(f"./Resurses/Words.txt","w") as file:
-        msgSplitLines = msg.split("\n")
-        file.write(f"{Oldmsg}")
-        for line in msgSplitLines:
-            file.writelines(f"\n{line}")
+def SaveWords(msg : str,Server : str,Status : str):
+    if Status != "PRIVATE":
+        Oldmsg = ReadWords(Server,Status)
+        with open(f"./Resurses/Words.txt","w") as file:
+            msgSplitLines = msg.split("\n")
+            file.write(f"{Oldmsg}")
+            for line in msgSplitLines:
+                file.writelines(f"\n{line}")
+    else:
+        Oldmsg = ReadWords(Server,Status)
+        with open(f"./Servers/{Server}/Words.txt","w") as file:
+            msgSplitLines = msg.split("\n")
+            file.write(f"{Oldmsg}")
+            for line in msgSplitLines:
+                file.writelines(f"\n{line}")
 
 
 def ClearWords(**fields):
@@ -1406,88 +1294,6 @@ def CheckParametrsEquipment(**fields):
             if ID == itemID:
                 return itemDict
 
-
-def EditItem(**fields):
-    """
-    Редактирует предмет
-
-    `username` : Имя игрока
-
-    `ID` : Индекс предмета
-
-    `type` : тип `Оружие` , `Экипировка`
-
-    `armor` : Броня у предмета
-
-    `protect` : защита
-
-    `damage` : урон
-
-    `classItem` : Сломанный -> Первоначальный -> Обычный -> Редкий -> Эпический -> Легендарный -> Мифический -> Демонический = Божественный -> Уникальный
-
-    `gold` : Количество золотых, на улучшение предмета
-
-    """
-
-    username = fields.pop('username')
-    ID = fields.pop('ID')
-    armor = fields.pop('armor')
-    type_ = fields.pop("type")
-    classItem = fields.pop("classItem")
-    gold = fields.pop("gold")
-
-    try:
-        protect = fields.pop('protect')
-    except:
-        pass
-
-    try:
-        damage = fields.pop('damage')
-    except:
-        pass
-    
-    ListItems = list()
-    with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
-        for item in file.readlines():
-            itemDict = StrToDict(str=item)
-            itemDictStandart = StrToDict(str=item)
-            itemID = int(itemDict.pop('ID'))
-            if ID == itemID:
-                type_item = itemDict.pop('type')
-                nameItem = itemDict.pop('name')
-                if type_ == "Оружие":
-                    newItem = {
-                        "type" : type_item,
-                        "name" : nameItem,
-                        "classItem" : classItem,
-                        "ID" : itemID,
-                        "gold" : gold,
-                        "armor" : armor,
-                        "damage" : damage
-                    }
-                if type_ == "Экипировка":
-                    newItem = {
-                        "type" : type_item,
-                        "name" : nameItem,
-                        "classItem" : classItem,
-                        "ID" : itemID,
-                        "gold" : gold,
-                        "armor" : armor,
-                        "protect" : protect
-                    }
-                ListItems.append(newItem)
-            else:
-                ListItems.append(itemDictStandart)
-    with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
-        Counts = len(ListItems)
-        for ItemIn in ListItems:
-            Counts -= 1
-            if Counts != 0:
-                file.writelines(f"{ItemIn}\n")
-            else:
-                file.writelines(f"{ItemIn}")
-        pass
-    pass
 
 def _Gold(**fields):
     """
@@ -1640,12 +1446,12 @@ def BalansList(**fields):
             Armored = random.randint(100,10000000)
 
         if classItem == "Демонический":
-            Damage = random.randint(60000000,100000000)
+            Damage = random.randint(60350000,100000000)
             Gold = random.randint(15000000,32000000)
             Armored = 100000000
 
         if classItem == "Божественный":
-            Damage = random.randint(60350000,100650000)
+            Damage = random.randint(60000000,100650000)
             Gold = random.randint(15350000,35650000)
             Armored = 100000000
 
@@ -2028,38 +1834,25 @@ def CreateImageInventor(**fields):
 
     """
     try:
-        typeItem = fields.pop("typeItem")
-    except: raise Error("Не указан typeItem")
-    try:
-        name = fields.pop("name")
-    except: raise Error("Не указан name")
-    try:
-        classItem = fields.pop("classItem")
-    except: raise Error("Не указан classItem")
-    try:
         ID = fields.pop("ID")
     except: raise Error("Не указан ID")
     try:
-        gold = fields.pop("gold")
-    except: raise Error("Не указан gold")
-    try:
-        protect = 0
-        if typeItem == "Экипировка":
-            protect = fields.pop("protect")
-    except: raise Error("Не указан protect")
-    try:
-        armor = 0
-        if (typeItem == "Экипировка") or (typeItem == "Оружие"):
-            armor = fields.pop("armor")
-    except: raise Error("Не указан armor")
-    try:
-        damage = 0
-        if typeItem == "Оружие":
-            damage = fields.pop("damage")
-    except: raise Error("Не указан damage")
-    try:
         username = fields.pop("username")
     except: raise Error("Не указан username")
+    ThisItem = CheckParametrsEquipment(username=username,ID=ID)
+    typeItem = ThisItem["type"]
+    classItem = ThisItem["classItem"]
+    gold = ThisItem["gold"]
+    name = ThisItem["name"]
+    try:
+        armor = ThisItem["armor"]
+    except: pass
+    try:
+        damage = ThisItem["damage"]
+    except: pass
+    try:
+        protect = ThisItem["protect"]
+    except: pass
     PATH = "./Resurses/Inventor/"
     #130 30
     ItemPath = f"{PATH}Item.png"
@@ -2099,7 +1892,7 @@ def CreateImageInventor(**fields):
     txt = f"Класс : {classItem}"
     DrawItem.text(area,txt,font=font,fill=Color)
 
-    area = (1925,1846)
+    area = (1925,1880)
     Color = (0,0,0)
     font = ImageFont.truetype("arial.ttf",Scaling)
     txt = f"{gold}"
@@ -2139,6 +1932,32 @@ def CreateImageInventor(**fields):
     txt = f"ID : {ID}"
     DrawItem.text(area,txt,font=font,fill=Color)
 
+    try:
+        area = (2332,800)
+        Color = (0,0,0)
+        font = ImageFont.truetype("arial.ttf",60)
+        txt = "Особые свойства : \n"
+        _magic = ThisItem["magic"]
+        _magic = _magic['Parametrs']
+        _magic = _magic[0]
+        Keys = _magic.keys()
+        for key in Keys:
+            key = str(key)
+            Spell = _magic[key]
+            Name = Spell.pop('name')
+            KeysSpell = Spell.keys()
+            txt += f"{Name} "
+            for Key in KeysSpell:
+                key = str(Key)
+                if key != "Description":
+                    Stat = Spell[key]
+                    txt += f" {Stat} "
+            txt += '\n'
+
+
+        DrawItem.text(area,txt,font=font,fill=Color)
+    except: pass
+
     area = (79,59)
     ImageAvatar = ImageAvatar.resize((616,616))
     ItemImage.paste(ImageAvatar,area)
@@ -2161,93 +1980,6 @@ def CreateImageInventor(**fields):
     df = discord.File(f"{SaveImage}",f"{SaveImage}")
     return df
 
-def SellItem(**fields):
-    """
-    Продает предмет
-
-    `username` : Имя игрока
-
-    `ID` : Индекс предмета
-
-    `Сломанный` : с 1 до 15 золотых
-
-    `Первоначальный` : с 5 до 15 золотых
-
-    `Обычный` : с 500 до 700 золотых
-
-    `Редкий` : с 1000 до 1111 золотых
-
-    `Эпический` : с 2000 до 3000 золотых
-
-    `Легендарный` : с 6000 до 10000 золотых
-
-    `Мифический` : с 500 до 100000 золотых
-
-    `Божественный` : с 100000 до 130000 золотых
-
-    `Демонический` : с 59999 до 200000 золотых
-
-    """
-    username = str(fields.pop("username"))
-    ID = int(fields.pop("ID"))
-    Inventor = ReadInventor(username)
-
-    Inventor = Inventor.split("\n")
-
-    NewInventor = list()
-
-    CountItems = len(Inventor)
-
-    for Item in Inventor:
-        ItemDict = StrToDict(str=Item)
-        ItemID = int(ItemDict.pop("ID"))
-        if ItemID == ID:
-            if CountItems > 1:
-                ClassItem = ItemDict.pop("classItem")
-
-                if ClassItem == "Сломанный":
-                    SellMoney = random.randint(1,15)
-                    _Gold(username=username,do="Добавить",count=SellMoney)
-                elif ClassItem == "Первоначальный":
-                    SellMoney = random.randint(5,15)
-                    _Gold(username=username,do="Добавить",count=SellMoney)
-                elif ClassItem == "Обычный":
-                    SellMoney = random.randint(500,700)
-                    _Gold(username=username,do="Добавить",count=SellMoney)
-                elif ClassItem == "Редкий":
-                    SellMoney = random.randint(1000,1111)
-                    _Gold(username=username,do="Добавить",count=SellMoney)
-                elif ClassItem == "Эпический":
-                    SellMoney = random.randint(2000,3000)
-                    _Gold(username=username,do="Добавить",count=SellMoney)
-                elif ClassItem == "Легендарный":
-                    SellMoney = random.randint(6000,10000)
-                    _Gold(username=username,do="Добавить",count=SellMoney)
-                elif ClassItem == "Мифический":
-                    SellMoney = random.randint(500,100000)
-                    _Gold(username=username,do="Добавить",count=SellMoney)
-                elif ClassItem == "Божественный":
-                    SellMoney = random.randint(100000,130000)
-                    _Gold(username=username,do="Добавить",count=SellMoney)
-                elif ClassItem == "Демонический":
-                    SellMoney = random.randint(59999,200000)
-                    _Gold(username=username,do="Добавить",count=SellMoney)       
-            else:
-                raise LastItem("Последний предмет")
-        else:
-            NewInventor.append(Item)
-        pass
-
-    with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
-        Counts = len(NewInventor)
-        for Item in NewInventor:
-            Counts -= 1
-            if Counts != 0:
-                file.writelines(f"{Item}\n")
-            else:
-                file.writelines(f"{Item}")
-
-    return SellMoney
 class NotEnoughGold(Error):
     pass
 class Auction():
@@ -2294,8 +2026,8 @@ class Auction():
         OldAuction = Auction.ReadAuction()
 
         OldAuction = str(OldAuction).split("\n")
-
-        Inventor = ReadInventor(username)
+        _PlayerInventor = PlayerInventor(username)
+        Inventor = _PlayerInventor.ReadInventor()
 
         Inventor = str(Inventor).split("\n")
 
@@ -2328,7 +2060,8 @@ class Auction():
                 NewAuction = StrToDict(str=NewAuction_)
                 try:
                     try:
-                        SellItem(username=username,ID=ID)
+                        _PlayerInventor = PlayerInventor(username)
+                        _PlayerInventor.SellItem(ID=ID)
                     except: 
                         print("Этого предмета нет")
                         return
@@ -2390,18 +2123,21 @@ class Auction():
                         _AuctionsOwner = str(_AuctionsDict.pop("username"))
                         _Gold(username=username,do="Убавить",count=gold)
                         _Gold(username=_AuctionsOwner,do="Добавить",count=gold)
+                        _PlayerInventor = PlayerInventor(username)
                         if _AuctionsItemType == "Оружие":
-                            Inventor = ReadInventor(username)
+                            Inventor = _PlayerInventor.ReadInventor()
                             AuctionsItemArmor = int(_AuctionsDict.pop("armor"))
                             AuctionsItemDamage = int(_AuctionsDict.pop("damage"))
-                            WriteInventor(username=username,old=Inventor,type=_AuctionsItemType
+                            _PlayerInventor = PlayerInventor(username)
+                            _PlayerInventor.WriteInventor(username=username,old=Inventor,type=_AuctionsItemType
                             ,name=_AuctionsItemName,classItem=_AuctionsItemClassItem,ID=_AuctionsItemID,
                             gold=_AuctionsItemGold,armor=AuctionsItemArmor,damage=AuctionsItemDamage)
                         if _AuctionsItemType == "Экипировка":
-                            Inventor = ReadInventor(username)
+                            Inventor = _PlayerInventor.ReadInventor()
                             AuctionsItemArmor = int(_AuctionsDict.pop("armor"))
                             AuctionsItemProtect = int(_AuctionsDict.pop("protect"))
-                            WriteInventor(username=username,old=Inventor,type=_AuctionsItemType
+                            _PlayerInventor = PlayerInventor(username)
+                            _PlayerInventor.WriteInventor(username=username,old=Inventor,type=_AuctionsItemType
                             ,name=_AuctionsItemName,classItem=_AuctionsItemClassItem,ID=_AuctionsItemID,
                             gold=_AuctionsItemGold,armor=AuctionsItemArmor,protect=AuctionsItemProtect)
                 except SyntaxError: pass
@@ -2667,15 +2403,644 @@ def randomBool(_min : int,_max : int,_need : int):
     pass
 
 
+class BossForMoney():
+    """
+    Босс, которого можно призвать только за золото.
+
+    Сложность босса состоит в том, что он будет давать в ответ удар.
+    Так же, сложность можно настраивать.
+    Чем больше золотых потратить чтобы призвать его, тем сильнее он будет.
+    Опыт , который вы потеряете после вашей смерти об босса, перейдет к боссу.
+    Забрать его можно будет после смерти босса.
+    Внимание : Если кто то другой убьет босса, ваш опыт вернёться именно к вам.
+
+    """
 
 
+    def __init__(self,server : str):
+        self.server = server
+        self.direct = f"./Servers/{server}"
+        try:
+            os.mkdir(f"{self.direct}/Bosses")
+        except FileExistsError:
+            pass
+
+    class ToSmallGold(Error): pass
+
+    def Create(self,GetMoney : int):
+        """
+        Создать нового босса.
+        """
+        Multiply = int(GetMoney / 10000)
+        MaxHealth = 0
+        Health = 0
+        Damage = 0
+        Armor = 0
+        for Stats in range(Multiply):
+            if Stats < 0:
+                raise self.ToSmallGold("Не достаточно золота")
+            MaxHealth += random.randint(1000000000, 100000000000)
+            Damage += random.randint(50000, 100000)
+            Armor += random.randint(1000,3000)
+        Health = MaxHealth
+        with open(f"{self.direct}/Bosses/BossForGold.txt","w") as file:
+            StatsBoss = {
+                "MaxHealth" : MaxHealth,
+                "Health" : Health,
+                "Damage" : Damage,
+                "Armor" : Armor,
+                "Status" : "Life",
+                "Players" : {}
+            }
+            file.write(str(StatsBoss))
+    def Read(self):
+        """
+        Прочитать статистику босса
+        """
+        with open(f"{self.direct}/Bosses/BossForGold.txt","r") as file:
+            return StrToDict(str=str(file.readline()))
+    
+    def _CheckParametr(self,Parametr : str,fields):
+        try:
+            _Parametr = str(fields[Parametr])
+            return _Parametr
+        except:
+            Read = self.Read()
+            _Parametr = str(Read[Parametr])
+            return _Parametr
+
+    
+    def Write(self,**fields):
+        """
+        Записать в статистику босса.
+        """
+
+        MaxHealth = int(self._CheckParametr("MaxHealth",fields))
+
+        Health = int(self._CheckParametr("Health",fields))
+
+        Damage = int(self._CheckParametr("Damage",fields))
+
+        Armor = int(self._CheckParametr("Armor",fields))
+
+        Status = str(self._CheckParametr("Status",fields))
+
+        Players = self._CheckParametr("Players",fields)
+
+        with open(f"{self.direct}/Bosses/BossForGold.txt","w") as file:
+            NewData = {
+                "MaxHealth" : MaxHealth,
+                "Health" : Health,
+                "Damage" : Damage,
+                "Armor" : Armor,
+                "Status" : Status,
+                "Players" : Players
+            }
+            file.write(str(NewData))
+
+
+class PlayerInventor():
+    """
+    Инвентарь.
+    """
+    
+    def __init__(self,Player : str):
+        self.Player = Player
+
+    def ReadInventor(self):
+        '''
+        Читает инвентарь
+        '''
+        Inventor = ""
+        with open(f"./Stats/Inventory/Inventor_{self.Player}.txt","r") as file:
+            for line in file.readlines():
+                Inventor += line
+            return Inventor
+
+    def WriteInventor(self,**objects):
+        """
+        Записать в инвентарь.
+
+        `------------------- Обязательные -----------------`
+
+        `type` : тип предмета
+
+        `Типы предметов` :  `Предмет`  ,  `Оружие`  ,  `Экипировка`  ,  `Ингридиент`
+
+        `name` : имя предмета
+
+        `classItem` : Класс предмета
+
+        `Классы` : Сломанный -> Первоначальный -> Обычный -> Редкий -> Эпический -> Легендарный -> Мифический -> Демонический = Божественный -> Уникальный -> Реликвия -> Запретный
+
+        `ID` : это персональный номер у предмета, к которому нужно будет отссылаться, дабы взаимодействовать с ним
+
+        `gold` : Количество золотых, которые нужно потратить, для улучшения предмета
+
+        `------------------- Для предметов ----------------`
+
+        `duration` : длительность эффекта
+
+        `------------------- Для оружия -------------------`
+
+        `armor` : прочность оружия
+
+        `damage` : Урон от оружия
+
+        `magic` : особое свойство
+
+        `------------------- Для экиперовки ---------------`
+
+        `armor` : прочность брони
+
+        `protect` : Уровень защиты
+        
+        `------------------- Для ингридиентов -------------`
+
+        `count` : количество ингридиентов
+
+        """
+
+        try:
+            type_ = str(objects.pop('type'))
+        except: raise Error_CreateItem("type error")
+
+
+        try:
+            name = str(objects.pop('name'))
+        except: raise Error_CreateItem("name error")
+
+
+        try:
+            classItem = str(objects.pop('classItem'))
+        except: raise Error_CreateItem("classItem error")
+
+
+        try:
+            ID = int(objects.pop("ID"))
+        except: raise Error_CreateItem("ID error")
+
+        try:
+            gold = int(objects.pop("gold"))
+        except: raise Error_CreateItem("gold error")
+
+        try:
+            duration = int(objects.pop("duration"))
+        except:
+            if type_ == "Предмет":
+                raise Error_CreateItem("duration error")
+
+        try:
+            armor = int(objects.pop("armor"))
+        except:
+            if (type_ == "Оружие") or (type_ == "Экипировка"):
+                raise Error_CreateItem("armor error")
+
+        try:
+            damage = int(objects.pop("damage"))
+        except:
+            if type_ == "Оружие":
+                raise Error_CreateItem("damage error")
+
+
+
+        try:
+            protect = int(objects.pop("protect"))
+        except:
+            if type_ == "Экипировка":
+                raise Error_CreateItem("protect error")
+
+
+        try:
+            count = int(objects.pop("count"))
+        except:
+            if type_ == "Ингридиент":
+                raise Error_CreateItem("count error")
+
+        old = self.ReadInventor()
+
+        magic = {}
+
+        newItem = {}
+        try:
+            magic = objects.pop("magic")
+        except:
+            pass
+        if type_ == "Предмет":
+            newItem = {
+                "type" : type_,
+                "name" : name,
+                "classItem" : classItem,
+                "ID" : ID,
+                "duration" : duration,
+                "gold" : gold,
+                "magic" : magic
+            }
+        if type_ == "Оружие":
+            newItem = {
+                "type" : type_,
+                "name" : name,
+                "classItem" : classItem,
+                "ID" : ID,
+                "gold" : gold,
+                "armor" : armor,
+                "damage" : damage,
+                "magic" : magic
+            }
+        if type_ == "Экипировка":
+            newItem = {
+                "type" : type_,
+                "name" : name,
+                "classItem" : classItem,
+                "ID" : ID,
+                "gold" : gold,
+                "armor" : armor,
+                "protect" : protect,
+                "magic" : magic
+            }
+        if type_ == "Ингридиент":
+            newItem = {
+                "type" : type_,
+                "name" : name,
+                "classItem" : classItem,
+                "ID" : ID,
+                "gold" : gold,
+                "count" : count,
+                "magic" : magic
+            }
+        with open(f"./Stats/Inventory/Inventor_{self.Player}.txt","w") as file:
+            if str(old) != "":
+                file.write(f"{str(old)}\n{str(newItem)}")
+            else:
+                file.write(f"{str(newItem)}")
+
+    def SellItem(self,**fields):
+        """
+        Продает предмет
+
+        `ID` : Индекс предмета
+
+        `Сломанный` : с 1 до 15 золотых
+
+        `Первоначальный` : с 5 до 15 золотых
+
+        `Обычный` : с 500 до 700 золотых
+
+        `Редкий` : с 1000 до 1111 золотых
+
+        `Эпический` : с 2000 до 3000 золотых
+
+        `Легендарный` : с 6000 до 10000 золотых
+
+        `Мифический` : с 500 до 100000 золотых
+
+        `Божественный` : с 100000 до 130000 золотых
+
+        `Демонический` : с 59999 до 200000 золотых
+
+        """
+        username = self.Player
+        ID = int(fields.pop("ID"))
+        _PlayerInventor = PlayerInventor(username)
+        Inventor = _PlayerInventor.ReadInventor()
+
+        Inventor = Inventor.split("\n")
+
+        NewInventor = list()
+
+        CountItems = len(Inventor)
+
+        for Item in Inventor:
+            ItemDict = StrToDict(str=Item)
+            ItemID = int(ItemDict.pop("ID"))
+            if ItemID == ID:
+                if CountItems > 1:
+                    ClassItem = ItemDict.pop("classItem")
+
+                    if ClassItem == "Сломанный":
+                        SellMoney = random.randint(1,15)
+                        _Gold(username=username,do="Добавить",count=SellMoney)
+                    elif ClassItem == "Первоначальный":
+                        SellMoney = random.randint(5,15)
+                        _Gold(username=username,do="Добавить",count=SellMoney)
+                    elif ClassItem == "Обычный":
+                        SellMoney = random.randint(500,700)
+                        _Gold(username=username,do="Добавить",count=SellMoney)
+                    elif ClassItem == "Редкий":
+                        SellMoney = random.randint(1000,1111)
+                        _Gold(username=username,do="Добавить",count=SellMoney)
+                    elif ClassItem == "Эпический":
+                        SellMoney = random.randint(2000,3000)
+                        _Gold(username=username,do="Добавить",count=SellMoney)
+                    elif ClassItem == "Легендарный":
+                        SellMoney = random.randint(6000,10000)
+                        _Gold(username=username,do="Добавить",count=SellMoney)
+                    elif ClassItem == "Мифический":
+                        SellMoney = random.randint(500,100000)
+                        _Gold(username=username,do="Добавить",count=SellMoney)
+                    elif ClassItem == "Божественный":
+                        SellMoney = random.randint(100000,130000)
+                        _Gold(username=username,do="Добавить",count=SellMoney)
+                    elif ClassItem == "Демонический":
+                        SellMoney = random.randint(59999,200000)
+                        _Gold(username=username,do="Добавить",count=SellMoney)       
+                else:
+                    raise LastItem("Последний предмет")
+            else:
+                NewInventor.append(Item)
+            pass
+
+        with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
+            Counts = len(NewInventor)
+            for Item in NewInventor:
+                Counts -= 1
+                if Counts != 0:
+                    file.writelines(f"{Item}\n")
+                else:
+                    file.writelines(f"{Item}")
+
+        return SellMoney
+
+    def EditItem(self,**fields):
+        """
+        Редактирует предмет
+
+        `ID` : Индекс предмета
+
+        `type` : тип `Оружие` , `Экипировка`
+
+        `armor` : Броня у предмета
+
+        `protect` : защита
+
+        `damage` : урон
+
+        `classItem` : Сломанный -> Первоначальный -> Обычный -> Редкий -> Эпический -> Легендарный -> Мифический -> Демонический = Божественный -> Уникальный
+
+        `gold` : Количество золотых, на улучшение предмета
+
+        `magic` : Магические свойства у предмета
+        """
+
+        username = self.Player
+        ID = fields.pop('ID')
+        armor = fields.pop('armor')
+        type_ = fields.pop("type")
+        classItem = fields.pop("classItem")
+        gold = fields.pop("gold")
+
+        try:
+            protect = fields.pop('protect')
+        except:
+            pass
+
+        try:
+            damage = fields.pop('damage')
+        except:
+            pass
+
+        try:
+            magic = fields["magic"]
+        except:
+            magic = {}
+        
+        ListItems = list()
+        with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
+            for item in file.readlines():
+                itemDict = StrToDict(str=item)
+                itemDictStandart = StrToDict(str=item)
+                itemID = int(itemDict.pop('ID'))
+                if ID == itemID:
+                    type_item = itemDict.pop('type')
+                    nameItem = itemDict.pop('name')
+                    if type_ == "Оружие":
+                        newItem = {
+                            "type" : type_item,
+                            "name" : nameItem,
+                            "classItem" : classItem,
+                            "ID" : itemID,
+                            "gold" : gold,
+                            "armor" : armor,
+                            "damage" : damage,
+                            "magic" : magic
+                        }
+                    if type_ == "Экипировка":
+                        newItem = {
+                            "type" : type_item,
+                            "name" : nameItem,
+                            "classItem" : classItem,
+                            "ID" : itemID,
+                            "gold" : gold,
+                            "armor" : armor,
+                            "protect" : protect,
+                            "magic" : magic
+                        }
+                    ListItems.append(newItem)
+                else:
+                    ListItems.append(itemDictStandart)
+        with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
+            Counts = len(ListItems)
+            for ItemIn in ListItems:
+                Counts -= 1
+                if Counts != 0:
+                    file.writelines(f"{ItemIn}\n")
+                else:
+                    file.writelines(f"{ItemIn}")
+            pass
+        pass
+
+class Magic():
+    """
+    Магические свойства у предмета
+    """
+    def __init__(self):
+        pass
+
+
+    def Create(self,**fields):
+        """
+        Parametrs
+
+        in parametrs :
+            Name
+            Description
+            maxLevel
+            Level
+            Other... ;D
+        """
+        
+        GetParametrs = fields["Parametrs"]
+        Parametrs = list()
+        Parametrs.append(GetParametrs)
+        NewMagic = {
+            "Parametrs" : Parametrs
+        }
+        return NewMagic
+
+
+class PlayerClass():
+    """
+    Об игроке.
+    """
+    def __init__(self,Player :str,Client):
+        self.Player = Player
+        self.Client = Client
+    
+    async def Regeneration(self,Time : int,Health : int):
+        """
+        Регенерация для игрока
+        
+        Time : Как быстро игрок будет исциляться
+        
+        Health : как много здоровья исцилит игрок (в общем)
+        """
+        HealthPerTick = int(Health / 10)
+        for tick in range(10):
+            if tick: pass
+            Stats = ReadMainParametrs(username=self.Player)
+            HealthHero = int(Stats["curHealth"])
+            maxHealth = int(Stats["maxHealth"])
+            HealthHero += HealthPerTick
+            if HealthHero > maxHealth: HealthHero = maxHealth
+            WriteMainParametrs(username=self.Player,curHealth=HealthHero)
+            await asyncio.sleep(Time)
+    async def Poison(self,Target,Time : int,Damage : int):
+        """
+        Яд.
+        Яд побивает бронь, это означает что сколько бы брони у вас не было, от яда вам не скрыться.
+        
+        Time : Как быстро игрок будет получать урон от яда
+        
+        Health : Сколько вообще он получит урона, от яда
+        """
+        DamagePerTick = int(Damage / 10)
+        for tick in range(10):
+            if tick: pass
+            Enemy_Stats = ReadMainParametrs(username=Target)
+            PlayerStats = ReadMainParametrs(username=self.Player)
+            Enemy_Health = int(Enemy_Stats["curHealth"])
+            Enemy_Level = int(Enemy_Stats["lvl"])
+            Enemy_MaxHealth = int(Enemy_Stats["maxHealth"])
+            Enemy_Damage = int(Enemy_Stats["damage"])
+            Enemy_Health -= DamagePerTick
+            if Enemy_Health <= 0:
+                FreeLvl = Enemy_Level / 5
+                OurLevel = int(PlayerStats["lvl"])
+                OurLevel += FreeLvl
+                plus = int(PlayerStats["plus"])
+                maxLevel = int(PlayerStats["maxLevel"])
+                PlayerHealth = int(PlayerStats["maxHealth"])
+                PlayerCurHealth = int(PlayerStats["curHealth"])
+                PlayerDamage = int(PlayerStats["damage"])
+                if OurLevel > maxLevel:
+                    plus += 1 * (OurLevel - maxLevel)
+                    maxLevel = OurLevel
+                _LevelUp = LevelUp(count=int(FreeLvl))
+
+                PlayerHealth += int(_LevelUp['health'])
+                PlayerCurHealth += int(_LevelUp['health'])
+                PlayerDamage += int(_LevelUp['damage'])
+
+                Enemy_MaxHealth -= int(_LevelUp['health'])
+                Enemy_Health = Enemy_MaxHealth
+                Enemy_Damage -= int(_LevelUp['damage'])
+                WriteMainParametrs(
+                    username=Target,
+                    curHealth=Enemy_Health,
+                    maxHealth=Enemy_MaxHealth,
+                    damage=Enemy_Damage
+                    )
+                WriteMainParametrs(
+                    username=self.Player,
+                    curHealth=PlayerCurHealth,
+                    maxHealth=PlayerHealth,
+                    damage=PlayerDamage
+                    )
+            else:
+                WriteMainParametrs(username=Target,curHealth=Enemy_Health)
+            await asyncio.sleep(Time)
 
 if __name__ == "__main__":
-    # description = "Проверка описания к заданию"
-    # main_task = "Стать аниме-девочкой"
-    # tag = QuestTags.main()
-    # NewQuest = Quest(username="KOT32500",NPC="Gabriele",
-    # description=description,main_task=main_task,tag=tag)
-    # NewQuest.Add()
+
+    # _PlayerInventor = PlayerInventor("KOT32500")
+    # _Magic = Magic()
+    # Magc = _Magic.Create(
+    #     Parametrs = {
+    #         "Vampirism" : {
+    #             "name" : "Вампиризм",
+    #             "Description" : "После каждой атаки вы исциляетесь",
+    #             "Heal" : 75,
+    #             "type" : "%"
+    #             },
+    #         "More experience": {
+    #             "name" : "Больше опыта",
+    #             "Description" : "После каждого убийства героя, вы забираете дополнительный опыт",
+    #             "Multi" : 2
+    #         },
+    #         "Poison": {
+    #             "name" : "Яд",
+    #             "Description" : "После каждой атаки, вы наносите дополнительный урон ядом",
+    #             "Time" : 1,
+    #             "Damage" : 1000
+    #         },
+    #         "Fury": {
+    #             "name" : "Неистовство",
+    #             "Description" : "Вы начинаете получать опыт, за убийство боссов.",
+    #             "Exp" : 1000
+    #         },
+    #         "Critical hit": {
+    #             "name" : "Критический удар",
+    #             "Description" : "У вас есть шанс, нанести умноженный урон",
+    #             "Multy" : 2
+    #         },
+    #         "Recklessness": {
+    #             "name" : "Безрассудство",
+    #             "Description" : "Ваши удары игнорируют броню, однако прочность предмета снижается на 99%"
+    #         },
+    #         "Execution": {
+    #             "name" : "Казнь",
+    #             "Description" : "Противники чье хп стало меньше отметки, могут быть убиты с 1 удара",
+    #             "MinHealth" : 10
+    #         },
+    #         "Looting": {
+    #             "name" : "Грабёж",
+    #             "Description" : "С каждой атакой, вы имеете шанс ограбить героя",
+    #             "chance" : 10
+    #         },
+    #         "Grace": {
+    #             "name" : "Благодать",
+    #             "Description" : "После вашей смерти, предмет пропадает, однако дает вам временную неуязвимость, и полностью исциляет вас",
+    #             "Time" : 50000
+    #         },
+    #         "Cheating": {
+    #             "name" : "Читерство",
+    #             "Description" : "Увеличивает шансы победить , в казино. Внимание : Другие игроки , которые будут вас атаковать, смогут забирать ваши деньги"
+    #         },
+    #         "Dealer": {
+    #             "name" : "Торговец",
+    #             "Description" : "Этот предмет стоит в 10 раз дороже"
+    #         },
+    #         "Training": {
+    #             "name" : "Обучение",
+    #             "Description" : "Если вы атакуете кого либо, вы получаете большее количество опыта",
+    #             "Exp" : 15
+    #         },
+    #         "Curse": {
+    #             "name" : "Проклятье",
+    #             "Description" : "Каждое ваше сообщение, убивает вас.",
+    #             "Damage" : 15
+    #         }
+    #     }
+    # )
+    # _PlayerInventor.WriteInventor (
+    #     type="Оружие",
+    #     name="Админский клинок",
+    #     classItem="Реликвия",
+    #     ID=1,
+    #     gold=1,
+    #     armor=999999,
+    #     damage=3250000000000,
+    #     magic=Magc
+    #     )
     pass
     

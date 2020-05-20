@@ -1,2 +1,2 @@
-
 {'username': 'KOT32500', 'ID': 4534, 'goldAuction': 100, 'AuctionID': 376541916, 'type': 'Оружие', 'name': 'Ржавый сломанный ножик', 'classItem': 'Первоначальный', 'gold': 100, 'armor': 1000, 'damage': 5}
+{'username': 'JesusPilatus', 'ID': 848198, 'goldAuction': 100, 'AuctionID': 615005936, 'type': 'Оружие', 'name': 'Редкий железный нож', 'classItem': 'Редкий', 'gold': 2748, 'armor': 100, 'damage': 2996}

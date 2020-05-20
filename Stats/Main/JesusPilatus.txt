@@ -1,1 +1,1 @@
-{'exp': 1, 'lvl': 12, 'maxHealth': 60, 'curHealth': 60, 'damage': 28, 'description': '', 'money': 51447, 'messages': 4, 'maxLevel': 12, 'strength': 1.0, 'agility': 1.0, 'intelligence': 1.0, 'plus': 7}
+{'exp': 9, 'lvl': 39, 'maxHealth': 300, 'curHealth': 300, 'damage': 367, 'description': 'About_Me 1 шот и ты ваншот', 'money': 32298695212, 'messages': 4, 'maxLevel': 45, 'strength': 1.0, 'agility': 1.0, 'intelligence': 1.15, 'plus': 19}
