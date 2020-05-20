@@ -1,1 +1,1 @@
-{'data': '2020-05-20-22-02-12', 'maxHealth': 65224400, 'curHealth': -127465543, 'getGold': 27331, 'dead': 'Yes', 'nameFile': 'Boss18', 'killer': 'Savage'}
+{'data': '2020-05-20-23-00-17', 'maxHealth': 45926971, 'curHealth': -116761733, 'getGold': 19483, 'dead': 'Yes', 'nameFile': 'Boss1', 'killer': 'Savage'}

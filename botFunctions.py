@@ -1904,6 +1904,10 @@ def CreateImageInventor(**fields):
         font = ImageFont.truetype("arial.ttf",Scaling)
         txt = f"Прочность : {armor}"
         DrawItem.text(area,txt,font=font,fill=Color)
+
+        area = (1272,1027)
+        CurImage = Item_Armor.resize((167,167))
+        ItemImage.paste(CurImage.convert('RGB'), area, CurImage)
     if (str(typeItem) == "Экипировка"):
         area = (230,1300)
         Color = (0,0,0)
@@ -1912,6 +1916,10 @@ def CreateImageInventor(**fields):
         DrawItem.text(area,txt,font=font,fill=Color)
 
         area = (1272,784)
+        CurImage = Item_Armor.resize((167,167))
+        ItemImage.paste(CurImage.convert('RGB'), area, CurImage)
+
+        area = (1272,1265)
         CurImage = Item_Armor.resize((167,167))
         ItemImage.paste(CurImage.convert('RGB'), area, CurImage)
 
@@ -1924,6 +1932,10 @@ def CreateImageInventor(**fields):
 
         area = (1272,784)
         CurImage = Item_SwordTwo.resize((167,167))
+        ItemImage.paste(CurImage.convert('RGB'), area, CurImage)
+
+        area = (1272,1265)
+        CurImage = Item_Sword.resize((167,167))
         ItemImage.paste(CurImage.convert('RGB'), area, CurImage)
 
     area = (943,160)
@@ -1964,15 +1976,9 @@ def CreateImageInventor(**fields):
 
 
     #Щит
-    area = (1272,1027)
-    CurImage = Item_Armor.resize((167,167))
-    ItemImage.paste(CurImage.convert('RGB'), area, CurImage)
 
 
     #Меч
-    area = (1272,1265)
-    CurImage = Item_Sword.resize((167,167))
-    ItemImage.paste(CurImage.convert('RGB'), area, CurImage)
 
 
 

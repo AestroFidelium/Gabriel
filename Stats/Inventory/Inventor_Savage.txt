@@ -1,14 +1,10 @@
 {'type': 'ќружие', 'name': 'Ѕоевой тапок', 'classItem': '”никальный', 'ID': 999, 'gold': 999999999, 'armor': 10000, 'damage': 5000}
 {'type': 'ќружие', 'name': 'ѕродай мен€', 'classItem': 'ƒемонический', 'ID': 123556, 'gold': 24194446, 'armor': 100000000, 'damage': 85852990, 'magic': {}}
 {'type': 'Ёкипировка', 'name': 'ѕорванный носок', 'classItem': 'ќбычный', 'ID': 685348, 'gold': 1246, 'armor': 100, 'protect': 770, 'magic': {}}
-{'type': 'Ёкипировка', 'name': 'Ѕрон€ √еро€', 'classItem': 'Ёпический', 'ID': 429858, 'gold': 8939, 'armor': 100, 'protect': 5136, 'magic': {}}
 {'type': 'ќружие', 'name': 'ћедный лук', 'classItem': 'ќбычный', 'ID': 786812, 'gold': 1275, 'armor': 100, 'damage': 846, 'magic': {}}
-{'type': 'Ёкипировка', 'name': 'Ѕрон€ из камн€', 'classItem': 'Ёпический', 'ID': 424782, 'gold': 7248, 'armor': 100, 'protect': 3936, 'magic': {}}
-{'type': 'Ёкипировка', 'name': 'ћагический барьер', 'classItem': 'Ёпический', 'ID': 809539, 'gold': 9169, 'armor': 100, 'protect': 2586, 'magic': {}}
-{'type': 'ќружие', 'name': 'ƒлинный меч', 'classItem': 'Ёпический', 'ID': 813259, 'gold': 7643, 'armor': 100, 'damage': 3548, 'magic': {}}
 {'type': 'Ёкипировка', 'name': 'Ўл€па', 'classItem': 'ќбычный', 'ID': 469853, 'gold': 1155, 'armor': 100, 'protect': 741, 'magic': {}}
 {'type': 'ќружие', 'name': '“€жела€ палка', 'classItem': 'ѕервоначальный', 'ID': 382747, 'gold': 19, 'armor': 100, 'damage': 454, 'magic': {}}
-{'type': 'Ёкипировка', 'name': 'Ўл€па', 'classItem': 'ќбычный', 'ID': 241435, 'gold': 1343, 'armor': 100, 'protect': 496, 'magic': {}}
 {'type': 'Ёкипировка', 'name': ' уртка', 'classItem': 'ќбычный', 'ID': 118634, 'gold': 1244, 'armor': 100, 'protect': 545, 'magic': {}}
 {'type': 'ќружие', 'name': 'ќстрый камень', 'classItem': 'ƒемонический', 'ID': 875860, 'gold': 27372778, 'armor': 100000000, 'damage': 90657452, 'magic': {}}
-{'type': 'ќружие', 'name': 'ѕерчатки', 'classItem': 'ѕервоначальный', 'ID': 932583, 'gold': 7, 'armor': 100, 'damage': 154, 'magic': {}}
+{'type': 'Ёкипировка', 'name': 'ѕорванный носок', 'classItem': 'ќбычный', 'ID': 561349, 'gold': 1107, 'armor': 100, 'protect': 550, 'magic': {}}
+{'type': 'ќружие', 'name': 'ћедна€ рапира', 'classItem': 'ќбычный', 'ID': 308111, 'gold': 1315, 'armor': 100, 'damage': 475, 'magic': {}}

@@ -284,21 +284,6 @@ def ProfileBoss(*Stats):
     discordFile = discord.File(nameSave,nameSave)
 
     return discordFile
-def WriteNewMessage(_UserName_,_Message_,_NowTime_):
-    _NowTime_DateWrite = _NowTime_.split(",")
-    _OldMessage_ = str()
-    try:
-        with open(f"./Resurses/Messages/{_NowTime_DateWrite[0]}.txt","r") as file:
-            for line in file.readlines():
-                _OldMessage_ += line
-        pass
-    except Exception:
-        _OldMessage_ = "Начало нового дня."
-    with open(f"./Resurses/Messages/{_NowTime_DateWrite[0]}.txt","w") as file:
-        file.writelines(_OldMessage_)
-        file.writelines(f"\n{_UserName_}[{_NowTime_DateWrite[1]}] : {_Message_}")
-        pass
-    pass
 def _WriteMainStats(_UserName_,*age):
     f = open("./Stats/Main/" + _UserName_ + ".txt","w")
     for target_list in range(len(age)):
@@ -1056,11 +1041,6 @@ class MyClient(discord.Client):
         time.sleep(0.02)
 
         _ReadLastMessage = ReadLastMessage()
-
-        try:
-            WriteNewMessage(UserName_,msg,NowTime.strftime("%Y-%m-%d,%H:%M:%S"))
-        except: pass
-
 
         if (Time_between_dates_mins <= -20) or (Time_between_dates_hour <= -1) or (Time_between_dates_day <= -1):
                 Functions.CreateNewBoss()

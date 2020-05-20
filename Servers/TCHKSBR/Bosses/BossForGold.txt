@@ -1,1 +1,1 @@
-{'MaxHealth': 5013837429240, 'Health': 4997830459003, 'Damage': 7602552, 'Armor': 205580, 'Status': 'Life', 'Players': '{}'}
+{'MaxHealth': 5013837429240, 'Health': 5011561041047, 'Damage': 7602552, 'Armor': 205580, 'Status': 'Life', 'Players': '{}'}
