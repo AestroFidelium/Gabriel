@@ -3,8 +3,23 @@
 {'type': 'Экипировка', 'name': 'Порванный носок', 'classItem': 'Обычный', 'ID': 685348, 'gold': 1246, 'armor': 100, 'protect': 770, 'magic': {}}
 {'type': 'Оружие', 'name': 'Медный лук', 'classItem': 'Обычный', 'ID': 786812, 'gold': 1275, 'armor': 100, 'damage': 846, 'magic': {}}
 {'type': 'Экипировка', 'name': 'Шляпа', 'classItem': 'Обычный', 'ID': 469853, 'gold': 1155, 'armor': 100, 'protect': 741, 'magic': {}}
-{'type': 'Оружие', 'name': 'Тяжелая палка', 'classItem': 'Первоначальный', 'ID': 382747, 'gold': 19, 'armor': 100, 'damage': 454, 'magic': {}}
 {'type': 'Экипировка', 'name': 'Куртка', 'classItem': 'Обычный', 'ID': 118634, 'gold': 1244, 'armor': 100, 'protect': 545, 'magic': {}}
 {'type': 'Оружие', 'name': 'Острый камень', 'classItem': 'Демонический', 'ID': 875860, 'gold': 27372778, 'armor': 100000000, 'damage': 90657452, 'magic': {}}
-{'type': 'Экипировка', 'name': 'Порванный носок', 'classItem': 'Обычный', 'ID': 561349, 'gold': 1107, 'armor': 100, 'protect': 550, 'magic': {}}
-{'type': 'Оружие', 'name': 'Медная рапира', 'classItem': 'Обычный', 'ID': 308111, 'gold': 1315, 'armor': 100, 'damage': 475, 'magic': {}}
+{'type': 'Оружие', 'name': 'Палка', 'classItem': 'Демонический', 'ID': 807782, 'gold': 29494473, 'armor': 100000000, 'damage': 82130926, 'magic': {}}
+{'type': 'Оружие', 'name': 'Медный нож', 'classItem': 'Обычный', 'ID': 348137, 'gold': 1311, 'armor': 100, 'damage': 967, 'magic': {}}
+{'type': 'Экипировка', 'name': 'Майка', 'classItem': 'Обычный', 'ID': 300557, 'gold': 1324, 'armor': 100, 'protect': 544, 'magic': {}}
+{'type': 'Оружие', 'name': 'Медный кинжал', 'classItem': 'Обычный', 'ID': 733382, 'gold': 1272, 'armor': 100, 'damage': 724, 'magic': {}}
+{'type': 'Оружие', 'name': 'Секира', 'classItem': 'Эпический', 'ID': 331917, 'gold': 5445, 'armor': 100, 'damage': 5335, 'magic': {}}
+{'type': 'Экипировка', 'name': 'Сандали', 'classItem': 'Обычный', 'ID': 875404, 'gold': 1158, 'armor': 100, 'protect': 730, 'magic': {}}
+{'type': 'Оружие', 'name': 'Медный лук', 'classItem': 'Обычный', 'ID': 399747, 'gold': 1331, 'armor': 100, 'damage': 617, 'magic': {}}
+{'type': 'Оружие', 'name': 'Острый камень', 'classItem': 'Первоначальный', 'ID': 17764, 'gold': 11, 'armor': 100, 'damage': 255, 'magic': {}}
+{'type': 'Оружие', 'name': 'Перчатки', 'classItem': 'Первоначальный', 'ID': 797727, 'gold': 20, 'armor': 100, 'damage': 254, 'magic': {}}
+{'type': 'Экипировка', 'name': 'Сандали', 'classItem': 'Обычный', 'ID': 22288, 'gold': 1266, 'armor': 100, 'protect': 455, 'magic': {}}
+{'type': 'Оружие', 'name': 'Тяжелая палка', 'classItem': 'Первоначальный', 'ID': 601435, 'gold': 20, 'armor': 100, 'damage': 127, 'magic': {}}
+{'type': 'Оружие', 'name': 'Медный нож', 'classItem': 'Обычный', 'ID': 377507, 'gold': 1347, 'armor': 100, 'damage': 774, 'magic': {}}
+{'type': 'Оружие', 'name': 'Дубинка', 'classItem': 'Первоначальный', 'ID': 763153, 'gold': 24, 'armor': 100, 'damage': 131, 'magic': {}}
+{'type': 'Экипировка', 'name': 'Героическая душа', 'classItem': 'Эпический', 'ID': 191617, 'gold': 8880, 'armor': 100, 'protect': 2404, 'magic': {}}
+{'type': 'Оружие', 'name': 'Острый камень', 'classItem': 'Первоначальный', 'ID': 5752, 'gold': 18, 'armor': 100, 'damage': 294, 'magic': {}}
+{'type': 'Оружие', 'name': 'Тяжелая палка', 'classItem': 'Первоначальный', 'ID': 76380, 'gold': 21, 'armor': 100, 'damage': 425, 'magic': {}}
+{'type': 'Оружие', 'name': 'Кинжал тени', 'classItem': 'Эпический', 'ID': 584850, 'gold': 7589, 'armor': 100, 'damage': 4293, 'magic': {}}
+{'type': 'Оружие', 'name': 'Перчатки', 'classItem': 'Первоначальный', 'ID': 734132, 'gold': 25, 'armor': 100, 'damage': 294, 'magic': {}}

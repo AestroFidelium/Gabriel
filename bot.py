@@ -474,6 +474,9 @@ def _AgentWrite(_UserName_,__url__,BackGround : bool):
                 pass
         pass
 
+from PIL import Image, ImageDraw , ImageFont
+import botFunctions as Functions
+Resurses = "./Resurses/"
 def profileEdit(_UserName_):
     """
     Меняет профиль игрока. Относиться к команде Profile
@@ -524,13 +527,13 @@ def profileEdit(_UserName_):
     except:
         raise ErrorAvatar("Отсустует аватарка")
 
-    Ava = N_Ava.resize((74,74)) #76 76
+    Ava = N_Ava.resize((264,264)) #76 76
 
     draw = ImageDraw.Draw(img)
     count = 10
     counts = 0
     ElseCount = 0
-    Scaling = 20
+    Scaling = 50
     for target_list in range(int(IntCurLvl)):
         if target_list < -5:
             print("ERROR")
@@ -541,7 +544,7 @@ def profileEdit(_UserName_):
             ElseCount += 5
             Scaling -= 1
 
-    areaT = (54 - ElseCount,145) #121 153
+    areaT = (163 - ElseCount,309) #121 153
     font = ImageFont.truetype("arial.ttf",Scaling)
     draw.text(areaT,str(IntCurLvl),font=font,fill="black")
 
@@ -549,30 +552,30 @@ def profileEdit(_UserName_):
 
     #AgentConfig = _AgentReadConfig(_UserName_)
 
-    area = (101,108)
+    area = (370,155)
     Color = (200,210,255)
     # Color = AgentConfig
-    font = ImageFont.truetype("arial.ttf",25)
+    font = ImageFont.truetype("arial.ttf",100)
     draw.text(area,_UserName_,font=font,fill=Color)
     try:
         Item_ID = Functions.ReadEquipment(username=_UserName_,type="Экипировка")
         ItemProtect = Functions.CheckParametrsEquipment(username=_UserName_,ID=Item_ID)
         protect = ItemProtect["protect"]
-        area = (161,143)
+        area = (570 - 20,289 - 13)
         Color = (0,0,0)
-        font = ImageFont.truetype("arial.ttf",8)
+        font = ImageFont.truetype("arial.ttf",35)
         txt = str(f"Здоровье : {str(IntCurHealth)} ед./ {str(IntMaxHealth)} ({protect})")
         draw.text(area,txt,font=font,fill=Color)
     except:
-        area = (161,143)
+        area = (570 - 20,289 - 13)
         Color = (0,0,0)
-        font = ImageFont.truetype("arial.ttf",8)
+        font = ImageFont.truetype("arial.ttf",35)
         txt = str(f"Здоровье : {str(IntCurHealth)} ед./ {str(IntMaxHealth)}")
         draw.text(area,txt,font=font,fill=Color)
 
-    area = (161,158)
+    area = (570 - 20,341 - 13)
     Color = (0,0,0)
-    font = ImageFont.truetype("arial.ttf",8)
+    font = ImageFont.truetype("arial.ttf",35)
     try:
         DmgItemID = Functions.ReadEquipment(username=_UserName_,type="Оружие")
         Item = Functions.CheckParametrsEquipment(username=_UserName_,ID=DmgItemID)
@@ -582,37 +585,30 @@ def profileEdit(_UserName_):
     
     txt = str(f"Урон : {str(IntMaxDamage)} +({DamageItem}) ед.")
     draw.text(area,txt,font=font,fill=Color)
+
+
+    #Slider Exp
+    # 686 = 100%
+    # 342 = 0%
+    # 35% 
+    # 500 = 35%
+    EndPoint = 686 - 342
+    EndPoint /= 100
+    Procent = IntCurExp * 100
+    Procent /= IntCurLvl * 5
+    EndPoint *= Procent
+    EndPoint += 342
+    fstPoints = (342,761,EndPoint,761)
+    # EndPoints = (686,743,686,780)
     
-    area = (110,280)
+    Color = (255,0,255)
+    draw.line(fstPoints,fill=Color,width=37)
+    #Slider Exp
+    
+    area = (380,743)
     Color = (0,0,0)
-    try:
-        Procent = (IntCurExp * 100) / (IntCurLvl * 5)
-    except: Procent = 0
-    # print(Procent)
-    # print(int(Procent))
 
-    #ProcentDel = int(Procent / 100)
-
-
-
-    xPos = int((200 - 100) + Procent) ; yPos = 289
-    Start_X_Pixel = 100; Start_Y_Pixel = 279
-    #MathXPos = xPos - 100 # 183
-    RedColor = random.randint(50,205)
-    GreenColor = random.randint(50,205)
-    BlueColor = random.randint(50,205)
-    ColorCur = (RedColor,GreenColor,BlueColor)
-    for x in range(int((xPos - Start_X_Pixel))):
-        Start_X_Pixel += 1
-        Cur_Y_Pixel = Start_Y_Pixel
-        for y in range(yPos - Start_Y_Pixel):
-            Start_Y_Pixel += 1
-            #ColorCur = (85,233,156)
-            img.putpixel((Start_X_Pixel,Start_Y_Pixel),ColorCur)
-            if (x) and (y) == -1: pass
-        Start_Y_Pixel = Cur_Y_Pixel
-    
-    font = ImageFont.truetype("arial.ttf",8)
+    font = ImageFont.truetype("arial.ttf",35)
     txt = str(f"Опыт : {IntCurExp} / {IntCurLvl * 5}")
     draw.text(area,txt,font=font,fill=Color)
 
@@ -623,29 +619,29 @@ def profileEdit(_UserName_):
     intelligence = float(Main_characteristics.pop("intelligence"))
     plus = int(Main_characteristics.pop("plus"))
     if plus > 0:
-        area = (210,280)
+        area = (782,700)
         Color = (100,110,90)
-        font = ImageFont.truetype("arial.ttf",10)
+        font = ImageFont.truetype("arial.ttf",30)
         txt = str(f"Талант очки : {plus}")
         draw.text(area,txt,font=font,fill=Color)
 
 
     Color = (255,100,0)
-    area = (15,175)
-    font = ImageFont.truetype("arial.ttf",12)
+    area = (38,393)
+    font = ImageFont.truetype("arial.ttf",35)
     txt = str(f"Сила : \n{strength}")
     draw.text(area,txt,font=font,fill=Color)
     # draw.line((25 - 5,195,100 - 5,195),fill=Color,width=5)
 
     Color = (0,255,0)
-    area = (15,200 + 10)
-    font = ImageFont.truetype("arial.ttf",12)
+    area = (38,471)
+    font = ImageFont.truetype("arial.ttf",35)
     txt = str(f"Ловкость : \n{agility}")
     draw.text(area,txt,font=font,fill=Color)
 
     Color = (0,255,255)
-    area = (15,225 + 20)
-    font = ImageFont.truetype("arial.ttf",12)
+    area = (38,570)
+    font = ImageFont.truetype("arial.ttf",35)
     txt = str(f"Интеллект : \n{intelligence}")
     draw.text(area,txt,font=font,fill=Color)
 
@@ -653,9 +649,9 @@ def profileEdit(_UserName_):
             
     
 
-    area = (161,173)
+    area = (570 - 20,393 - 13)
     Color = (0,0,0)
-    font = ImageFont.truetype("arial.ttf",8)
+    font = ImageFont.truetype("arial.ttf",35)
     txt = str("Золота : " + str(Gold) + " / " + str(Messages))
     draw.text(area,txt,font=font,fill=Color)
 
@@ -681,29 +677,26 @@ def profileEdit(_UserName_):
     if Scaling < 0:
         Scaling = 0
     area = (110,200 + Offset)
-    font = ImageFont.truetype("arial.ttf",1 + Scaling)
+    font = ImageFont.truetype("arial.ttf",10 + Scaling)
     txt = str(Description)
     draw.text(area,txt,font=font,fill=Color)
 
-    area = (108,185)
-    font = ImageFont.truetype("arial.ttf",17)
+    area = (380,470)
+    font = ImageFont.truetype("arial.ttf",35)
     txt = str("О себе : \n")
     draw.text(area,txt,font=font,fill=Color)
 
-    areaAva = (19,68)
+    areaAva = (46,8)
 
     img.paste(Ava,areaAva)
     nameSave = "StatsPl.webp"
-    #img.save(nameSave)
-    BackGround = BackGround.resize((300,400)) #(358,481)
-    area = (0,100) #(25,175)
+    BackGround = BackGround.resize((1000,1450)) #(358,481)
+    area = (0,550)
     
     BackGround.paste(img.convert('RGB'), area, img)
     BackGround.save(nameSave)
 
     sf = discord.File(nameSave,nameSave)
-    #await message.channel.send(" ",file=sf)
-    pass
     return sf
 
 def RatingSystem():
@@ -1962,7 +1955,7 @@ class MyClient(discord.Client):
                             _PlayerInventor = Functions.PlayerInventor(UserName_)
                             _PlayerInventor.EditItem(username=UserName_,ID=itemID,type=type_,classItem=NewClassItem,armor=NewArmor,gold=NewGold,damage=NewDamage)
                             Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
-                            await message.channel.send(f"Урон : {NewDamage}\nПрочность : {NewArmor}\nНужно золотых : {NewGold} \nID : {itemID}")
+                            await message.channel.send(f"Урон : {NewDamage}\nПрочность : {NewArmor}\nНужно золотых : {NewGold} \nID : {itemID} \nКласс : {NewClassItem}")
                             return
                         if (type_ == "Экипировка"):
                             NewProtect = NewUpgrade.pop('protect')
@@ -1980,7 +1973,7 @@ class MyClient(discord.Client):
                                 protect=NewProtect
                                 )
                             Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
-                            await message.channel.send(f"Защиты : {NewProtect}\nПрочность : {NewArmor}\nНужно золотых : {NewGold} \nID : {itemID}")
+                            await message.channel.send(f"Защиты : {NewProtect}\nПрочность : {NewArmor}\nНужно золотых : {NewGold} \nID : {itemID}\nКласс : {NewClassItem}")
                             return
 
                     Functions._Gold(username=UserName_,do="Убавить",count=GoldSell)
