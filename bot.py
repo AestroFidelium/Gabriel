@@ -20,12 +20,15 @@ import botFunctions as Functions
 from botFunctions import PlayerInventor
 from botFunctions import BossForMoney
 from botFunctions import PlayerClass
+from botFunctions import CheckMessage
 import ast
 from bs4 import BeautifulSoup
 import lxml
 import requests
 import datetime
 import asyncio
+from PIL import Image, ImageDraw , ImageFont
+import botFunctions as Functions
 
 Resurses = "./Resurses/"
 StandartURL = "https://pbs.twimg.com/profile_images/589387776740593664/24AVkUCB_400x400.jpg"
@@ -290,8 +293,6 @@ def _WriteMainStats(_UserName_,*age):
         f.writelines(str(age[target_list] + "\n"))
     f.close()
 
-
-
 def FixText(text):
     """
     Фиксирует текст
@@ -474,8 +475,7 @@ def _AgentWrite(_UserName_,__url__,BackGround : bool):
                 pass
         pass
 
-from PIL import Image, ImageDraw , ImageFont
-import botFunctions as Functions
+
 Resurses = "./Resurses/"
 def profileEdit(_UserName_):
     """
@@ -619,7 +619,7 @@ def profileEdit(_UserName_):
     intelligence = float(Main_characteristics.pop("intelligence"))
     plus = int(Main_characteristics.pop("plus"))
     if plus > 0:
-        area = (782,700)
+        area = (700,700)
         Color = (100,110,90)
         font = ImageFont.truetype("arial.ttf",30)
         txt = str(f"Талант очки : {plus}")
@@ -628,20 +628,20 @@ def profileEdit(_UserName_):
 
     Color = (255,100,0)
     area = (38,393)
-    font = ImageFont.truetype("arial.ttf",35)
+    font = ImageFont.truetype("arial.ttf",50)
     txt = str(f"Сила : \n{strength}")
     draw.text(area,txt,font=font,fill=Color)
     # draw.line((25 - 5,195,100 - 5,195),fill=Color,width=5)
 
     Color = (0,255,0)
     area = (38,471)
-    font = ImageFont.truetype("arial.ttf",35)
+    font = ImageFont.truetype("arial.ttf",50)
     txt = str(f"Ловкость : \n{agility}")
     draw.text(area,txt,font=font,fill=Color)
 
     Color = (0,255,255)
     area = (38,570)
-    font = ImageFont.truetype("arial.ttf",35)
+    font = ImageFont.truetype("arial.ttf",50)
     txt = str(f"Интеллект : \n{intelligence}")
     draw.text(area,txt,font=font,fill=Color)
 
@@ -657,27 +657,9 @@ def profileEdit(_UserName_):
 
     Color = (0,0,0)
     The_number_of_letters = list()
-    Scaling = 0
-    The_number_of_letters.extend(Description)
-    countLetter = 0
-    Offset = 0
-    for Letter in The_number_of_letters:
-        if (Letter == "ERROR"): pass
-        countLetter += 1
-        # print(f"{Letter} текущая буква")
-        if (countLetter == 4):
-            Scaling -= 1
-            countLetter = 0
-            Offset += 2
-            #print(f"{Letter} текущая строчка ({countLetter})")
-    # print(f"{The_number_of_letters} \n {Scaling}")
-    The_number_of_letters.clear()
 
-    Scaling = (18 + Scaling)
-    if Scaling < 0:
-        Scaling = 0
-    area = (110,200 + Offset)
-    font = ImageFont.truetype("arial.ttf",10 + Scaling)
+    area = (380,500)
+    font = ImageFont.truetype("arial.ttf",10 + 50)
     txt = str(Description)
     draw.text(area,txt,font=font,fill=Color)
 
@@ -689,7 +671,7 @@ def profileEdit(_UserName_):
     areaAva = (46,8)
 
     img.paste(Ava,areaAva)
-    nameSave = "StatsPl.webp"
+    nameSave = "StatsPl.png"
     BackGround = BackGround.resize((1000,1450)) #(358,481)
     area = (0,550)
     
@@ -804,7 +786,10 @@ def is_internet():
         return False
 def InternetActive():
     client = MyClient()
-    client.run(BazaDate.token)
+    try:
+        client.run(BazaDate.token)
+    except: 
+        print("Нет подключения к интернету")
 class MyClient(discord.Client):
     _VoiceClient = None
     async def Dialog(self,message):
@@ -842,6 +827,14 @@ class MyClient(discord.Client):
             pass
         except IndexError:
             pass
+
+        _CheckMessage = CheckMessage(str(msg).upper(),"gachi".upper())
+
+        IsGachi = _CheckMessage.Start()
+
+        if IsGachi == True:
+            await message.delete()
+            return
 
         if RandomSaying == 1:
             SavedChat = self.Chat.SavedChat()
@@ -886,7 +879,7 @@ class MyClient(discord.Client):
                 'INV',
                 'WEAR',
                 'UPGRADE_ITEM',
-                'G','GABRIELE',
+                'G','GABRIELE',"GS",
                 'ГАБРИЭЛЬ',
                 'КУПИТЬ','BUY','К','B',
                 'TALANT',"ТАЛАНТ",
@@ -958,6 +951,12 @@ class MyClient(discord.Client):
                 activity=discord.Activity(
                     type=discord.ActivityType.watching, 
                     name="в даль"))
+        # Channel = await self.fetch_channel(691750825030320218)
+        # df = discord.File("LogoGuild.png","Логотип Гильдии.png")
+        # await Channel.send(" ",file=df)
+        # df = discord.File("Трактат правил.png","Трактат правил.png")
+        # await Channel.send(" ",file=df)
+        self.SoundsWas = []
         RegenerationBoss = asyncio.create_task(self.BossesRegeneration())
         asyncio.gather(RegenerationBoss)
     async def botEvent(self,message):
@@ -1229,43 +1228,43 @@ class MyClient(discord.Client):
                         Functions.WriteMainParametrs(username=UserName_,money=GoldPlayer)
                         await message.channel.send(f"{UserName_} взял(а) ежедневный бонус, в {RandomAddMoney}:moneybag:")
             time.sleep(0.01)
-            if (CurCommandEvent == "CASINO") or (CurCommandEvent == "C"):
-                MainStats = Functions.ReadMainParametrs(username=UserName_)
-                Money = MainStats.pop("money")
-                try:
-                    CurCountForCasino = int(CurCountForCasino)
-                except ValueError:
-                    await message.channel.send(f":negative_squared_cross_mark:`Нужно указать число` :negative_squared_cross_mark:")
-                    return
+            # if (CurCommandEvent == "CASINO") or (CurCommandEvent == "C"):
+            #     MainStats = Functions.ReadMainParametrs(username=UserName_)
+            #     Money = MainStats.pop("money")
+            #     try:
+            #         CurCountForCasino = int(CurCountForCasino)
+            #     except ValueError:
+            #         await message.channel.send(f":negative_squared_cross_mark:`Нужно указать число` :negative_squared_cross_mark:")
+            #         return
                 
-                try:
-                   # oldMoney = Money
-                    if CurCountForCasino > Money:
-                        CurCountForCasino = Money
-                    if CurCountForCasino < 0:
-                        await message.channel.send(f"Нельзя указать < 0")
-                        return
-                    Money -= CurCountForCasino
+            #     try:
+            #        # oldMoney = Money
+            #         if CurCountForCasino > Money:
+            #             CurCountForCasino = Money
+            #         if CurCountForCasino < 0:
+            #             await message.channel.send(f"Нельзя указать < 0")
+            #             return
+            #         Money -= CurCountForCasino
 
-                   # GetMoney = int(CurCountForCasino * (random.random() * 2))
-                    rnd = random.random()
-                    rnd *= 1.85
-                    GetMoney = int(CurCountForCasino * rnd)
-                    Money += GetMoney
-                   # GetMoney = 1
-                    #GetMoney
-                   # print(GetMoney)
-                    await message.channel.send(f"Коэффициент : {rnd}%. \nСтавка : {CurCountForCasino} золотых.\nПолученно золотых : {GetMoney}.\nТекущее количество золотых : {Money} золотых.")
+            #        # GetMoney = int(CurCountForCasino * (random.random() * 2))
+            #         rnd = random.random()
+            #         rnd *= 1.85
+            #         GetMoney = int(CurCountForCasino * rnd)
+            #         Money += GetMoney
+            #        # GetMoney = 1
+            #         #GetMoney
+            #        # print(GetMoney)
+            #         await message.channel.send(f"Коэффициент : {rnd}%. \nСтавка : {CurCountForCasino} золотых.\nПолученно золотых : {GetMoney}.\nТекущее количество золотых : {Money} золотых.",delete_after=100)
 
-                    #_AddMoney(UserName_,GetMoney)
-                    # _SetMoney(UserName_,Money)
-                    Functions.WriteMainParametrs(username=UserName_,money=Money)
+            #         #_AddMoney(UserName_,GetMoney)
+            #         # _SetMoney(UserName_,Money)
+            #         Functions.WriteMainParametrs(username=UserName_,money=Money)
 
 
 
-                    pass
-                except ValueError:
-                    await message.channel.send(f"Ошибка : проверьте правильность написания команды")
+            #         pass
+            #     except ValueError:
+            #         await message.channel.send(f"Ошибка : проверьте правильность написания команды")
                 
 
 
@@ -1423,23 +1422,6 @@ class MyClient(discord.Client):
                 await _Message_.delete()
             except:
                 pass
-            Agree = ["Yes","Agree","Да","Согласен","Конечно","Хорошо","Ок","Ok","Okay","Okey","Ог"]
-            not_agree = ["No","No agree","Нет","Не","Неа","Нет уж"]
-            if MessageContent in str(not_agree).lower():
-                await message.channel.send("Ничего страшного. Зайти на сервер, вы можете когда вам угодно.",delete_after=2)
-            elif MessageContent in str(Agree).lower():
-                StartRole = OurServer.get_role(691735620346970123)
-                TimeRole = OurServer.get_role(610078093260095488)
-
-                await Member_Player.add_roles(TimeRole,reason="Прошел проверку")
-                await Member_Player.remove_roles(StartRole,reason="Прошел проверку")
-
-                StandartChannel = await self.fetch_channel(419879599363850253)
-                await StandartChannel.send(f"{message.author.mention} присоединился на сервер",delete_after=300)
-            
-            if MessageContent not in str(not_agree).lower() and MessageContent not in str(Agree).lower():
-                await message.channel.send("Это не похоже на ответ. Пожалуйста, следуйте указаниям",delete_after=2)
-            return
         
         YourProfilParamerts = Functions.ReadMainParametrs(username=UserName_)
         IntCurExp = int(YourProfilParamerts.pop("exp"))
@@ -1508,7 +1490,6 @@ class MyClient(discord.Client):
         
         
         CurCommandPlayer = ""
-
         try:
             CurCommandPlayer = msgSP[1]
 
@@ -1550,19 +1531,32 @@ class MyClient(discord.Client):
                     await _Message_.delete()
                 except:
                     pass
-                
-                _ChannelVoice_ = await self.fetch_channel(message.author.voice.channel.id)
+                try:
+                    _ChannelVoice_ = await self.fetch_channel(int(str(message.content).split()[1]))
+                except:
+                    _ChannelVoice_ = await self.fetch_channel(message.author.voice.channel.id)
+                try:
+                    Mode = int(str(message.content).split()[2])
+                except:
+                    Mode = 0
                 InVoice = False
                 for member in _ChannelVoice_.members:
                     if member == _Gabriele_:
                         InVoice = True
                 if InVoice == False:
-                    _VoiceClient = await _ChannelVoice_.connect()
-                    RandomInt = random.randint(1,36)
-                    RandomSound = f"JoinVoice ({RandomInt}).mp3"
-                    _VoiceClient.play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source=f"./Resurses/JoinVoice/{RandomSound}"))
+                    self._VoiceClient = await _ChannelVoice_.connect()
+                    Sounds = os.listdir(f"./Resurses/JoinVoice/")
+                    # Sounds.pop(self.SoundsWas)
+                    RandomInt = random.randint(0,len(Sounds) - 1)
+                    RandomSound = Sounds[RandomInt]
+                    self.SoundsWas.append(RandomSound)
+                    self._VoiceClient.play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source=f"./Resurses/JoinVoice/{RandomSound}"))
                 else:
-                    await message.channel.send(f"Не могу проиграть звук",delete_after=1)
+                    # await message.channel.send(f"Не могу проиграть звук",delete_after=1)
+                    Sounds = os.listdir(f"./Resurses/JoinVoice/")
+                    RandomInt = random.randint(0,len(Sounds) - 1)
+                    RandomSound = Sounds[RandomInt]
+                    self._VoiceClient.play(discord.FFmpegPCMAudio(executable="C:/ffmpeg/bin/ffmpeg.exe", source=f"./Resurses/JoinVoice/{RandomSound}"))
         except AttributeError:
             pass
 
@@ -1595,28 +1589,29 @@ class MyClient(discord.Client):
                 Player_ = Functions.ReadMainParametrs(username=UserName_)
                 Health = int(Player_["curHealth"])
                 maxHealth = int(Player_["maxHealth"])
-                _magic = _magic['Parametrs']
-                _magic = _magic[0]
-                Keys = _magic.keys()
-                for key in Keys:
-                    key = str(key)
-                    Spell = _magic[key]
-                    # KeysSpell = Spell.keys()
-                    # print(key)
-                    # print(Spell)
-                    if key == "Poison":
-                        Time = int(Spell["Time"])
-                        Damage = int(Spell["Damage"])
-                        _PlayerClass = PlayerClass(UserName_,self)
-                        await _PlayerClass.Poison(CurCommandPlayer,Time,Damage)
-                    if key == "Vampirism":
-                        Heal = int(Spell["Heal"])
-                        Health += Heal
-                        if Health >= maxHealth:
-                            Health = 0
-                        Functions.WriteMainParametrs(username=UserName_,curHealth=Health)
-
-                    await asyncio.sleep(0.1)
+                try:
+                    _magic = _magic['Parametrs']
+                    _magic = _magic[0]
+                    Keys = _magic.keys()
+                    for key in Keys:
+                        key = str(key)
+                        Spell = _magic[key]
+                        # KeysSpell = Spell.keys()
+                        # print(key)
+                        # print(Spell)
+                        if key == "Poison":
+                            Time = int(Spell["Time"])
+                            Damage = int(Spell["Damage"])
+                            _PlayerClass = PlayerClass(UserName_,self)
+                            await _PlayerClass.Poison(CurCommandPlayer,Time,Damage)
+                        if key == "Vampirism":
+                            Heal = int(Spell["Heal"])
+                            Health += Heal
+                            if Health >= maxHealth:
+                                Health = 0
+                            Functions.WriteMainParametrs(username=UserName_,curHealth=Health)
+                        await asyncio.sleep(0.1)
+                except: pass
                     
                     # Name = Spell.pop('name')
                     # KeysSpell = Spell.keys()
@@ -1692,8 +1687,8 @@ class MyClient(discord.Client):
                     plus = int(MainStats.pop("plus"))
                     maxLevel = int(MainStats.pop("maxLevel"))
                     if IntCurLvl > maxLevel:
-                        plus += 1 * (IntCurLvl - maxLevel)
-                        maxLevel = IntCurLvl
+                        plus += maxLevel - IntCurLvl
+                        maxLevel = plus
 
 
                     # await BotInisializator.AttackMessage(CurCommandPlayer,IntCurLvl,EnIntCurHealth,EnIntMaxHealth,FreeLvlHA,GetDamage,CurChannel)
@@ -2019,45 +2014,6 @@ class MyClient(discord.Client):
                     
             pass
 
-    
-        # if CurCommand == "ROLE":
-        #     try:
-        #         RoleMentions = _Message_.raw_role_mentions[0]
-        #         RoleMentions = OurServer.get_role(RoleMentions)
-        #         MentionPlayer = await OurServer.fetch_member(_Mention_.id)
-
-        #         Can = [578514082252980234,626028536305811487,578514024782626837,691209621968519188,692917601076248657,688482228962983968,578517475042394113,610078093260095488,622412934391267378,625966754769928202,632180542070325248,686553299641827331,688015318396043317,691735620346970123,623063847497891840,419879599363850251]
-
-        #         if RoleMentions.id not in Can:
-        #             await MentionPlayer.add_roles(RoleMentions)
-        #             # print(f"{MentionPlayer} {type(MentionPlayer)} {_Mention_.id} {_Mention_.name}")
-        #             await message.channel.send(f"{_Mention_.mention} повысили до {RoleMentions.mention}")
-        #         else:
-        #             await message.channel.send(f"{_Mention_.mention} нельзя повысить до {RoleMentions.mention}")
-                
-        #         pass
-        #     except:
-        #         await message.channel.send(f"Ошибка в команде",delete_after=5)
-
-
-        # if CurCommand == "GUILD":
-        #     EveryOne = OurServer.get_role(419879599363850251)
-        #     CreatorGuild = OurServer.get_role(692917601076248657)
-        #     Member = await OurServer.fetch_member(message.author.id)
-        #     await Member.add_roles(CreatorGuild)
-        #     # await Functions.GetPermissions(self)
-        #     perms = discord.Permissions(267910976)
-        #     color = discord.colour.Colour(2123412)
-        #     Guard = await OurServer.create_role(name=f"Стража Гильдии ({UserName_})",permissions=perms,colour=color)
-        #     Permissions = {
-        #         EveryOne: discord.PermissionOverwrite(read_messages=False,send_messages=False,read_message_history=False),
-        #         Guard: discord.PermissionOverwrite(read_messages=True,send_messages=True,read_message_history=True),
-        #         message.author: discord.PermissionOverwrite(read_messages=True,send_messages=True,read_message_history=True,manage_channels=True)
-        #     }
-        #     newGuild = await OurServer.create_category(name="Гильдия",overwrites=Permissions)
-        #     Info = await OurServer.create_text_channel(name="Информация",category=newGuild,overwrites=Permissions)
-        #     pass
-        
         time.sleep(0.1)
         if (CurCommand == "TALANT") or (CurCommand == "ТАЛАНТ"):
             CurCommandPlayer = str(CurCommandPlayer).upper()
@@ -2070,7 +2026,7 @@ class MyClient(discord.Client):
                 plus = int(MainStatsTalant.pop("plus"))
                 time.sleep(0.1)
                 if (Number <= plus) and (Number > 0):
-                    strength += float(0.01 * Number)
+                    strength += float(0.0025 * Number)
                     plus -= Number
                     Functions.WriteMainParametrs(username=UserName_,strength=strength,plus=plus)
                     await message.channel.send(f"Вы успешно повысили силу, на {Number} ед.",delete_after=5)
@@ -2085,7 +2041,7 @@ class MyClient(discord.Client):
                 plus = int(MainStatsTalant.pop("plus"))
                 time.sleep(0.1)
                 if (Number <= plus) and (Number > 0):
-                    agility += (0.025 * Number)
+                    agility += (0.01 * Number)
                     plus -= Number
                     Functions.WriteMainParametrs(username=UserName_,agility=agility,plus=plus)
                     await message.channel.send(f"Вы успешно повысили ловкость, на {Number} ед.",delete_after=5)
@@ -2099,7 +2055,7 @@ class MyClient(discord.Client):
                 plus = int(MainStatsTalant.pop("plus"))
                 time.sleep(0.1)
                 if (Number <= plus) and (Number > 0):
-                    intelligence += (0.03 * Number)
+                    intelligence += (0.025 * Number)
                     plus -= Number
                     Functions.WriteMainParametrs(username=UserName_,intelligence=intelligence,plus=plus)
                     await message.channel.send(f"Вы успешно повысили интеллект, на {Number} ед.",delete_after=5)
@@ -2108,7 +2064,7 @@ class MyClient(discord.Client):
         
         
         if CurCommand == "AU":
-            Auction = Functions.Auction()
+            _Auction = Functions.Auction()
             CurCommandPlayer = str(CurCommandPlayer).upper()
             if CurCommandPlayer == "ADD":
                 ItemID = int(msgSP[2])
@@ -2116,14 +2072,14 @@ class MyClient(discord.Client):
                 if GoldCost < 100: 
                     await message.channel.send("Число не должно быть меньше 100")
                     return
-                Auction.AddAuction(username=UserName_,ID=ItemID,goldAuction=GoldCost)
+                _Auction.AddAuction(username=UserName_,ID=ItemID,goldAuction=GoldCost)
                 await message.channel.send(f'{FixText(f"Вы успешно поставили выбранный торг, за {GoldCost}")}')
                 # Functions._Gold(username=UserName_,do="Убавить",count=GoldCost)
             if CurCommandPlayer == "BUY":
                 AuctionID = int(msgSP[2])
                 GoldCost = int(msgSP[3])
                 try:
-                    Auction.RemoveAuction(username=UserName_,gold=GoldCost,AuctionID=AuctionID)
+                    _Auction.RemoveAuction(username=UserName_,gold=GoldCost,AuctionID=AuctionID)
                     await message.channel.send("Покупка торга прошла успешна")
                 except Functions.NotEnoughGold:
                     await message.channel.send("Не достаточно золота")
@@ -2140,26 +2096,33 @@ class MyClient(discord.Client):
 
                 pass
             if CurCommandPlayer == "SHOW":
-                AllAuctions = Auction.ReadAuction()
+                AllAuctions = str(_Auction.ReadAuction())
                 AllAuctions = AllAuctions.split("\n")
                 for _Auction in AllAuctions:
-                    AuctionDict = Functions.StrToDict(str=_Auction)
-                    Owner = str(AuctionDict.pop("username"))
-                    ItemID = int(AuctionDict.pop("ID"))
-                    goldAuction = int(AuctionDict.pop("goldAuction"))
-                    ItemType = str(AuctionDict.pop("type"))
-                    ItemName = str(AuctionDict.pop("name"))
-                    ClassItem = str(AuctionDict.pop("classItem"))
-                    ItemGold = int(AuctionDict.pop("gold"))
-                    if ItemType == "Оружие":
-                        ItemArmor = int(AuctionDict.pop("armor"))
-                        ItemDamage = int(AuctionDict.pop("damage"))
-                        await message.channel.send(f"Владелец : {Owner}\nИндекс предмета : {ItemID}\nСтоимость торга : {goldAuction}\nТип предмета : {ItemType}\nИмя предмета : {ItemName}\nКласс предмета : {ClassItem}\nЗолото в предмете : {ItemGold}\nПрочность : {ItemArmor}\nУрон : {ItemDamage}")
-                    if ItemType == "Экипировка":
-                        ItemArmor = int(AuctionDict.pop("armor"))
-                        ItemProtect = int(AuctionDict.pop("protect"))
-                        await message.channel.send(f"Владелец : {Owner}\nИндекс предмета : {ItemID}\nСтоимость торга : {goldAuction}\nТип предмета : {ItemType}\nИмя предмета : {ItemName}\nКласс предмета : {ClassItem}\nЗолото в предмете : {ItemGold}\nПрочность : {ItemArmor}\nЗащита : {ItemProtect}")
-                    pass
+                    print(_Auction)
+                    try:
+                        AuctionDict = Functions.StrToDict(str=_Auction)
+                        Owner = str(AuctionDict.pop("username"))
+                        ItemID = int(AuctionDict.pop("ID"))
+                        goldAuction = int(AuctionDict.pop("goldAuction"))
+                        AuctionID = int(AuctionDict.pop("AuctionID"))
+                        Item = Functions.StrToDict(str=AuctionDict["Item"])
+                        ItemType = str(Item.pop("type"))
+                        ItemName = str(Item.pop("name"))
+                        ClassItem = str(Item.pop("classItem"))
+
+                        ItemGold = int(Item.pop("gold"))
+                        if ItemType == "Оружие":
+                            ItemArmor = int(Item.pop("armor"))
+                            ItemDamage = int(Item.pop("damage"))
+                            await message.channel.send(f"Владелец : {Owner}\nИндекс предмета : {ItemID}\nСтоимость торга : {goldAuction}\nИндекс торга : {AuctionID}\nТип предмета : {ItemType}\nИмя предмета : {ItemName}\nКласс предмета : {ClassItem}\nЗолото в предмете : {ItemGold}\nПрочность : {ItemArmor}\nУрон : {ItemDamage}")
+                        if ItemType == "Экипировка":
+                            ItemArmor = int(Item.pop("armor"))
+                            ItemProtect = int(Item.pop("protect"))
+                            await message.channel.send(f"Владелец : {Owner}\nИндекс предмета : {ItemID}\nСтоимость торга : {goldAuction}\nИндекс торга : {AuctionID}\nТип предмета : {ItemType}\nИмя предмета : {ItemName}\nКласс предмета : {ClassItem}\nЗолото в предмете : {ItemGold}\nПрочность : {ItemArmor}\nЗащита : {ItemProtect}")
+                        pass
+                    except SyntaxError:
+                        print("SyntaxError")
                 pass
             
             pass
@@ -2228,19 +2191,23 @@ class MyClient(discord.Client):
         IntMaxHealth = int(MainStats.pop("maxHealth"))
         IntCurHealth = int(MainStats.pop("curHealth"))
         IntMaxDamage = int(MainStats.pop("damage"))
+        
+        Plus = int(MainStats["plus"]) 
 
-        if (CurCommand == "BUY") or (CurCommand == "B") or (CurCommand == "Б") or (CurCommand == "КУПИТЬ") or (CurCommand == "К"):
+        maxLevel = int(MainStats["maxLevel"]) 
+
+        if (CurCommand == "BUY"):
             #Начало
             await _Message_.delete()
             if CurBuyItem == "ЛЕЧЕНИЕ":
                 if CurCountBuyItem != "":
-                    BuyItem = _BuyItem(5,Gold,CurCountBuyItem)
+                    BuyItem = _BuyItem(2,Gold,CurCountBuyItem)
                     _CountBuy = BuyItem[0]
                     str1 = BuyItem[1]
                     _Gold_ = BuyItem[2]
                     Gold = _Gold_
                     for target_list in range(int(_CountBuy)):
-                        IntCurHealth += 500
+                        IntCurHealth += 35
                         if IntCurHealth > IntMaxHealth:
                             IntCurHealth = IntMaxHealth
                         if target_list < 0:
@@ -2252,13 +2219,13 @@ class MyClient(discord.Client):
             #Начало
             elif CurBuyItem == "УРОН":
                 if CurCountBuyItem != "":
-                    BuyItem = _BuyItem(35,Gold,CurCountBuyItem)
+                    BuyItem = _BuyItem(8,Gold,CurCountBuyItem)
                     _CountBuy = BuyItem[0]
                     str1 = BuyItem[1]
                     _Gold_ = BuyItem[2]
                     Gold = _Gold_
                     for target_list in range(int(_CountBuy)):
-                        IntMaxDamage += random.randint(5,35)
+                        IntMaxDamage += random.randint(1,5)
                         if target_list < 0:
                             print("ERROR")
                     await message.channel.send(str1)
@@ -2268,13 +2235,13 @@ class MyClient(discord.Client):
             #Начало
             elif CurBuyItem == "ЗДОРОВЬЕ":
                 if CurCountBuyItem != "":
-                    BuyItem = _BuyItem(8,Gold,CurCountBuyItem)
+                    BuyItem = _BuyItem(13,Gold,CurCountBuyItem)
                     _CountBuy = BuyItem[0]
                     str1 = BuyItem[1]
                     _Gold_ = BuyItem[2]
                     Gold = _Gold_
                     for target_list in range(int(_CountBuy)):
-                        IntMaxHealth += random.randint(50,80)
+                        IntMaxHealth += random.randint(5,10)
                         if target_list < 0:
                             print("ERROR")
                     await message.channel.send(str1)
@@ -2285,13 +2252,13 @@ class MyClient(discord.Client):
             elif CurBuyItem == "ОПЫТ":
                 if CurCountBuyItem != "":
                     time.sleep(1)
-                    BuyItem = _BuyItem(25,Gold,CurCountBuyItem)
+                    BuyItem = _BuyItem(50,Gold,CurCountBuyItem)
                     _CountBuy = BuyItem[0]
                     str1 = BuyItem[1]
                     _Gold_ = BuyItem[2]
                     Gold = _Gold_
                     for target_list in range(int(_CountBuy)):
-                        IntCurExp += random.randint(1000,2000)
+                        IntCurExp += random.randint(10,200)
                         while IntCurExp >= IntCurLvl * 5:
                             WasExpNeed = IntCurLvl * 5
                             IntCurLvl += 1
@@ -2303,6 +2270,8 @@ class MyClient(discord.Client):
                             else:
                                 IntCurHealth = IntMaxHealth
                             IntCurExp -= WasExpNeed
+                            if maxLevel < IntCurLvl:
+                                Plus += 1
                         if target_list < 0:
                             print("ERROR")
                     await message.channel.send(str1)
@@ -2312,7 +2281,7 @@ class MyClient(discord.Client):
             #Начало
             elif CurBuyItem == "УРОВЕНЬ":
                 if CurCountBuyItem != "":
-                    BuyItem = _BuyItem(50,Gold,CurCountBuyItem)
+                    BuyItem = _BuyItem(100,Gold,CurCountBuyItem)
                     _CountBuy = BuyItem[0]
                     str1 = BuyItem[1]
                     _Gold_ = BuyItem[2]
@@ -2328,6 +2297,8 @@ class MyClient(discord.Client):
                                 IntCurHealth += 5
                             else:
                                 IntCurHealth = IntMaxHealth
+                            if maxLevel < IntCurLvl:
+                                Plus += 1
                         if target_list < 0:
                             print("ERROR")
                     await message.channel.send(str1)
@@ -2337,7 +2308,7 @@ class MyClient(discord.Client):
             else:
                 await message.channel.send("Такого предмета нет",delete_after=2)
 
-        Functions.WriteMainParametrs(username=UserName_,exp=IntCurExp,lvl=IntCurLvl,maxHealth=IntMaxHealth,curHealth=IntCurHealth,damage=IntMaxDamage,money=Gold,messages=Msages)
+        Functions.WriteMainParametrs(username=UserName_,exp=IntCurExp,lvl=IntCurLvl,maxHealth=IntMaxHealth,curHealth=IntCurHealth,damage=IntMaxDamage,money=Gold,messages=Msages,plus=Plus)
     async def BossesRegeneration(self):
         Servers = os.listdir("./Servers/")
         AliveBossed = []
@@ -2387,25 +2358,19 @@ class MyClient(discord.Client):
 
             if Command == "CreateHardBoss".upper():
                 Index = str(message.content).split(" ")[1].upper()
-                Boss.Create(int(Index)) 
-            if Command == "ShowHardBoss".upper():
-                await message.channel.send(f"Текущее здоровье : {Health}\nМаксимальное здоровье : {MaxHealth}\nВозможный урон : {Damage}\nБроня : {Armor}")
-            if Command == "HardBoss_attack".upper():
-                Item = Functions.ReadEquipment(username=UserName_,type="Оружие")
-                Item = Functions.CheckParametrsEquipment(username=UserName_,ID=Item)
-                ItemDamage = int(Item["damage"])
-                HeroStats = Functions.ReadMainParametrs(username=UserName_)
-                DamageHero = int(HeroStats["damage"])
-                GetDamage = random.randint(1,DamageHero + ItemDamage)
-                GetDamage -= Armor
-                if GetDamage <= 0: GetDamage = 1
-                Health -= GetDamage
-                if Health <= 0:
-                    Boss.Write(Health=Health,Status="Dead")
-                    await message.channel.send(f"Наелся и спит")
-                else:
-                    Boss.Write(Health=Health,Status="Life")
-                    await message.channel.send(f"Текущее здоровье : {Health}\nМаксимальное здоровье : {MaxHealth}\nВозможный урон : {Damage}\nБроня : {Armor}")
+                await message.delete()
+                if int(Index) < 100000:
+                    await message.channel.send(f"Меньше чем 100000 золотых, нельзя призывать босса",delete_after=10)
+                    return
+                curGold = Functions._Gold(username=UserName_,do="Разузнать")
+                if curGold < int(Index):
+                    await message.channel.send(f"У вас не достаточно золото чтобы призвать босса",delete_after=10)
+                    return
+                Functions._Gold(username=UserName_,do="Убавить",count=int(Index))
+                Boss.Create(int(Index))
+                await message.channel.send(f"Босс успешно был призван",delete_after=10)
+    async def PlaySounds(self):
+        pass
     async def on_message(self, message):
         self.Gabriel = Functions.Gabriel()
         Guild = await self.fetch_guild(message.channel.guild.id)
@@ -2413,6 +2378,7 @@ class MyClient(discord.Client):
         await self.Config.Start(Guild.id,self)
         self.Chat = self.Gabriel.Chat(Guild,self)
         self.Setting = self.Config.Read(message.channel.guild.name)
+        self.ThisGuild = await self.fetch_guild(message.channel.guild.id)
         Dialog = asyncio.create_task(self.Dialog(message))
         botEvent = asyncio.create_task(self.botEvent(message))
         botStandart = asyncio.create_task(self.botStandart(message))
@@ -2486,12 +2452,15 @@ class MyClient(discord.Client):
             pass
 
     async def on_guild_channel_update(self,before,after):
-        MembersBefore = after.members
-        for member in MembersBefore:
-            permiss = after.permissions_for(member)
-            if permiss.manage_channels == True:
-                Room = Functions.Room(member.name)
-                Room.Save(after.name)
+        overwrites = before.overwrites
+        for overwrite in overwrites:
+            try:
+                permissions = overwrite.permissions
+            except AttributeError:
+                permissions = overwrite.permissions_in(before)
+                if permissions.manage_channels == True:
+                    Room = Functions.Room(overwrite.name)
+                    Room.Save(after.name)
 
     async def on_member_join(self,member : discord.member.Member):
         try:
@@ -2499,6 +2468,359 @@ class MyClient(discord.Client):
             StartRole = OurServer.get_role(691735620346970123)
             await member.add_roles(StartRole,reason="Впервые зашел на сервер")
         except: pass
+
+    async def on_raw_reaction_add(self,payload):
+        Channel = await self.fetch_channel(payload.channel_id)
+        Message = await Channel.fetch_message(payload.message_id)
+        Guild = await self.fetch_guild(Message.channel.guild.id)
+        Player = await self.fetch_user(payload.user_id)
+        Member = await Guild.fetch_member(Player.id)
+        UserName_ = Player.name
+        UserName_ = str.split(UserName_)
+        UserName__ = str()
+        for word in UserName_:
+            UserName__ += word
+        UserName_ = str(UserName__)
+        DevelopGabriel = await self.fetch_guild(711132161444675595)
+        EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
+        # for Emodji in EmodjsInDevelop:
+        #     await Message.add_reaction(Emodji)
+        Emoji = payload.emoji
+        # print(Emoji)
+        # await Message.add_reaction(Emoji)
+        #Босс 2
+        if Message.id == 713440081863639130:
+            if Player == self.user:
+                return
+            Boss = BossForMoney(Guild.name)
+            Stats = Boss.Read()
+            HeroStats = Functions.ReadMainParametrs(username=UserName_)
+            HeroStrength = float(HeroStats["strength"])
+            PlayerHealth = int(HeroStats["curHealth"])
+            await Message.remove_reaction(Emoji,Player)
+            Health = int(Stats["Health"])
+            MaxHealth = int(Stats["MaxHealth"])
+            Damage = int(Stats["Damage"])
+            Armor = int(Stats["Armor"])
+            BossStatus = str(Stats["Status"])
+            if str(Emoji.name) == "Fight":
+                Item = Functions.ReadEquipment(username=UserName_,type="Оружие")
+                Item = Functions.CheckParametrsEquipment(username=UserName_,ID=Item)
+                ItemDamage = int(Item["damage"])
+                
+                DamageHero = int(HeroStats["damage"])
+                GetDamage = random.randint(1,DamageHero + ItemDamage)
+                GetDamage -= Armor
+                if GetDamage <= 0: GetDamage = 1
+                GetDamage = int(GetDamage * HeroStrength)
+                Health -= GetDamage
+                PlayerHealth -= Damage
+                if PlayerHealth <= 0:
+                    PlayerMaxHealth = int(HeroStats["maxHealth"])
+                    PlayerLevel = int(HeroStats["lvl"])
+                    FreeLevel = PlayerLevel / 5
+                    PlayerLevel -= FreeLevel
+                    LostLevels = Functions.LevelUp(count=FreeLevel)
+                    LostHealth = LostLevels["health"]
+                    LostDamage = LostLevels["damage"]
+                    PlayerMaxHealth -= LostHealth
+                    DamageHero -= LostDamage
+                    PlayerHealth = PlayerMaxHealth
+                    PlayersLostStats = list()
+                    Functions.WriteMainParametrs(
+                        username = UserName_,
+                        lvl = PlayerLevel,
+                        curHealth = PlayerHealth,
+                        maxHealth = PlayerMaxHealth,
+                        damage = DamageHero
+                        )
+                if Health <= 0:
+                    Boss.Write(Health=Health,Status="Dead")
+                    if BossStatus == "Life":
+                        await Message.edit(
+                            content=f"Текущее здоровье : 0\nМаксимальное здоровье : {MaxHealth}\nВозможный урон : {Damage}\nБроня : {Armor}"
+                        )
+                        Magic = Functions.Magic()
+                        Encanteds = Magic.PossibleEnchant()
+                        Enchant = Encanteds[random.randint(0,len(Encanteds))]
+                        Inventor = Functions.PlayerInventor(UserName_)
+                        ReliquaryNames = [
+                            "Божественная длань",
+                            "Затерянный левый носок",
+                            "Деревянная палка",
+                            "Драконий посох",
+                            "Правосудие",
+                            "Испепелитель",
+                            "Душа",
+                            "Уничтожитель",
+                            "Меч из чистой энергии",
+                            "Плазменный меч",
+                            "Заряженный великой магией посох",
+                            "Злобная энергия",
+                            "Атомный разборщик",
+                            "Тренировочный меч",
+                            "Ветвь дерева",
+                            "Заточенный острый камень",
+                            "Перчатка с шипами",
+                            "Укрепленный магией и драконьей душой , позолоченный , кристальный боевой тапок",
+                            "Ворованный носок"
+                        ]
+                        if Enchant == "Vampirism":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Vampirism" : {
+                                        "name" : "Вампиризм",
+                                        "Description" : "После каждой атаки вы исциляетесь",
+                                        "Heal" : random.randint(100,3000),
+                                        "type" : "+"
+                                    }
+                                }
+                            )
+                        elif Enchant == "More experience":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "More experience" : {
+                                        "name" : "Больше опыта",
+                                        "Description" : "После каждого убийства героя, вы забираете дополнительный опыт",
+                                        "Multi" : 2
+                                    }
+                                }
+                            )
+                        elif Enchant == "Poison":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Poison" : {
+                                        "name" : "Яд",
+                                        "Description" : "После каждой атаки, вы наносите дополнительный урон ядом",
+                                        "Time" : random.randint(0.1,10),
+                                        "Damage" : random.randint(1000,100000)
+                                    }
+                                }
+                            )
+                        elif Enchant == "Fury":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Fury" : {
+                                        "name" : "Неистовство",
+                                        "Description" : "Вы начинаете получать опыт, за убийство боссов.",
+                                        "Exp" : random.randint(100,1000)
+                                    }
+                                }
+                            )
+                        elif Enchant == "Critical hit":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Critical hit" : {
+                                        "name" : "Критический удар",
+                                        "Description" : "У вас есть шанс, нанести умноженный урон",
+                                        "Multy" : 2
+                                    }
+                                }
+                            )
+                        elif Enchant == "Recklessness":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Recklessness" : {
+                                        "name" : "Безрассудство",
+                                        "Description" : "Ваши удары игнорируют броню, однако прочность предмета снижается на 99%",
+                                    }
+                                }
+                            )
+                        elif Enchant == "Execution":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Execution" : {
+                                        "name" : "Казнь",
+                                        "Description" : "Противники чье хп стало меньше отметки, могут быть убиты с 1 удара",
+                                        "MinHealth" : 10
+                                    }
+                                }
+                            )
+                        elif Enchant == "Looting":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Looting" : {
+                                        "name" : "Грабёж",
+                                        "Description" : "С каждой атакой, вы имеете шанс ограбить героя",
+                                        "chance" : 10
+                                    }
+                                }
+                            )
+                        elif Enchant == "Grace":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Grace" : {
+                                        "name" : "Благодать",
+                                        "Description" : "После вашей смерти, предмет пропадает, однако дает вам временную неуязвимость, и полностью исциляет вас",
+                                        "Time" : 50000
+                                    }
+                                }
+                            )
+                        elif Enchant == "Cheating":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Cheating" : {
+                                        "name" : "Читерство",
+                                        "Description" : "Увеличивает шансы победить , в казино. Внимание : Другие игроки , которые будут вас атаковать, смогут забирать ваши деньги",
+                                    }
+                                }
+                            )
+                        elif Enchant == "Dealer":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Dealer" : {
+                                        "name" : "Торговец",
+                                        "Description" : "Этот предмет стоит в 10 раз дороже",
+                                    }
+                                }
+                            )
+                        elif Enchant == "Training":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Training" : {
+                                        "name" : "Обучение",
+                                        "Description" : "Если вы атакуете кого либо, вы получаете большее количество опыта",
+                                        "Exp" : 15
+                                    }
+                                }
+                            )
+                        elif Enchant == "Curse":
+                            EncantItem = Magic.Create(
+                                Parametrs = {
+                                    "Curse" : {
+                                        "name" : "Проклятье",
+                                        "Description" : "Каждое ваше сообщение, убивает вас.",
+                                        "Damage" : 15
+                                    }
+                                }
+                            )
+                        try:
+                            ReliquaryName = ReliquaryNames[random.randint(0,len(ReliquaryNames))]
+                        except:
+                            ReliquaryName = ReliquaryNames[0]
+                        Inventor.WriteInventor(
+                            type="Оружие",
+                            name=ReliquaryName,
+                            classItem="Реликвия",
+                            ID=random.randint(0,99999999),
+                            gold=9999999999,
+                            armor=5000000,
+                            damage=random.randint(500650000,1065000000),
+                            magic=EncantItem
+                        )
+                else:
+                    Boss.Write(Health=Health,Status="Life")
+                    await Message.edit(
+                        content=f"Текущее здоровье : {Health}\nМаксимальное здоровье : {MaxHealth}\nВозможный урон : {Damage}\nБроня : {Armor}\n\n{UserName_} : \nЗдоровье : {PlayerHealth}"
+                    )    
+        # -----
+        # Регистрация
+        if Message.id == 713880721709727754:
+            if Player == self.user:
+                return
+            await Message.remove_reaction(Emoji,Player)
+            Standart = Guild.get_role(610078093260095488)
+            StartRole = Guild.get_role(691735620346970123)
+            MainChannel = self.get_channel(419879599363850253)
+            await MainChannel.send(f"{Player.mention} присоединился на сервер",delete_after=600)
+            if str(Emoji.name) == "⚫":
+                Role = Guild.get_role(713477362058002535)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🔵": 
+                Role = Guild.get_role(713477367061938180)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟤": 
+                Role = Guild.get_role(713681425056006154)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟢": 
+                Role = Guild.get_role(713477377644167288)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟠": 
+                Role = Guild.get_role(713477369045712932)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟣": 
+                Role = Guild.get_role(713477376910032897)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🔴": 
+                Role = Guild.get_role(713477364977500220)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "⚪": 
+                Role = Guild.get_role(713477210446757900)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟡": 
+                Role = Guild.get_role(713477378214592603)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+        # -----------
+        # await Message.add_reaction("⚫")
+        # await Message.add_reaction("🔵")
+        # await Message.add_reaction("🟤")
+        # await Message.add_reaction("🟢")
+        # await Message.add_reaction("🟠")
+        # await Message.add_reaction("🟣")
+        # await Message.add_reaction("🔴")
+        # await Message.add_reaction("⚪")
+        # await Message.add_reaction("🟡")
+        #Роли
+        # print(Emoji)
+        if Message.id == 714080637648240690:
+            # ⚫ - Чёрный
+            # 🔵 - Синий
+            # 🟤 - Коричневый
+            # 🟢 - Зелёный
+            # 🟠 - Оранжевый
+            # 🟣 - Фиолетовый
+            # 🔴 - Красный
+            # ⚪ - Белый
+            # 🟡 - Жёлтый
+            if Player == self.user:
+                return
+            await Message.remove_reaction(Emoji,Player)
+            
+            RolesID = [
+                713477210446757900, 713477362058002535, 713477364977500220,
+                713477367061938180, 713477369045712932, 713477376910032897,
+                713477377644167288, 713477378214592603, 713681425056006154,
+                716391511708794951, 716390741475196969, 716391516137848863,
+                716391507980189726, 716391501772488748, 716391505425858641,
+                716390742012199024, 716391505073274920
+
+                    ]
+            RoleList = list()
+            for Role in RolesID:
+                RoleList.append(Guild.get_role(Role))
+            if str(Emoji.name) == "⚫": await self.AddOneRole(713477362058002535,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🔵": await self.AddOneRole(713477367061938180,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟤": await self.AddOneRole(713681425056006154,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟢": await self.AddOneRole(713477377644167288,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟠": await self.AddOneRole(713477369045712932,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟣": await self.AddOneRole(713477376910032897,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🔴": await self.AddOneRole(713477364977500220,Member,Guild,RolesID)
+            elif str(Emoji.name) == "⚪": await self.AddOneRole(713477210446757900,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟡": await self.AddOneRole(713477378214592603,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Turquoise_circle": await self.AddOneRole(716391511708794951,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Darkpurple_circle": await self.AddOneRole(716390741475196969,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Darkgreen_circle": await self.AddOneRole(716391516137848863,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Brown_circle": await self.AddOneRole(716391507980189726,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Blue_circle": await self.AddOneRole(716391501772488748,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Pink_circle": await self.AddOneRole(716390742012199024,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Scarlet_circle": await self.AddOneRole(716391505425858641,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Golden_circle": await self.AddOneRole(716391505073274920,Member,Guild,RolesID)
+        #----
+    async def AddOneRole(self,ID,Member,Guild,RolesID):
+        Role = Guild.get_role(ID)
+        await Member.add_roles(Role,reason="Выбрал роль")
+        for role in Member.roles:
+            if role.id in RolesID and role != Role:
+                await Member.remove_roles(role,reason="Убрана старая роль")
 
 InternetActive()
 
@@ -2510,5 +2832,4 @@ while True:
             InternetActive()
             internetWasOff = False
     else:
-        print("Internet disconnected")
         internetWasOff = True

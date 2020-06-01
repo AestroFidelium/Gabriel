@@ -960,12 +960,12 @@ async def EditAttackDamageTwo(self,Channel : discord.channel.TextChannel,GetDama
 def CreateNewBoss():
     with open(f"./Stats/EventBoss.txt","w") as file:
         today = datetime.datetime.today()
-        MaxHealth = random.randint(50000,100000000)
+        MaxHealth = random.randint(10000,50000)
         CurHealth = MaxHealth
         GetGold = 0
-        for ran in range(int(MaxHealth / 1000000)):
+        for ran in range(int(MaxHealth / 1000)):
             if ran < 0: print("ERROR")
-            GetGold += random.randint(300,550)
+            GetGold += random.randint(5,50)
             pass
         Dead = "No"
         NameFile = random.randint(1,32)
@@ -1343,61 +1343,61 @@ def BalansList(**fields):
 
     `------------------- ОРУЖИЕ -------------------`
 
-    `Первоначальный` = от `100` до `500`
+    `Первоначальный` = от `1` до `5`
 
-    `Обычный` = от `350` до `1.000`
+    `Обычный` = от `10` до `30`
 
-    `Редкий` = от `850` до `3.000`
+    `Редкий` = от `45` до `100`
 
-    `Эпический` = от `2.800` до `8.000`
+    `Эпический` = от `125` до `300`
 
-    `Легендарный` = от `10.000` до `325.000`
+    `Легендарный` = от `500` до `700`
 
-    `Мифический` = от `100` до `6.352.500`
+    `Мифический` = от `10` до `2000`
 
-    `Демонический` = от `60.000.000` до `100.000.000`
+    `Демонический` = от `2500` до `4000`
 
-    `Божественный` = от `60.350.000` до `100.650.000`
+    `Божественный` = от `2000` до `4500`
 
     `------------------- ОРУЖИЕ -------------------`
     
     `----------------- ЭКИПИРОВКА -----------------`
 
-    `Первоначальный` = от `5` до `425`
+    `Первоначальный` = от `1` до `5`
 
-    `Обычный` = от `425` до `800`
+    `Обычный` = от `10` до `25`
 
-    `Редкий` = от `750` до `2.500`
+    `Редкий` = от `40` до `90`
 
-    `Эпический` = от `2.255` до `7.000`
+    `Эпический` = от `100` до `250`
 
-    `Легендарный` = от `9.000` до `320.000`
+    `Легендарный` = от `500` до `600`
 
-    `Мифический` = от `100` до `55.000.000`
+    `Мифический` = от `10` до `1700`
 
-    `Демонический` = от `60.000.000` до `85.000.000`
+    `Демонический` = от `2350` до `3700`
 
-    `Божественный` = от `60.000.000` до `75.000.000`
+    `Божественный` = от `2000` до `4000`
 
     `----------------- ЭКИПИРОВКА -----------------`
 
     `----------------- СТОИМОСТЬ ------------------`
     
-    `Первоначальный` = от `5` до `25`
+    `Первоначальный` = от `35` до `50`
 
-    `Обычный` = от `1.110` до `1.350`
+    `Обычный` = от `45` до `100`
 
-    `Редкий` = от `2.000` до `2.800`
+    `Редкий` = от `110` до `170`
 
-    `Эпический` = от `5.000` до `10.000`
+    `Эпический` = от `300` до `1000`
 
-    `Легендарный` = от `100.000` до `125.000`
+    `Легендарный` = от `1300` до `3000`
 
-    `Мифический` = от `125.000` до `1.325.000`
+    `Мифический` = от `5000` до `10000`
 
-    `Демонический` = от `15.000.000` до `35.000.000`
+    `Демонический` = от `9500` до `10000`
 
-    `Божественный` = от `15.350.000` до `35.650.000`
+    `Божественный` = от `10000` до `15000`
 
     `----------------- СТОИМОСТЬ ------------------`
 
@@ -1414,104 +1414,104 @@ def BalansList(**fields):
     if type_ == "Оружие":
         Damage = 0
         Gold = 0
-        Armored = 0
+        Stability = 0
         if classItem == "Первоначальный":
-            Damage = random.randint(100,500)
-            Gold = random.randint(5,25)
-            Armored = random.randint(100,200)
+            Damage = random.randint(1,5)
+            Gold = random.randint(35,50)
+            Stability = random.randint(100,200)
 
         if classItem == "Обычный":
-            Damage = random.randint(350,1000)
-            Gold = random.randint(1100,1350)
-            Armored = random.randint(150,300)
+            Damage = random.randint(10,30)
+            Gold = random.randint(45,100)
+            Stability = random.randint(150,300)
 
         if classItem == "Редкий":
-            Damage = random.randint(850,3000)
-            Gold = random.randint(2000,2800)
-            Armored = random.randint(250,450)
+            Damage = random.randint(45,100)
+            Gold = random.randint(110,170)
+            Stability = random.randint(250,450)
 
         if classItem == "Эпический":
-            Damage = random.randint(2800,8000)
-            Gold = random.randint(5000,10000)
-            Armored = random.randint(600,1000)
+            Damage = random.randint(125,300)
+            Gold = random.randint(300,1000)
+            Stability = random.randint(600,1000)
 
         if (classItem == "Легендарный") or (classItem == "Ћегендарный"):
-            Damage = random.randint(10000,325000)
-            Gold = random.randint(100000,125000)
-            Armored = random.randint(32000,100000)
+            Damage = random.randint(500,700)
+            Gold = random.randint(1300,3000)
+            Stability = random.randint(32000,100000)
 
         if classItem == "Мифический":
-            Damage = random.randint(100,6352500)
-            Gold = random.randint(125000,1325000)
-            Armored = random.randint(100,10000000)
+            Damage = random.randint(10,2000)
+            Gold = random.randint(5000,10000)
+            Stability = random.randint(100,10000000)
 
         if classItem == "Демонический":
-            Damage = random.randint(60350000,100000000)
-            Gold = random.randint(15000000,32000000)
-            Armored = 100000000
+            Damage = random.randint(2500,4000)
+            Gold = random.randint(9500,10000)
+            Stability = 100000000
 
         if classItem == "Божественный":
-            Damage = random.randint(60000000,100650000)
-            Gold = random.randint(15350000,35650000)
-            Armored = 100000000
+            Damage = random.randint(2000,4500)
+            Gold = random.randint(10000,15000)
+            Stability = 100000000
 
 
         NewInfo = {
             "damage" : Damage,
             "gold" : Gold,
-            "armor" : Armored
+            "armor" : Stability
         }
 
         return NewInfo
     if type_ == "Экипировка":
         Armor = 0
         Gold = 0
-        Armored = 0
+        Stability = 0
 
         if classItem == "Первоначальный":
-            Armor = random.randint(5,425)
-            Gold = random.randint(5,25)
-            Armored = random.randint(100,200)
+            Armor = random.randint(1,5)
+            Gold = random.randint(10,25)
+            Stability = random.randint(100,200)
 
         if classItem == "Обычный":
-            Armor = random.randint(425,800)
+            Armor = random.randint(10,25)
             Gold = random.randint(1100,1350)
-            Armored = random.randint(150,300)
+            Stability = random.randint(150,300)
 
         if classItem == "Редкий":
-            Armor = random.randint(750,2500)
+            Armor = random.randint(40,90)
             Gold = random.randint(2000,2800)
-            Armored = random.randint(250,450)
+            Stability = random.randint(250,450)
 
         if classItem == "Эпический":
-            Armor = random.randint(2255,7000)
+            Armor = random.randint(100,250)
             Gold = random.randint(5000,10000)
-            Armored = random.randint(600,1000)
+            Stability = random.randint(600,1000)
 
         if classItem == "Легендарный":
-            Armor = random.randint(9000,320000)
+            Armor = random.randint(500,600)
             Gold = random.randint(100000,125000)
-            Armored = random.randint(32000,100000)
+            Stability = random.randint(32000,100000)
 
         if classItem == "Мифический":
-            Armor = random.randint(100,55000000)
+            Armor = random.randint(10,1700)
             Gold = random.randint(125000,1325000)
-            Armored = random.randint(100,10000000)
+            Stability = random.randint(100,10000000)
 
         if classItem == "Демонический":
-            Armor = random.randint(60000000,85000000)
+            Armor = random.randint(2350,3700)
             Gold = random.randint(15000000,32000000)
-            Armored = 100000000
+            Stability = 100000000
 
         if classItem == "Божественный":
-            Armor = random.randint(60000000,75000000)
+            Armor = random.randint(2000,4000)
             Gold = random.randint(15350000,35650000)
-            Armored = 100000000
+            Stability = 100000000
 
         NewInfo = {
             "protect" : Armor,
             "gold" : Gold,
-            "armor" : Armored
+            "armor" : Stability
         }
 
         return NewInfo
@@ -1953,6 +1953,7 @@ def CreateImageInventor(**fields):
         _magic = _magic['Parametrs']
         _magic = _magic[0]
         Keys = _magic.keys()
+
         for key in Keys:
             key = str(key)
             Spell = _magic[key]
@@ -2000,20 +2001,21 @@ class Auction():
 
     """
 
-    @staticmethod
-    def ReadAuction(**fields):
+    def ReadAuction(self):
         """
         Прочитать все торги
         """
         Items = ""
         with open(f"./Stats/Auction.txt","r") as file:
             for line in file.readlines():
-                if (line != "") and (line != "\n"):
-                    Items += f"{line}"
-        return Items
-    
-    @staticmethod
-    def AddAuction(**fields):
+                if line != " " and line != "\n" and line != "":
+                    Items += f"{line}\n"
+        try:
+            return StrToDict(str=Items)
+        except:
+            return " "
+
+    def AddAuction(self,**fields):
         """
         Создать новые торги
 
@@ -2025,65 +2027,43 @@ class Auction():
 
         """
         
-        username = fields.pop("username")
-        ID = fields.pop("ID")
-        goldAuction = fields.pop("goldAuction")
+        username = str(fields["username"])
+        ID = int(fields["ID"])
+        goldAuction = int(fields["goldAuction"])
 
-        OldAuction = Auction.ReadAuction()
-
-        OldAuction = str(OldAuction).split("\n")
+        
         _PlayerInventor = PlayerInventor(username)
         Inventor = _PlayerInventor.ReadInventor()
 
         Inventor = str(Inventor).split("\n")
 
-        NewAuction = {
-            "username" : username,
-            "ID" : ID,
-            "goldAuction" : goldAuction,
-            "AuctionID" : random.randint(0,999999999)
-        }
-
-        NewAuction = str(NewAuction)
-
-        Words = list();Words.extend(NewAuction)
-        NewAuction_ = str()
-        for Word in Words:
-            if Word != "}":
-                NewAuction_ += Word
-            else:
-                NewAuction_ += ","
-        
-
         for item in Inventor:
             itemDict = StrToDict(str=item)
-            ItemID = itemDict.pop("ID")
+            ItemID = int(itemDict["ID"])
             if ItemID == ID:
-                Words = list() ; Words.extend(str(itemDict))
-                for word in Words:
-                    if word != "{":
-                        NewAuction_ += word
-                NewAuction = StrToDict(str=NewAuction_)
+                NewAuction = {
+                    "username" : username,
+                    "ID" : ID,
+                    "goldAuction" : goldAuction,
+                    "AuctionID" : random.randint(0,999999999),
+                    "Item" : itemDict
+                    }
                 try:
-                    try:
-                        _PlayerInventor = PlayerInventor(username)
-                        _PlayerInventor.SellItem(ID=ID)
-                    except: 
-                        print("Этого предмета нет")
-                        return
+                    _PlayerInventor.DeleteItem(ID=ID)
                 except LastItem: 
                     print("Последний предмет")
                     return
 
                 with open(f"./Stats/Auction.txt","w") as file:
-                    for Auctions in OldAuction:
-                        file.writelines(f"{str(Auctions)}\n")
+                    OldAuction = self.ReadAuction()
+                    if OldAuction != " ":
+                        OldAuction = str(OldAuction).split("\n")
+                        for Auctions in OldAuction:
+                            file.writelines(f"{str(Auctions)}\n")
                     file.writelines(f"{str(NewAuction)}")
                 pass
-        
-    
-    @staticmethod
-    def RemoveAuction(**fields):
+
+    def RemoveAuction(self,**fields):
         """
         Удалить торг
 
@@ -2099,9 +2079,9 @@ class Auction():
 
         gold = int(fields.pop("gold"))
 
-        AuctionID = fields.pop("AuctionID")
+        AuctionID = int(fields.pop("AuctionID"))
 
-        OldAuction = Auction.ReadAuction()
+        OldAuction = self.ReadAuction()
 
         OldAuction = str(OldAuction).split("\n")
         
@@ -2121,32 +2101,34 @@ class Auction():
                         if gold < _GoldAuction:
                             file.writelines(f"{str(Auctions)}\n")
                             raise NotEnoughGold("Не достаточно золота")
-                        _AuctionsItemType = str(_AuctionsDict.pop("type"))
-                        _AuctionsItemName = str(_AuctionsDict.pop("name"))
-                        _AuctionsItemClassItem = (_AuctionsDict.pop("classItem"))
-                        _AuctionsItemID = int(_AuctionsDict.pop("ID"))
-                        _AuctionsItemGold = int(_AuctionsDict.pop("gold"))
+                        ItemAU = _AuctionsDict.pop("Item")
+                        _AuctionsItemType = str(ItemAU.pop("type"))
+                        _AuctionsItemName = str(ItemAU.pop("name"))
+                        _AuctionsItemClassItem = (ItemAU.pop("classItem"))
+                        _AuctionsItemID = int(ItemAU.pop("ID"))
+                        _AuctionsItemGold = int(ItemAU.pop("gold"))
                         _AuctionsOwner = str(_AuctionsDict.pop("username"))
                         _Gold(username=username,do="Убавить",count=gold)
                         _Gold(username=_AuctionsOwner,do="Добавить",count=gold)
                         _PlayerInventor = PlayerInventor(username)
                         if _AuctionsItemType == "Оружие":
                             Inventor = _PlayerInventor.ReadInventor()
-                            AuctionsItemArmor = int(_AuctionsDict.pop("armor"))
-                            AuctionsItemDamage = int(_AuctionsDict.pop("damage"))
+                            AuctionsItemArmor = int(ItemAU.pop("armor"))
+                            AuctionsItemDamage = int(ItemAU.pop("damage"))
                             _PlayerInventor = PlayerInventor(username)
-                            _PlayerInventor.WriteInventor(username=username,old=Inventor,type=_AuctionsItemType
+                            _PlayerInventor.WriteInventor(type=_AuctionsItemType
                             ,name=_AuctionsItemName,classItem=_AuctionsItemClassItem,ID=_AuctionsItemID,
                             gold=_AuctionsItemGold,armor=AuctionsItemArmor,damage=AuctionsItemDamage)
                         if _AuctionsItemType == "Экипировка":
                             Inventor = _PlayerInventor.ReadInventor()
-                            AuctionsItemArmor = int(_AuctionsDict.pop("armor"))
-                            AuctionsItemProtect = int(_AuctionsDict.pop("protect"))
+                            AuctionsItemArmor = int(ItemAU.pop("armor"))
+                            AuctionsItemProtect = int(ItemAU.pop("protect"))
                             _PlayerInventor = PlayerInventor(username)
                             _PlayerInventor.WriteInventor(username=username,old=Inventor,type=_AuctionsItemType
                             ,name=_AuctionsItemName,classItem=_AuctionsItemClassItem,ID=_AuctionsItemID,
                             gold=_AuctionsItemGold,armor=AuctionsItemArmor,protect=AuctionsItemProtect)
-                except SyntaxError: pass
+                except SyntaxError: 
+                    print("SyntaxError")
             pass
         pass
 
@@ -2445,7 +2427,7 @@ class BossForMoney():
         for Stats in range(Multiply):
             if Stats < 0:
                 raise self.ToSmallGold("Не достаточно золота")
-            MaxHealth += random.randint(1000000000, 100000000000)
+            MaxHealth += random.randint(1000000000000000, 100000000000000000)
             Damage += random.randint(50000, 100000)
             Armor += random.randint(1000,3000)
         Health = MaxHealth
@@ -2456,7 +2438,8 @@ class BossForMoney():
                 "Damage" : Damage,
                 "Armor" : Armor,
                 "Status" : "Life",
-                "Players" : {}
+                "Gold" : int(GetMoney),
+                "Players" : []
             }
             file.write(str(StatsBoss))
     def Read(self):
@@ -2493,6 +2476,8 @@ class BossForMoney():
 
         Players = self._CheckParametr("Players",fields)
 
+        Gold = self._CheckParametr("Players",fields)
+
         with open(f"{self.direct}/Bosses/BossForGold.txt","w") as file:
             NewData = {
                 "MaxHealth" : MaxHealth,
@@ -2500,6 +2485,7 @@ class BossForMoney():
                 "Damage" : Damage,
                 "Armor" : Armor,
                 "Status" : Status,
+                "Gold" : Gold,
                 "Players" : Players
             }
             file.write(str(NewData))
@@ -2542,6 +2528,8 @@ class PlayerInventor():
         `ID` : это персональный номер у предмета, к которому нужно будет отссылаться, дабы взаимодействовать с ним
 
         `gold` : Количество золотых, которые нужно потратить, для улучшения предмета
+
+        'maxGold' : Максимальное количество золотых
 
         `------------------- Для предметов ----------------`
 
@@ -2622,9 +2610,9 @@ class PlayerInventor():
         except:
             if type_ == "Ингридиент":
                 raise Error_CreateItem("count error")
-
-        old = self.ReadInventor()
-
+        try:
+            old = self.ReadInventor()
+        except: old = ""
         magic = {}
 
         newItem = {}
@@ -2640,6 +2628,7 @@ class PlayerInventor():
                 "ID" : ID,
                 "duration" : duration,
                 "gold" : gold,
+                "maxGold" : gold,
                 "magic" : magic
             }
         if type_ == "Оружие":
@@ -2649,6 +2638,7 @@ class PlayerInventor():
                 "classItem" : classItem,
                 "ID" : ID,
                 "gold" : gold,
+                "maxGold" : gold,
                 "armor" : armor,
                 "damage" : damage,
                 "magic" : magic
@@ -2660,6 +2650,7 @@ class PlayerInventor():
                 "classItem" : classItem,
                 "ID" : ID,
                 "gold" : gold,
+                "maxGold" : gold,
                 "armor" : armor,
                 "protect" : protect,
                 "magic" : magic
@@ -2671,6 +2662,7 @@ class PlayerInventor():
                 "classItem" : classItem,
                 "ID" : ID,
                 "gold" : gold,
+                "maxGold" : gold,
                 "count" : count,
                 "magic" : magic
             }
@@ -2685,24 +2677,6 @@ class PlayerInventor():
         Продает предмет
 
         `ID` : Индекс предмета
-
-        `Сломанный` : с 1 до 15 золотых
-
-        `Первоначальный` : с 5 до 15 золотых
-
-        `Обычный` : с 500 до 700 золотых
-
-        `Редкий` : с 1000 до 1111 золотых
-
-        `Эпический` : с 2000 до 3000 золотых
-
-        `Легендарный` : с 6000 до 10000 золотых
-
-        `Мифический` : с 500 до 100000 золотых
-
-        `Божественный` : с 100000 до 130000 золотых
-
-        `Демонический` : с 59999 до 200000 золотых
 
         """
         username = self.Player
@@ -2722,34 +2696,8 @@ class PlayerInventor():
             if ItemID == ID:
                 if CountItems > 1:
                     ClassItem = ItemDict.pop("classItem")
-
-                    if ClassItem == "Сломанный":
-                        SellMoney = random.randint(1,15)
-                        _Gold(username=username,do="Добавить",count=SellMoney)
-                    elif ClassItem == "Первоначальный":
-                        SellMoney = random.randint(5,15)
-                        _Gold(username=username,do="Добавить",count=SellMoney)
-                    elif ClassItem == "Обычный":
-                        SellMoney = random.randint(500,700)
-                        _Gold(username=username,do="Добавить",count=SellMoney)
-                    elif ClassItem == "Редкий":
-                        SellMoney = random.randint(1000,1111)
-                        _Gold(username=username,do="Добавить",count=SellMoney)
-                    elif ClassItem == "Эпический":
-                        SellMoney = random.randint(2000,3000)
-                        _Gold(username=username,do="Добавить",count=SellMoney)
-                    elif ClassItem == "Легендарный":
-                        SellMoney = random.randint(6000,10000)
-                        _Gold(username=username,do="Добавить",count=SellMoney)
-                    elif ClassItem == "Мифический":
-                        SellMoney = random.randint(500,100000)
-                        _Gold(username=username,do="Добавить",count=SellMoney)
-                    elif ClassItem == "Божественный":
-                        SellMoney = random.randint(100000,130000)
-                        _Gold(username=username,do="Добавить",count=SellMoney)
-                    elif ClassItem == "Демонический":
-                        SellMoney = random.randint(59999,200000)
-                        _Gold(username=username,do="Добавить",count=SellMoney)       
+                    SellMoney = int(ItemDict["maxGold"])
+                    _Gold(username=username,do="Добавить",count=SellMoney)     
                 else:
                     raise LastItem("Последний предмет")
             else:
@@ -2855,6 +2803,42 @@ class PlayerInventor():
             pass
         pass
 
+    def DeleteItem(self,**fields):
+        """
+        Продает предмет
+
+        `ID` : Индекс предмета
+
+        """
+        username = self.Player
+        ID = int(fields.pop("ID"))
+        _PlayerInventor = PlayerInventor(username)
+        Inventor = _PlayerInventor.ReadInventor()
+
+        Inventor = Inventor.split("\n")
+
+        NewInventor = list()
+
+        CountItems = len(Inventor)
+
+        for Item in Inventor:
+            ItemDict = StrToDict(str=Item)
+            ItemID = int(ItemDict.pop("ID"))
+            if ItemID == ID:
+                if CountItems <= 1:
+                    raise LastItem("Последний предмет")
+            else:
+                NewInventor.append(Item)
+            pass
+
+        with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
+            Counts = len(NewInventor)
+            for Item in NewInventor:
+                Counts -= 1
+                if Counts != 0:
+                    file.writelines(f"{Item}\n")
+                else:
+                    file.writelines(f"{Item}")
 class Magic():
     """
     Магические свойства у предмета
@@ -2862,6 +2846,23 @@ class Magic():
     def __init__(self):
         pass
 
+    def PossibleEnchant(self):
+        Enchantend = [
+            "Vampirism",
+            "More experience",
+            "Poison",
+            "Fury",
+            "Critical hit",
+            "Recklessness",
+            "Execution",
+            "Looting",
+            "Grace",
+            "Cheating",
+            "Dealer",
+            "Training",
+            "Curse"
+        ]
+        return Enchantend
 
     def Create(self,**fields):
         """
@@ -2966,9 +2967,53 @@ class PlayerClass():
                 WriteMainParametrs(username=Target,curHealth=Enemy_Health)
             await asyncio.sleep(Time)
 
+class Talant():
+    """
+    Таланты.
+    """
+    def __init__(self,Player : str):
+        self.Player = Player
+        self.path = f"./Stats/Talants/{Player}"
+        try:
+            with open(f"{self.path}.txt","r"): pass
+        except FileNotFoundError:
+            self.Create()
+
+    def Edit(self):
+        pass
+
+
+    def Create(self):
+        with open(f"{self.path}.txt","w") as file:
+            BlankList = {
+                "Talants" : {
+                    "More Exp" : {
+                            "Name" : "Больше опыта",
+                            "Description" : "Каждое сообщение дает больше единиц опыта, за каждый уровень этого умения",
+                            "Level" : 0,
+                            "MaxLevel" : 10,
+                            "Exp" : 0,
+                            "NeedExp" : 10,
+                            },
+                    "More Gold" : {
+                            "Name" : "Больше золота",
+                            "Description" : "Уменьшает необходимое количество сообщений, чтобы получить золото",
+                            "Level" : 0,
+                            "MaxLevel" : 5,
+                            "Exp" : 0,
+                            "NeedExp" : 10,
+                            }
+                    },
+                "Stats" : {
+                    "Exp" : 0
+                }
+                }
+            file.write(str(BlankList))
+            pass
+
+
 if __name__ == "__main__":
 
-    # _PlayerInventor = PlayerInventor("KOT32500")
     # _Magic = Magic()
     # Magc = _Magic.Create(
     #     Parametrs = {
@@ -2976,7 +3021,7 @@ if __name__ == "__main__":
     #             "name" : "Вампиризм",
     #             "Description" : "После каждой атаки вы исциляетесь",
     #             "Heal" : 75,
-    #             "type" : "%"
+    #             "type" : "+"
     #             },
     #         "More experience": {
     #             "name" : "Больше опыта",
@@ -3038,15 +3083,16 @@ if __name__ == "__main__":
     #         }
     #     }
     # )
+    # _PlayerInventor = PlayerInventor("KOT32500")
     # _PlayerInventor.WriteInventor (
     #     type="Оружие",
-    #     name="Админский клинок",
-    #     classItem="Реликвия",
-    #     ID=1,
+    #     name="Проверка Аукциона",
+    #     classItem="Сломанный",
+    #     ID=15,
     #     gold=1,
     #     armor=999999,
-    #     damage=3250000000000,
-    #     magic=Magc
+    #     damage=1,
     #     )
+    Talant_ = Talant("KOT32500")
     pass
     

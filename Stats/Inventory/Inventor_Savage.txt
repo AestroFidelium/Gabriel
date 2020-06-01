@@ -1,25 +1,23 @@
-{'type': 'ќружие', 'name': 'Ѕоевой тапок', 'classItem': '”никальный', 'ID': 999, 'gold': 999999999, 'armor': 10000, 'damage': 5000}
-{'type': 'ќружие', 'name': 'ѕродай мен€', 'classItem': 'ƒемонический', 'ID': 123556, 'gold': 24194446, 'armor': 100000000, 'damage': 85852990, 'magic': {}}
-{'type': 'Ёкипировка', 'name': 'ѕорванный носок', 'classItem': 'ќбычный', 'ID': 685348, 'gold': 1246, 'armor': 100, 'protect': 770, 'magic': {}}
-{'type': 'ќружие', 'name': 'ћедный лук', 'classItem': 'ќбычный', 'ID': 786812, 'gold': 1275, 'armor': 100, 'damage': 846, 'magic': {}}
-{'type': 'Ёкипировка', 'name': 'Ўл€па', 'classItem': 'ќбычный', 'ID': 469853, 'gold': 1155, 'armor': 100, 'protect': 741, 'magic': {}}
-{'type': 'Ёкипировка', 'name': ' уртка', 'classItem': 'ќбычный', 'ID': 118634, 'gold': 1244, 'armor': 100, 'protect': 545, 'magic': {}}
-{'type': 'ќружие', 'name': 'ќстрый камень', 'classItem': 'ƒемонический', 'ID': 875860, 'gold': 27372778, 'armor': 100000000, 'damage': 90657452, 'magic': {}}
-{'type': 'ќружие', 'name': 'ѕалка', 'classItem': 'ƒемонический', 'ID': 807782, 'gold': 29494473, 'armor': 100000000, 'damage': 82130926, 'magic': {}}
-{'type': 'ќружие', 'name': 'ћедный нож', 'classItem': 'ќбычный', 'ID': 348137, 'gold': 1311, 'armor': 100, 'damage': 967, 'magic': {}}
-{'type': 'Ёкипировка', 'name': 'ћайка', 'classItem': 'ќбычный', 'ID': 300557, 'gold': 1324, 'armor': 100, 'protect': 544, 'magic': {}}
-{'type': 'ќружие', 'name': 'ћедный кинжал', 'classItem': 'ќбычный', 'ID': 733382, 'gold': 1272, 'armor': 100, 'damage': 724, 'magic': {}}
-{'type': 'ќружие', 'name': '—екира', 'classItem': 'Ёпический', 'ID': 331917, 'gold': 5445, 'armor': 100, 'damage': 5335, 'magic': {}}
-{'type': 'Ёкипировка', 'name': '—андали', 'classItem': 'ќбычный', 'ID': 875404, 'gold': 1158, 'armor': 100, 'protect': 730, 'magic': {}}
-{'type': 'ќружие', 'name': 'ћедный лук', 'classItem': 'ќбычный', 'ID': 399747, 'gold': 1331, 'armor': 100, 'damage': 617, 'magic': {}}
-{'type': 'ќружие', 'name': 'ќстрый камень', 'classItem': 'ѕервоначальный', 'ID': 17764, 'gold': 11, 'armor': 100, 'damage': 255, 'magic': {}}
-{'type': 'ќружие', 'name': 'ѕерчатки', 'classItem': 'ѕервоначальный', 'ID': 797727, 'gold': 20, 'armor': 100, 'damage': 254, 'magic': {}}
-{'type': 'Ёкипировка', 'name': '—андали', 'classItem': 'ќбычный', 'ID': 22288, 'gold': 1266, 'armor': 100, 'protect': 455, 'magic': {}}
-{'type': 'ќружие', 'name': '“€жела€ палка', 'classItem': 'ѕервоначальный', 'ID': 601435, 'gold': 20, 'armor': 100, 'damage': 127, 'magic': {}}
-{'type': 'ќружие', 'name': 'ћедный нож', 'classItem': 'ќбычный', 'ID': 377507, 'gold': 1347, 'armor': 100, 'damage': 774, 'magic': {}}
-{'type': 'ќружие', 'name': 'ƒубинка', 'classItem': 'ѕервоначальный', 'ID': 763153, 'gold': 24, 'armor': 100, 'damage': 131, 'magic': {}}
-{'type': 'Ёкипировка', 'name': '√ероическа€ душа', 'classItem': 'Ёпический', 'ID': 191617, 'gold': 8880, 'armor': 100, 'protect': 2404, 'magic': {}}
-{'type': 'ќружие', 'name': 'ќстрый камень', 'classItem': 'ѕервоначальный', 'ID': 5752, 'gold': 18, 'armor': 100, 'damage': 294, 'magic': {}}
-{'type': 'ќружие', 'name': '“€жела€ палка', 'classItem': 'ѕервоначальный', 'ID': 76380, 'gold': 21, 'armor': 100, 'damage': 425, 'magic': {}}
-{'type': 'ќружие', 'name': ' инжал тени', 'classItem': 'Ёпический', 'ID': 584850, 'gold': 7589, 'armor': 100, 'damage': 4293, 'magic': {}}
-{'type': 'ќружие', 'name': 'ѕерчатки', 'classItem': 'ѕервоначальный', 'ID': 734132, 'gold': 25, 'armor': 100, 'damage': 294, 'magic': {}}
+{'type': 'ќружие', 'name': '–жавый сломанный ножик', 'classItem': 'ƒемонический', 'ID': 94413159, 'gold': 9606, 'armor': 100000000, 'damage': 3527, 'magic': {}}
+{'type': 'Ёкипировка', 'name': 'ƒуховное покровительство', 'classItem': 'Ёпический', 'ID': 669911, 'gold': 7756, 'maxGold': 7756, 'armor': 100, 'protect': 237, 'magic': {}}
+{'type': 'Ёкипировка', 'name': 'Ўл€па', 'classItem': 'ќбычный', 'ID': 216422, 'gold': 1268, 'maxGold': 1268, 'armor': 100, 'protect': 24, 'magic': {}}
+{'type': 'Ёкипировка', 'name': 'Ѕрон€ из камн€', 'classItem': 'Ёпический', 'ID': 998124, 'gold': 6133, 'maxGold': 6133, 'armor': 100, 'protect': 246, 'magic': {}}
+{'type': 'Ёкипировка', 'name': 'ћайка', 'classItem': 'ќбычный', 'ID': 141446, 'gold': 1122, 'maxGold': 1122, 'armor': 100, 'protect': 21, 'magic': {}}
+{'type': 'ќружие', 'name': 'Ёльфийский лук', 'classItem': 'ƒемонический', 'ID': 207411, 'gold': 9650, 'armor': 100000000, 'damage': 3201, 'magic': {}}
+{'type': 'ќружие', 'name': 'ќстрый камень', 'classItem': 'ƒемонический', 'ID': 251834, 'gold': 9924, 'armor': 100000000, 'damage': 3713, 'magic': {}}
+{'type': 'Ёкипировка', 'name': 'ƒуховное покровительство', 'classItem': 'Ћегендарный', 'ID': 847566, 'gold': 9705, 'armor': 85166, 'protect': 503, 'magic': {}}
+{'type': 'Ёкипировка', 'name': ' уртка', 'classItem': 'ќбычный', 'ID': 106133, 'gold': 1158, 'maxGold': 1158, 'armor': 100, 'protect': 19, 'magic': {}}
+{'type': 'ќружие', 'name': 'ћедное копье', 'classItem': 'ќбычный', 'ID': 739030, 'gold': 98, 'maxGold': 98, 'armor': 100, 'damage': 16, 'magic': {}}
+{'type': 'ќружие', 'name': 'ƒва топора', 'classItem': 'Ёпический', 'ID': 51076, 'gold': 371, 'maxGold': 371, 'armor': 100, 'damage': 195, 'magic': {}}
+{'type': 'ќружие', 'name': '“€жела€ палка', 'classItem': 'ѕервоначальный', 'ID': 148389, 'gold': 46, 'maxGold': 46, 'armor': 100, 'damage': 3, 'magic': {}}
+{'type': 'Ёкипировка', 'name': ' уртка', 'classItem': 'ќбычный', 'ID': 151887, 'gold': 1299, 'maxGold': 1299, 'armor': 100, 'protect': 12, 'magic': {}}
+{'type': 'ќружие', 'name': 'ќстрый камень', 'classItem': 'ѕервоначальный', 'ID': 943981, 'gold': 50, 'maxGold': 50, 'armor': 100, 'damage': 1, 'magic': {}}
+{'type': 'ќружие', 'name': 'ѕерчатки', 'classItem': 'ѕервоначальный', 'ID': 949811, 'gold': 37, 'maxGold': 37, 'armor': 100, 'damage': 5, 'magic': {}}
+{'type': 'Ёкипировка', 'name': 'ћагический барьер', 'classItem': 'Ёпический', 'ID': 503599, 'gold': 9321, 'maxGold': 9321, 'armor': 100, 'protect': 152, 'magic': {}}
+{'type': 'ќружие', 'name': 'ќстрый камень', 'classItem': 'ѕервоначальный', 'ID': 576707, 'gold': 42, 'maxGold': 42, 'armor': 100, 'damage': 5, 'magic': {}}
+{'type': 'ќружие', 'name': 'ѕерчатки', 'classItem': 'ѕервоначальный', 'ID': 368756, 'gold': 40, 'maxGold': 40, 'armor': 100, 'damage': 3, 'magic': {}}
+{'type': 'ќружие', 'name': 'ћедный лук', 'classItem': 'ќбычный', 'ID': 441984, 'gold': 79, 'maxGold': 79, 'armor': 100, 'damage': 30, 'magic': {}}
+{'type': 'Ёкипировка', 'name': ' уртка', 'classItem': 'ќбычный', 'ID': 798115, 'gold': 1274, 'maxGold': 1274, 'armor': 100, 'protect': 10, 'magic': {}}
+{'type': 'ќружие', 'name': 'Ёпическое копье', 'classItem': 'Ёпический', 'ID': 969162, 'gold': 702, 'maxGold': 702, 'armor': 100, 'damage': 266, 'magic': {}}
+{'type': 'ќружие', 'name': 'ћедное копье', 'classItem': 'ќбычный', 'ID': 221805, 'gold': 48, 'maxGold': 48, 'armor': 100, 'damage': 16, 'magic': {}}
+{'type': 'Ёкипировка', 'name': '√ероическа€ душа', 'classItem': 'Ёпический', 'ID': 96022, 'gold': 9957, 'maxGold': 9957, 'armor': 100, 'protect': 188, 'magic': {}}

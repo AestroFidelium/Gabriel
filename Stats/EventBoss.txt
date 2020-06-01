@@ -1,1 +1,1 @@
-{'data': '2020-05-22-21-45-34', 'maxHealth': 24028625, 'curHealth': 24028625, 'getGold': 10572, 'dead': 'No', 'nameFile': 'Boss1', 'killer': 'none'}
+{'data': '2020-05-31-23-55-13', 'maxHealth': 39616, 'curHealth': 39616, 'getGold': 974, 'dead': 'No', 'nameFile': 'Boss22', 'killer': 'none'}
