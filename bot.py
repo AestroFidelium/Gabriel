@@ -1288,7 +1288,6 @@ class MyClient(discord.Client):
         _Gabriele_ = await self.fetch_user(656808327954825216)
         OurServer = await self.fetch_guild(message.guild.id)
         # print(message.content)
-        _Channel_ = None
         _Message_ = discord.message.Message
         _Player_ = discord.user.User
         Member_Player = discord.member.Member
@@ -2125,9 +2124,9 @@ class MyClient(discord.Client):
                         print("SyntaxError")
                 pass
             
-            pass
-        
-
+        if message.channel.topic == "Создание текстовой личной комнаты":
+            if message.author != self.user:
+                await self._CreateRoom(message.channel,message.author)
         pass
     async def botShop(self,message):
         time.sleep(1)
@@ -2369,8 +2368,7 @@ class MyClient(discord.Client):
                 Functions._Gold(username=UserName_,do="Убавить",count=int(Index))
                 Boss.Create(int(Index))
                 await message.channel.send(f"Босс успешно был призван",delete_after=10)
-    async def PlaySounds(self):
-        pass
+    
     async def on_message(self, message):
         self.Gabriel = Functions.Gabriel()
         Guild = await self.fetch_guild(message.channel.guild.id)
@@ -2481,7 +2479,7 @@ class MyClient(discord.Client):
         for word in UserName_:
             UserName__ += word
         UserName_ = str(UserName__)
-        DevelopGabriel = await self.fetch_guild(711132161444675595)
+        DevelopGabriel = await self.fetch_guild(716945063351156736)
         EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
         # for Emodji in EmodjsInDevelop:
         #     await Message.add_reaction(Emodji)
@@ -2821,6 +2819,104 @@ class MyClient(discord.Client):
         for role in Member.roles:
             if role.id in RolesID and role != Role:
                 await Member.remove_roles(role,reason="Убрана старая роль")
+
+    async def _CreateRoom(self,GetChannel, User):
+        Guild = await self.fetch_guild(419879599363850251)
+        # Channel = await self.fetch_channel(717131413828403212)
+        # print(GetChannel.topic)
+        topic = "Создание текстовой личной комнаты"
+        if GetChannel.topic == topic:
+            Category = GetChannel.category
+            Position = GetChannel.position
+            Position -= 1
+            # await GetChannel.trigger_typing()
+            NewRoom = await Guild.create_text_channel(
+                name = "комната",
+                category = Category,
+                position = Position,
+                topic = topic,
+                reason = "Новая комната"
+                )
+            Message = "Написав что либо в эту комнату, вы её создадите"
+            NewMessage = await NewRoom.send(Message)
+            async for message in GetChannel.history(limit=10):
+                if message.author == self.user:
+                    if message.content == Message:
+                        Message = f"{User.mention}, Вы успешно создали комнату"
+                        await message.edit(
+                            content=Message,
+                            reason = "Уведомление о успешной созданной комнате"
+                            )
+            await GetChannel.edit(
+                name = f"{User.name}",
+                topic = f"Комната игрока {User.name}",
+                category = Category,
+                reason = "Игрок создал новую комнату"
+            )
+            task1 = asyncio.create_task(
+                self.NotMessagesInRoom(User,GetChannel))
+            task2 = asyncio.create_task(
+                self.CommandInCustomRoom(User,GetChannel))
+            asyncio.gather(task1,task2)
+
+    async def on_typing(self,GetChannel, User, When):
+        if GetChannel.topic == "Создание текстовой личной комнаты":
+            await self._CreateRoom(GetChannel,User)
+
+    async def CommandInCustomRoom(self,User : discord.User,Channel : discord.TextChannel):
+        historyMessages = list()
+        while Channel.topic != "Комната удалена":
+            try:
+                async for message in Channel.history(limit=10):
+                    Message = str(message.content)
+                    Command = Message.split()[0].upper()
+                    Mention = message.mentions
+                    if Message not in historyMessages: #Команда не повторяется
+                        historyMessages.append(Message)
+                        if Command == "Add".upper():
+                            Members = message.mentions
+                            for member in Members:
+                                overwrite = discord.PermissionOverwrite()
+                                overwrite.send_messages = True
+                                overwrite.read_messages = True
+                                # overwrite.view_channel = True
+                                await message.channel.set_permissions(member,overwrite=overwrite)
+                        if Command == "Remove".upper():
+                            Members = message.mentions
+                            for member in Members:
+                                overwrite = discord.PermissionOverwrite()
+                                overwrite.send_messages = False
+                                overwrite.read_messages = False
+                                # overwrite.view_channel = False
+                                await message.channel.set_permissions(member,overwrite=overwrite)
+
+                await asyncio.sleep(0.35)
+            except discord.errors.NotFound: 
+                break
+
+    async def NotMessagesInRoom(self,User,Channel):
+        MaxTime = 100
+        Times = MaxTime
+        historyMessages = list()
+        while Times > 0:
+            await asyncio.sleep(0.010)
+            NewMessages = False
+            try:
+                async for message in Channel.history(limit=100):
+                    if str(message.content) not in historyMessages:
+                        Times = MaxTime
+                        NewMessages = True
+                        historyMessages.append(str(message.content))
+                if NewMessages == False:
+                    Times -= 1
+            except discord.errors.NotFound:
+                Times = 0
+
+        await Channel.edit(
+            topic = "Комната удалена"
+        )
+
+        await Channel.delete(reason="Комната не взаимодейсвует")
 
 InternetActive()
 

@@ -29,18 +29,17 @@ class MyClient(discord.Client):
 
     async def on_ready(self):
         print(f"Loggined")#permissions edit
-
         # newGuild = await self.create_guild("Прикол да?")
         #716945063351156736
-        GodsAndCat = await self.fetch_guild(419879599363850251)
-        Administrator_Role = GodsAndCat.get_role(578514082252980234)
-        OldSettings = Administrator_Role.colour
-        Guild = await self.fetch_guild(716945063351156736)
-        Me = await Guild.fetch_member(414150542017953793)
-        # await NewGroup.set_permissions(Me,manage_channels=True,move_members=True,manage_roles=True,reason="Новая комната")
-        # Role = await Guild.create_role(name="Кот")
-        Role = Guild.get_role(716947955160186891)
-        await Role.edit(colour=OldSettings)
+        # GodsAndCat = await self.fetch_guild(419879599363850251)
+        # Administrator_Role = GodsAndCat.get_role(578514082252980234)
+        # OldSettings = Administrator_Role.colour
+        # Guild = await self.fetch_guild(716945063351156736)
+        # Me = await Guild.fetch_member(414150542017953793)
+        # # await NewGroup.set_permissions(Me,manage_channels=True,move_members=True,manage_roles=True,reason="Новая комната")
+        # # Role = await Guild.create_role(name="Кот")
+        # Role = Guild.get_role(716947955160186891)
+        # await Role.edit(colour=OldSettings)
         # await Me.add_roles(Role)
         # newGuild = await self.fetch_guild(419879599363850251)
         # sfs = discord.Invite(newGuild)
@@ -51,7 +50,10 @@ class MyClient(discord.Client):
         #         Invite = await channel.create_invite()
         #         print(Invite)
         #     except: pass
-
+    async def on_typing(self,channel, user, when):
+        print(channel)
+        print(user)
+        print(when)
         pass
 InternetActive()
 
