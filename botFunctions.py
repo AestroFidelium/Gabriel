@@ -12,6 +12,7 @@ import datetime
 import ast
 import os
 import asyncio
+import codecs
 
 Resurses = "./Resurses/"
 StandartURL = "https://pbs.twimg.com/profile_images/589387776740593664/24AVkUCB_400x400.jpg"
@@ -80,24 +81,29 @@ class Gabriel():
             self.direct = f"./Servers/{self.server.name}"
             try:
                 self.CreateServer()
-                with open(f"{self.direct}/ChatConfig.txt","w") as file:
+                with codecs.open(f"{self.direct}/ChatConfig.txt","w",encoding='utf-8', errors='ignore') as file:
+                # with open(f"{self.direct}/ChatConfig.txt","w") as file:
                     NewDict = {
                         "Activity" : [],
                         "Status" : "PRIVATE"
                     }
                     file.write(str(NewDict))
-                with open(f"{self.direct}/RoomsConfig.txt","w") as file:
+                with codecs.open(f"{self.direct}/RoomsConfig.txt","w",encoding='utf-8', errors='ignore') as file:
+                # with open(f"{self.direct}/RoomsConfig.txt","w") as file:
                     NewDict = {
                         "Activity" : []
                     }
                     file.write(str(NewDict))
-                with open(f"{self.direct}/Words.txt","w") as file:
+                with codecs.open(f"{self.direct}/Words.txt","w",encoding='utf-8', errors='ignore') as file:
+                # with open(f"{self.direct}/Words.txt","w") as file:
                     file.write("")
             except FileExistsError:
                 pass #Старый сервер
         def Read(self,serverName : str):
             try:
-                with open(f"./Servers/{serverName}/Config.txt","r") as file:
+                with codecs.open(f"./Servers/{serverName}/Config.txt","r"
+                ,encoding='utf-8', errors='ignore') as file:
+                # with open(f"./Servers/{serverName}/Config.txt","r") as file:
                     return StrToDict(str=str(file.readline()))
             except FileNotFoundError:
                 Modules = {
@@ -133,8 +139,9 @@ class Gabriel():
             Chat = self._CheckModule("Chat",fields)
             Game = self._CheckModule("Game",fields)
             Rooms = self._CheckModule("Rooms",fields)
-            
-            with open(f"{self.direct}/Config.txt","w") as file:
+            with codecs.open(f"{self.direct}/Config.txt","w"
+                ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"{self.direct}/Config.txt","w") as file:
                 Modules = {
                     "Chat" : Chat,
                     "Game" : Game,
@@ -144,7 +151,9 @@ class Gabriel():
 
         def CreateServer(self):
             os.mkdir(self.direct)
-            with open(f"{self.direct}/ServerConfig.txt","w") as file:
+            with codecs.open(f"{self.direct}/ServerConfig.txt","w"
+                ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"{self.direct}/ServerConfig.txt","w") as file:
                 newDict = {
                     "name" : self.server.name,
                     "ID" : self.server.id
@@ -162,7 +171,9 @@ class Gabriel():
         def SavedRooms(self):
             self.File = True
             try:
-                with open(f"{self.direct}/RoomsConfig.txt","r") as file:
+                with codecs.open(f"{self.direct}/RoomsConfig.txt","r"
+                ,encoding='utf-8', errors='ignore') as file:
+                # with open(f"{self.direct}/RoomsConfig.txt","r") as file:
                     return StrToDict(str=str(file.readline()))
             except FileNotFoundError:
                 self.File = False
@@ -184,7 +195,9 @@ class Gabriel():
                         Channel
                     ]
                 }
-            with open(f"{self.direct}/RoomsConfig.txt","w") as file:
+            with codecs.open(f"{self.direct}/RoomsConfig.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"{self.direct}/RoomsConfig.txt","w") as file:
                 file.write(str(NewDict))
 
         def RemoveRooms(self,Channel : int):
@@ -200,7 +213,9 @@ class Gabriel():
                         *Channels
                     ]
                 }
-                with open(f"{self.direct}/RoomsConfig.txt","w") as file:
+                with codecs.open(f"{self.direct}/RoomsConfig.txt","w"
+                ,encoding='utf-8', errors='ignore') as file:
+                # with open(f"{self.direct}/RoomsConfig.txt","w") as file:
                     file.write(str(NewDict))
     class Chat(Config):
         """
@@ -220,7 +235,9 @@ class Gabriel():
             """
             self.File = True
             try:
-                with open(f"{self.direct}/ChatConfig.txt","r") as file:
+                with codecs.open(f"{self.direct}/ChatConfig.txt","r"
+                ,encoding='utf-8', errors='ignore') as file:
+                # with open(f"{self.direct}/ChatConfig.txt","r") as file:
                     return StrToDict(str=str(file.readline()))
             except FileNotFoundError:
                 self.File = False
@@ -244,7 +261,9 @@ class Gabriel():
                     "Activity" : [],
                     "Status" : "Private"
                 }
-            with open(f"{self.direct}/ChatConfig.txt","w") as file:
+            with codecs.open(f"{self.direct}/ChatConfig.txt","w"
+                ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"{self.direct}/ChatConfig.txt","w") as file:
                 file.write(str(NewDict))
         def LoadChat(self,Channel : int):
             """
@@ -268,7 +287,9 @@ class Gabriel():
                     ],
                     "Status" : "Private"
                 }
-            with open(f"{self.direct}/ChatConfig.txt","w") as file:
+            with codecs.open(f"{self.direct}/ChatConfig.txt","w"
+                ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"{self.direct}/ChatConfig.txt","w") as file:
                 file.write(str(NewDict))
 
         def RemoveChat(self,Channel : int):
@@ -288,7 +309,9 @@ class Gabriel():
                     ],
                     "Status" : "Private"
                 }
-                with open(f"{self.direct}/ChatConfig.txt","w") as file:
+                with codecs.open(f"{self.direct}/ChatConfig.txt","w"
+                ,encoding='utf-8', errors='ignore') as file:
+                # with open(f"{self.direct}/ChatConfig.txt","w") as file:
                     file.write(str(NewDict))
 
         
@@ -301,15 +324,18 @@ class Gabriel():
     def Message(self,CountMessages : int,ServerName : str,Status : GENERAL):
         Lines = []
         if Status == "GENERAL":
-            with open(f"./Resurses/Words.txt","r") as file:
+            with codecs.open(f"./Resurses/Words.txt", "r",encoding='utf-8', errors='ignore') as file:
+            # with open(f"./Resurses/Words.txt","r") as file:
                 for line in file.readlines():
+                    line = line.decode("utf-8")
                     Cannot = [' ','','\n']
                     if line not in Cannot:
                         CheckMessage_ = CheckMessage(line,"https://")
                         if CheckMessage_.Start() == None:
                             Lines.append(str(line))
         else:
-            with open(f"./Servers/{ServerName}/Words.txt","r") as file:
+            with codecs.open(f"./Servers/{ServerName}/Words.txt","r",encoding='utf-8', errors='ignore') as file:
+            # with open(f"./Servers/{ServerName}/Words.txt","r") as file:
                 for line in file.readlines():
                     Cannot = [' ','','\n']
                     if line not in Cannot:
@@ -414,7 +440,9 @@ def AllMVPs():
     PlayerList = list()
     LvlMvpList = list()
     lst = list()
-    with open(f"./Stats/Clients.txt","r") as file:
+    with codecs.open(f"./Stats/Clients.txt","r"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/Clients.txt","r") as file:
         PlayersInStats = int(file.readline())
         for target_list in range(PlayersInStats):
             RDtxt = file.readline()
@@ -422,7 +450,9 @@ def AllMVPs():
             try:
                 curPla = lst[target_list].split();curPla = curPla[0]
                 try:
-                    with open(f"./Stats/Main/{curPla}.txt","r") as fileTo:
+                    with codecs.open(f"./Stats/Main/{curPla}.txt","r"
+                    ,encoding='utf-8', errors='ignore') as file:
+                    # with open(f"./Stats/Main/{curPla}.txt","r") as fileTo:
                         rdExp = fileTo.readline() ; rdExp.split() ; rdExp = rdExp[0]
                         rdLvl = fileTo.readline() ; rdLvl.split()# ; rdLvl = rdLvl[0]
                         Numbers = int(rdLvl)
@@ -516,15 +546,21 @@ def nullWrite(_UserName_,new_Client : bool):
      # Description 5
     #f.writelines("\nS") # Description 5
     f.close()
-    with open(f"./Stats/Shop/{_UserName_}.txt","w") as file:
+    with codecs.open(f"./Stats/Shop/{_UserName_}.txt","w"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/Shop/{_UserName_}.txt","w") as file:
         file.writelines("0")
         file.writelines("\n0")
     lstClients = list()
     if new_Client == True:
-        with open(f"./Stats/Clients.txt","r") as file:
+        with codecs.open(f"./Stats/Clients.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Clients.txt","r") as file:
             for lines in file.readlines():
                 lstClients.append(lines)
-        with open(f"./Stats/Clients.txt","w") as file:
+        with codecs.open(f"./Stats/Clients.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Clients.txt","w") as file:
             for lines in range(len(lstClients)):
                 if lines != 0:
                     
@@ -561,7 +597,9 @@ def _readStats(_UserName_):
         Description = 5 (STR)
     """
     try:
-        with open(f"./Stats/Main/{_UserName_}.txt","r") as file:
+        with codecs.open(f"./Stats/Main/{_UserName_}.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Main/{_UserName_}.txt","r") as file:
             IntCurExp = file.readline()
             IntCurLvl = file.readline()
             IntMaxHealth = file.readline()
@@ -602,11 +640,15 @@ def _AgentRead(_UserName_,BackGround : bool):
         _url = URL. Str Формат
     """
     if BackGround == False:
-        with open(f"./Stats/Profile/{_UserName_}.txt","r") as file:
+        with codecs.open(f"./Stats/Profile/{_UserName_}.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Profile/{_UserName_}.txt","r") as file:
             _url = file.readline()
             return _url
     else:
-        with open(f"./Stats/Profile/BackGround_{_UserName_}.txt","r") as file:
+        with codecs.open(f"./Stats/Profile/BackGround_{_UserName_}.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Profile/BackGround_{_UserName_}.txt","r") as file:
             _url = file.readline()
             return _url
 
@@ -620,19 +662,24 @@ def _AgentWrite(_UserName_,__url__,BackGround : bool):
         _UserName_ = Имя игрока. Str формат
     """
     if BackGround == False:
-        with open("./Stats/Profile/" + _UserName_ + ".txt","w") as file:
+        with codecs.open("./Stats/Profile/" + _UserName_ + ".txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open("./Stats/Profile/" + _UserName_ + ".txt","w") as file:
             file.writelines(__url__)
 
             logo = StandartURL
 
             try:
                 logo = urllib.request.urlopen(__url__).read()
+                
                 with open(f"{Resurses}{_UserName_}.png", "wb") as fileTwo:
                     fileTwo.write(logo)
             except Exception:
                 pass
     else:
-        with open(f"./Stats/Profile/BackGround_{_UserName_}.txt","w") as file:
+        with codecs.open(f"./Stats/Profile/BackGround_{_UserName_}.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Profile/BackGround_{_UserName_}.txt","w") as file:
             file.writelines(__url__)
 
             logo = StandartURLBackGround
@@ -882,7 +929,9 @@ def RatingSystem():
         PositionRange = 0
         for _Level_ in _Level__:
             PositionRange += 1
-            with open(f"./Stats/Main/{_UserName_}.txt","r") as file:
+            with codecs.open(f"./Stats/Main/{_UserName_}.txt","r"
+            ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"./Stats/Main/{_UserName_}.txt","r") as file:
                 CurLvl = int(file.readline())
                 CurLvl = int(file.readline())
                 if (CurLvl == _Level_) and (_UserName_ not in alreadyChecked):
@@ -925,7 +974,9 @@ def RatingSystem():
 async def EditAttackDamageTwo(self,Channel : discord.channel.TextChannel,GetDamage : int,_Player : str,_Target : str,CurHealthTarget : int):
     today = datetime.datetime.today()
     try:
-        with open(f"./Stats/GetDamageForTime/{_Player}.txt","r") as file:
+        with codecs.open(f"./Stats/GetDamageForTime/{_Player}.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/GetDamageForTime/{_Player}.txt","r") as file:
             Message = int(file.readline())
             Message = await Channel.fetch_message(Message)
             Date = str(file.readline()) ; Date = Date.split("-")
@@ -935,7 +986,9 @@ async def EditAttackDamageTwo(self,Channel : discord.channel.TextChannel,GetDama
             _Message = await Channel.send(content=f"{_Player} нанёс : {GetDamage} ед.\nСумарный урон : {SumarDamage} ед.\nЗдоровье у {_Target} : {CurHealthTarget} ед.")
         else:
             await Message.edit(content=f"{_Player} нанёс : {GetDamage} ед.\nСумарный урон : {SumarDamage} ед.\nЗдоровье у {_Target} : {CurHealthTarget} ед.")
-        with open(f"./Stats/GetDamageForTime/{_Player}.txt","w") as file:
+        with codecs.open(f"./Stats/GetDamageForTime/{_Player}.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/GetDamageForTime/{_Player}.txt","w") as file:
             writeToday = "%Y-%m-%d-%H-%M-%S"
             if int(Date[4]) != today.minute:
                 file.writelines(f"{_Message.id}")
@@ -946,7 +999,9 @@ async def EditAttackDamageTwo(self,Channel : discord.channel.TextChannel,GetDama
                 file.writelines(f"\n{str(today.strftime(writeToday))}")
                 file.writelines(f"\n{SumarDamage}")
     except:
-        with open(f"./Stats/GetDamageForTime/{_Player}.txt","w") as file:
+        with codecs.open(f"./Stats/GetDamageForTime/{_Player}.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/GetDamageForTime/{_Player}.txt","w") as file:
             _Message = await Channel.send(content=f"{_Player} нанёс : {GetDamage} ед.\nСумарный урон : {GetDamage} ед.\nЗдоровье у {_Target} : {CurHealthTarget} ед.")
             writeToday = "%Y-%m-%d-%H-%M-%S"
             file.writelines(f"{_Message.id}")
@@ -958,7 +1013,9 @@ async def EditAttackDamageTwo(self,Channel : discord.channel.TextChannel,GetDama
 
 
 def CreateNewBoss():
-    with open(f"./Stats/EventBoss.txt","w") as file:
+    with codecs.open(f"./Stats/EventBoss.txt","w"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/EventBoss.txt","w") as file:
         today = datetime.datetime.today()
         MaxHealth = random.randint(10000,50000)
         CurHealth = MaxHealth
@@ -1000,7 +1057,9 @@ def ReadBossStats():
     `killer`
 
     """
-    with open(f"./Stats/EventBoss.txt","r") as file:
+    with codecs.open(f"./Stats/EventBoss.txt","r"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/EventBoss.txt","r") as file:
         stats = str(file.readline())
         stats = StrToDict(str=stats)
         pass
@@ -1085,8 +1144,9 @@ def WriteBossStats(**fields):
         "nameFile":nameFile,
         "killer":killer
     }
-
-    with open(f"./Stats/EventBoss.txt","w") as file:
+    with codecs.open(f"./Stats/EventBoss.txt","w"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/EventBoss.txt","w") as file:
         file.write(str(NewDict))
 
     
@@ -1161,7 +1221,9 @@ def FutureMessageDef(**fields):
 def ReadWords(Server : str,Status : str):
     AllWords = str()
     if Status != "PRIVATE":
-        with open(f"./Resurses/Words.txt","r") as file:
+        with codecs.open(f"./Resurses/Words.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Resurses/Words.txt","r") as file:
             try:
                 for line in file.readlines():
                     AllWords += line
@@ -1169,7 +1231,9 @@ def ReadWords(Server : str,Status : str):
                 pass
         return AllWords
     else:
-        with open(f"./Servers/{Server}/Words.txt","r") as file:
+        with codecs.open(f"./Servers/{Server}/Words.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Servers/{Server}/Words.txt","r") as file:
             try:
                 for line in file.readlines():
                     AllWords += line
@@ -1181,14 +1245,18 @@ def ReadWords(Server : str,Status : str):
 def SaveWords(msg : str,Server : str,Status : str):
     if Status != "PRIVATE":
         Oldmsg = ReadWords(Server,Status)
-        with open(f"./Resurses/Words.txt","w") as file:
+        with codecs.open(f"./Resurses/Words.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Resurses/Words.txt","w") as file:
             msgSplitLines = msg.split("\n")
             file.write(f"{Oldmsg}")
             for line in msgSplitLines:
                 file.writelines(f"\n{line}")
     else:
         Oldmsg = ReadWords(Server,Status)
-        with open(f"./Servers/{Server}/Words.txt","w") as file:
+        with codecs.open(f"./Servers/{Server}/Words.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Servers/{Server}/Words.txt","w") as file:
             msgSplitLines = msg.split("\n")
             file.write(f"{Oldmsg}")
             for line in msgSplitLines:
@@ -1196,7 +1264,9 @@ def SaveWords(msg : str,Server : str,Status : str):
 
 
 def ClearWords(**fields):
-    with open(f"./Resurses/Words.txt","w") as file:
+    with codecs.open(f"./Resurses/Words.txt","w"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Resurses/Words.txt","w") as file:
         file.write("")
     pass  
 
@@ -1222,13 +1292,17 @@ def WriteEquipment(**fields):
     ID = int(fields.pop('ID'))
 
     try:
-        with open(f"./Stats/Inventory/{username}.txt","r") as file:
+        with codecs.open(f"./Stats/Inventory/{username}.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Inventory/{username}.txt","r") as file:
             Inventor = file.readline()
             Inventor = StrToDict(str=Inventor)
             ArmorId = int(Inventor["Armor"])
             AttackId = int(Inventor["Attack"])
     except FileNotFoundError:
-        with open(f"./Stats/Inventory/{username}.txt","w") as file:
+        with codecs.open(f"./Stats/Inventory/{username}.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Inventory/{username}.txt","w") as file:
             NewDict = {
             "Armor" : 0,
             "Attack" : 0
@@ -1242,7 +1316,9 @@ def WriteEquipment(**fields):
         AttackId = ID
     if type_ == "Экипировка":
         ArmorId = ID
-    with open(f"./Stats/Inventory/{username}.txt","w") as file:
+    with codecs.open(f"./Stats/Inventory/{username}.txt","w"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/Inventory/{username}.txt","w") as file:
         NewDict = {
             "Armor" : int(ArmorId),
             "Attack" : int(AttackId)
@@ -1263,8 +1339,9 @@ def ReadEquipment(**fields):
 
     type_ = fields.pop('type')
     username = fields.pop('username')
-
-    with open(f"./Stats/Inventory/{username}.txt","r") as file:
+    with codecs.open(f"./Stats/Inventory/{username}.txt","r"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/Inventory/{username}.txt","r") as file:
         Stats = file.readline()
         Stats = StrToDict(str=Stats)
         if type_ == "Экипировка":
@@ -1286,8 +1363,9 @@ def CheckParametrsEquipment(**fields):
     username = fields.pop("username")
 
     ID = fields.pop("ID")
-
-    with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
+    with codecs.open(f"./Stats/Inventory/Inventor_{username}.txt","r"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
         for item in file.readlines():
             itemDict = StrToDict(str=item)
             itemID = int(itemDict['ID'])
@@ -1606,7 +1684,9 @@ def ReadMainParametrs(**fields):
     """
     username = fields.pop("username")
     try:
-        with open(f"./Stats/Main/{username}.txt","r") as file:
+        with codecs.open(f"./Stats/Main/{username}.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Main/{username}.txt","r") as file:
             YourProfile = str(file.readline()) ; YourProfile = StrToDict(str=YourProfile)
             return YourProfile
         pass
@@ -1803,8 +1883,9 @@ def WriteMainParametrs(**fields):
         "plus":plus
     }
 
-
-    with open(f"./Stats/Main/{username}.txt","w") as file:
+    with codecs.open(f"./Stats/Main/{username}.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/Main/{username}.txt","w") as file:
         file.write(str(newProfile))
     pass
 
@@ -2006,7 +2087,9 @@ class Auction():
         Прочитать все торги
         """
         Items = ""
-        with open(f"./Stats/Auction.txt","r") as file:
+        with codecs.open(f"./Stats/Auction.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Auction.txt","r") as file:
             for line in file.readlines():
                 if line != " " and line != "\n" and line != "":
                     Items += f"{line}\n"
@@ -2053,8 +2136,9 @@ class Auction():
                 except LastItem: 
                     print("Последний предмет")
                     return
-
-                with open(f"./Stats/Auction.txt","w") as file:
+                with codecs.open(f"./Stats/Auction.txt","w"
+                ,encoding='utf-8', errors='ignore') as file:
+                # with open(f"./Stats/Auction.txt","w") as file:
                     OldAuction = self.ReadAuction()
                     if OldAuction != " ":
                         OldAuction = str(OldAuction).split("\n")
@@ -2084,8 +2168,9 @@ class Auction():
         OldAuction = self.ReadAuction()
 
         OldAuction = str(OldAuction).split("\n")
-        
-        with open(f"./Stats/Auction.txt","w") as file:
+        with codecs.open(f"./Stats/Auction.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Auction.txt","w") as file:
             for Auctions in OldAuction:
                 try:
                     _AuctionsDict = StrToDict(str=Auctions)
@@ -2177,7 +2262,9 @@ class Quest():
     def Check(self):
         try:
             Quests = ""
-            with open(f"{self.path}{self.username}.txt","r") as file:
+            with codecs.open(f"{self.path}{self.username}.txt","r"
+            ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"{self.path}{self.username}.txt","r") as file:
                 for line in file.readlines():
                     if line != "\n" and line != " ":
                         Quests += line
@@ -2195,7 +2282,9 @@ class Quest():
             "main_task" : self.main_task,
             "tag" : self.tag
         }
-        with open(f"{self.path}{self.username}.txt","w") as file:
+        with codecs.open(f"{self.path}{self.username}.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"{self.path}{self.username}.txt","w") as file:
             for _Quest in self.Old_Quests:
                 file.writelines(f"{_Quest}\n")
             file.writelines(str(NewQuest))
@@ -2256,14 +2345,18 @@ class Room():
         """
         Сохраняет название комнаты
         """
-        with open(f"./Stats/Room/{self.Player}.txt","w") as file:
+        with codecs.open(f"./Stats/Room/{self.Player}.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Room/{self.Player}.txt","w") as file:
             file.write(str(RoomName))
     def Read(self):
         """
         Читает название комнаты
         """
         try:
-            with open(f"./Stats/Room/{self.Player}.txt","r") as file:
+            with codecs.open(f"./Stats/Room/{self.Player}.txt","r"
+            ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"./Stats/Room/{self.Player}.txt","r") as file:
                 self.RoomName = str(file.readline())
                 return self.RoomName
         except FileNotFoundError:
@@ -2431,7 +2524,9 @@ class BossForMoney():
             Damage += random.randint(50000, 100000)
             Armor += random.randint(1000,3000)
         Health = MaxHealth
-        with open(f"{self.direct}/Bosses/BossForGold.txt","w") as file:
+        with codecs.open(f"{self.direct}/Bosses/BossForGold.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"{self.direct}/Bosses/BossForGold.txt","w") as file:
             StatsBoss = {
                 "MaxHealth" : MaxHealth,
                 "Health" : Health,
@@ -2446,7 +2541,9 @@ class BossForMoney():
         """
         Прочитать статистику босса
         """
-        with open(f"{self.direct}/Bosses/BossForGold.txt","r") as file:
+        with codecs.open(f"{self.direct}/Bosses/BossForGold.txt","r"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"{self.direct}/Bosses/BossForGold.txt","r") as file:
             return StrToDict(str=str(file.readline()))
     
     def _CheckParametr(self,Parametr : str,fields):
@@ -2477,8 +2574,9 @@ class BossForMoney():
         Players = self._CheckParametr("Players",fields)
 
         Gold = self._CheckParametr("Players",fields)
-
-        with open(f"{self.direct}/Bosses/BossForGold.txt","w") as file:
+        with codecs.open(f"{self.direct}/Bosses/BossForGold.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"{self.direct}/Bosses/BossForGold.txt","w") as file:
             NewData = {
                 "MaxHealth" : MaxHealth,
                 "Health" : Health,
@@ -2504,7 +2602,9 @@ class PlayerInventor():
         Читает инвентарь
         '''
         Inventor = ""
-        with open(f"./Stats/Inventory/Inventor_{self.Player}.txt","r") as file:
+        with codecs.open(f"./Stats/Inventory/Inventor_{self.Player}.txt","r"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Inventory/Inventor_{self.Player}.txt","r") as file:
             for line in file.readlines():
                 Inventor += line
             return Inventor
@@ -2666,7 +2766,9 @@ class PlayerInventor():
                 "count" : count,
                 "magic" : magic
             }
-        with open(f"./Stats/Inventory/Inventor_{self.Player}.txt","w") as file:
+        with codecs.open(f"./Stats/Inventory/Inventor_{self.Player}.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Inventory/Inventor_{self.Player}.txt","w") as file:
             if str(old) != "":
                 file.write(f"{str(old)}\n{str(newItem)}")
             else:
@@ -2703,8 +2805,9 @@ class PlayerInventor():
             else:
                 NewInventor.append(Item)
             pass
-
-        with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
+        with codecs.open(f"./Stats/Inventory/Inventor_{username}.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
             Counts = len(NewInventor)
             for Item in NewInventor:
                 Counts -= 1
@@ -2759,7 +2862,9 @@ class PlayerInventor():
             magic = {}
         
         ListItems = list()
-        with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
+        with codecs.open(f"./Stats/Inventory/Inventor_{username}.txt","r"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
             for item in file.readlines():
                 itemDict = StrToDict(str=item)
                 itemDictStandart = StrToDict(str=item)
@@ -2792,7 +2897,9 @@ class PlayerInventor():
                     ListItems.append(newItem)
                 else:
                     ListItems.append(itemDictStandart)
-        with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
+        with codecs.open(f"./Stats/Inventory/Inventor_{username}.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
             Counts = len(ListItems)
             for ItemIn in ListItems:
                 Counts -= 1
@@ -2830,8 +2937,9 @@ class PlayerInventor():
             else:
                 NewInventor.append(Item)
             pass
-
-        with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
+        with codecs.open(f"./Stats/Inventory/Inventor_{username}.txt","w"
+            ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Inventory/Inventor_{username}.txt","w") as file:
             Counts = len(NewInventor)
             for Item in NewInventor:
                 Counts -= 1
@@ -2975,7 +3083,10 @@ class Talant():
         self.Player = Player
         self.path = f"./Stats/Talants/{Player}"
         try:
-            with open(f"{self.path}.txt","r"): pass
+            with codecs.open(f"{self.path}.txt","r"
+            ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"{self.path}.txt","r"): 
+                pass
         except FileNotFoundError:
             self.Create()
 
@@ -2984,7 +3095,9 @@ class Talant():
 
 
     def Create(self):
-        with open(f"{self.path}.txt","w") as file:
+        with codecs.open(f"{self.path}.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"{self.path}.txt","w") as file:
             BlankList = {
                 "Talants" : {
                     "More Exp" : {
@@ -3093,6 +3206,6 @@ if __name__ == "__main__":
     #     armor=999999,
     #     damage=1,
     #     )
-    Talant_ = Talant("KOT32500")
+    # Talant_ = Talant("KOT32500")
     pass
     

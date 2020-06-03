@@ -86,7 +86,9 @@ def AllMVPs():
     #me = "KOT32500"
     PlayersInStats = 0
     PlayerList = list()
-    with open(f"./Stats/Clients.txt","r") as file:
+    with codecs.open(f"./Stats/Clients.txt","r"
+    ,encoding='utf-8', errors='ignore') as file:
+    # with open(f"./Stats/Clients.txt","r") as file:
         PlayersInStats = int(file.readline())
         for target_list in range(PlayersInStats):
             RDtxt = file.readline()
@@ -94,7 +96,9 @@ def AllMVPs():
             try:
                 curPla = lst[target_list].split();curPla = curPla[0]
                 try:
-                    with open(f"./Stats/Main/{curPla}.txt","r") as fileTo:
+                    with codecs.open(f"./Stats/Main/{curPla}.txt","r"
+                    ,encoding='utf-8', errors='ignore') as file:
+                    # with open(f"./Stats/Main/{curPla}.txt","r") as fileTo:
                         rdExp = fileTo.readline() ; rdExp.split() ; rdExp = rdExp[0]
                         rdLvl = fileTo.readline() ; rdLvl.split()# ; rdLvl = rdLvl[0]
                         Numbers = int(rdLvl)
@@ -157,8 +161,6 @@ def Create_quotes(Who : str,Msg : str,Date : str):
     area = (800,800)
     Color = (255,255,255)
     font = ImageFont.truetype("arial.ttf",72)
-    #Date = Date.split("-")
-    #Year = Date[0]
     txt = str(f"(C) {Who} \n({Date})")
     draw.text(area,txt,font=font,fill=Color)
 
@@ -167,34 +169,6 @@ def Create_quotes(Who : str,Msg : str,Date : str):
     df = discord.File(nameSave,nameSave)
     return df
 
-def _RemoveMoney(_UserName_,Count):
-    with open(f"./Stats/Shop/{str(_UserName_)}.txt","r") as file:
-        Msages = int(file.readline())
-        Gold = int(file.readline())
-    Gold -= Count
-    with open(f"./Stats/Shop/{str(_UserName_)}.txt","w") as file:
-        file.writelines(f"{Msages}\n")
-        file.writelines(f"{Gold}")
-def _SetMoney(_UserName_,Count):
-    with open(f"./Stats/Shop/{str(_UserName_)}.txt","r") as file:
-        Msages = int(file.readline())
-        Gold = int(file.readline())
-    Gold = Count
-    with open(f"./Stats/Shop/{str(_UserName_)}.txt","w") as file:
-        file.writelines(f"{Msages}\n")
-        file.writelines(f"{Gold}")
-
-def WriteLastMessage(Who : str,Msg : str,Date : str):
-    with open(f"./Configs/LastMessage.txt","w") as file:
-        file.writelines(Who)
-        file.writelines(f"\n{Msg}")
-        file.writelines(f"\n{str(Date)}")
-def ReadLastMessage():
-    with open(f"./Configs/LastMessage.txt","r") as file:
-        Who = file.readline()
-        Msg = file.readline()
-        Date = file.readline()
-    return Who , Msg , Date
 def ProfileBoss(*Stats):
     NowTime = datetime.datetime.today()
     today = Stats[0]
@@ -298,68 +272,6 @@ def FixText(text):
     Фиксирует текст
     """
     return f"```fix\n{text}\n```"
-
-def Attack(_UserName_ : str,_Target_ : str):
-    with open(f"./Stats/Main/{_UserName_}.txt","r") as file:
-        IntCurExp = int(file.readline())
-        IntCurLvl = int(file.readline())
-        IntMaxHealth = int(file.readline())
-        IntCurHealth = int(file.readline())
-        IntMaxDamage = int(file.readline())
-        Description = str(file.readline())
-    with open(f"./Stats/Main/{_Target_}.txt","r") as file:
-        EnIntCurExp = int(file.readline())
-        EnIntCurLvl = int(file.readline())
-        EnIntMaxHealth = int(file.readline())
-        EnIntCurHealth = int(file.readline())
-        EnIntMaxDamage = int(file.readline())
-        EnDescription = str(file.readline())
-    GetDamage = random.randint(0,IntMaxDamage)
-
-    EnIntCurHealth -= GetDamage
-
-    FreeLvlHA = EnIntCurLvl / 5
-
-    if EnIntCurHealth <= 0:
-        EnIntCurHealth = EnIntMaxHealth
-        EnIntCurLvl -= int(FreeLvlHA)
-        IntCurLvl += int(FreeLvlHA)
-        time.sleep(0.1)
-
-
-        Emb = discord.Embed( title = _Target_ + " убит(а)")
-        Emb.add_field(name = 'Потерял(а) могущество : ',value = str(int(FreeLvlHA)) + " лвл.")
-        if IntCurLvl == 4:
-            Emb.add_field(name = 'Минимальный уровень',value =  "4",inline = True)
-        Emb.add_field(name = 'Здоровье : ',value = str(EnIntCurHealth) + " ед. / " + str(EnIntMaxHealth) + " ед.",inline = False)
-        Emb.add_field(name = 'Получил(а) урона : ',value = str(GetDamage) + " ед.",inline = True)
-
-        #await message.channel.send(embed = Emb)
-
-        IntMaxHealth += 10 * int(FreeLvlHA)
-        IntCurHealth += 10 * int(FreeLvlHA)
-        IntMaxDamage += random.randint(1,35) * int(FreeLvlHA)
-        if ((IntCurHealth + 5 * int(FreeLvlHA)) < (IntMaxHealth)):
-            IntCurHealth += 5 * int(FreeLvlHA)
-        else:
-            IntCurHealth = IntMaxHealth
-        
-        EnIntMaxHealth -= 10 * int(FreeLvlHA)
-        EnIntMaxDamage -= random.randint(1,35) * int(FreeLvlHA)
-        EnIntCurHealth = EnIntMaxHealth
-    with open(f"./Stats/Main/{_UserName_}.txt","w") as file:
-        file.writelines(str(IntCurExp))
-        file.writelines(str(IntCurLvl))
-        file.writelines(str(IntMaxHealth))
-        file.writelines(str(IntCurHealth))
-        file.writelines(str(Description))
-    with open(f"./Stats/Main/{_Target_}.txt","w") as file:
-        file.writelines(str(EnIntCurExp))
-        file.writelines(str(EnIntCurLvl))
-        file.writelines(str(EnIntMaxHealth))
-        file.writelines(str(EnIntCurHealth))
-        file.writelines(str(EnDescription))
-    return Emb
     
 def StrToDict(**fields):
     """
@@ -368,57 +280,6 @@ def StrToDict(**fields):
     _str = str(fields.pop('str'))
     NwDict = ast.literal_eval(f'{_str}') ; NwDict = dict(NwDict)
     return NwDict
-def nullWrite(_UserName_,new_Client : bool):
-    """
-    Обнуление статистики.
-
-    Или её создание
-
-    Вход : 
-        _UserName_ = Имя игрока. Str Формат
-    """
-    f = open("./Stats/Main/" + _UserName_ + ".txt","w")
-    f.writelines("0") # IntCurExp 0
-    f.writelines("\n0") # IntCurLvl 1
-    f.writelines("\n0") # IntMaxHealth 2
-    f.writelines("\n0") # IntCurHealth 3
-    f.writelines("\n0") # IntMaxDamage 4
-    Description_Randoms = ("Всем привет!","Мргл. мргл.","Информация пуста",".","Остуствует что либо")
-    rnd = random.randint(1,int(len(Description_Randoms)))
-    try:
-        f.writelines(f"\n{Description_Randoms[rnd]}")
-    except Exception:
-        f.writelines(f"\n ")
-     # Description 5
-    #f.writelines("\nS") # Description 5
-    f.close()
-    with open(f"./Stats/Shop/{_UserName_}.txt","w") as file:
-        file.writelines("0")
-        file.writelines("\n0")
-    lstClients = list()
-    if new_Client == True:
-        with open(f"./Stats/Clients.txt","r") as file:
-            for lines in file.readlines():
-                lstClients.append(lines)
-        with open(f"./Stats/Clients.txt","w") as file:
-            for lines in range(len(lstClients)):
-                if lines != 0:
-                    
-                    file.writelines(lstClients[lines])
-                else:
-                    first_line = lstClients[0]
-                    first_line.split() ; first_line = first_line[0]
-                    first_line = int(first_line)
-                    first_line += 1
-                    file.writelines(str(first_line) + "\n")
-            try:
-                file.writelines(f"\n{_UserName_}")
-            except UnicodeEncodeError:
-                pass
-            
-    #print(lstClients)
-
-    _AgentWrite(_UserName_,StandartURL,False) ; _AgentWrite(_UserName_,StandartURLBackGround,True)
 
 def _AgentRead(_UserName_,BackGround : bool):
     """
@@ -432,11 +293,15 @@ def _AgentRead(_UserName_,BackGround : bool):
         _url = URL. Str Формат
     """
     if BackGround == False:
-        with open(f"./Stats/Profile/{_UserName_}.txt","r") as file:
+        with codecs.open(f"./Stats/Profile/{_UserName_}.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Profile/{_UserName_}.txt","r") as file:
             _url = file.readline()
             return _url
     else:
-        with open(f"./Stats/Profile/BackGround_{_UserName_}.txt","r") as file:
+        with codecs.open(f"./Stats/Profile/BackGround_{_UserName_}.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Profile/BackGround_{_UserName_}.txt","r") as file:
             _url = file.readline()
             return _url
 
@@ -450,7 +315,9 @@ def _AgentWrite(_UserName_,__url__,BackGround : bool):
         _UserName_ = Имя игрока. Str формат
     """
     if BackGround == False:
-        with open("./Stats/Profile/" + _UserName_ + ".txt","w") as file:
+        with codecs.open("./Stats/Profile/" + _UserName_ + ".txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open("./Stats/Profile/" + _UserName_ + ".txt","w") as file:
             file.writelines(__url__)
 
             logo = StandartURL
@@ -462,7 +329,9 @@ def _AgentWrite(_UserName_,__url__,BackGround : bool):
             except Exception:
                 pass
     else:
-        with open(f"./Stats/Profile/BackGround_{_UserName_}.txt","w") as file:
+        with codecs.open(f"./Stats/Profile/BackGround_{_UserName_}.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+        # with open(f"./Stats/Profile/BackGround_{_UserName_}.txt","w") as file:
             file.writelines(__url__)
 
             logo = StandartURLBackGround
@@ -704,7 +573,9 @@ def RatingSystem():
         PositionRange = 0
         for _Level_ in _Level__:
             PositionRange += 1
-            with open(f"./Stats/Main/{_UserName_}.txt","r") as file:
+            with codecs.open(f"./Stats/Main/{_UserName_}.txt","r"
+            ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"./Stats/Main/{_UserName_}.txt","r") as file:
                 CurLvl = int(file.readline())
                 CurLvl = int(file.readline())
                 if (CurLvl == _Level_) and (_UserName_ not in alreadyChecked):
@@ -847,7 +718,8 @@ class MyClient(discord.Client):
                 pass
 
         if CurCommand == "G":
-            await _Message_.delete()
+            try: await _Message_.delete()
+            except: pass
             Step = int(CurCommandPlayer)
             try:
                 Status = []
@@ -1032,7 +904,7 @@ class MyClient(discord.Client):
 
         time.sleep(0.02)
 
-        _ReadLastMessage = ReadLastMessage()
+        # _ReadLastMessage = ReadLastMessage()
 
         if (Time_between_dates_mins <= -20) or (Time_between_dates_hour <= -1) or (Time_between_dates_day <= -1):
                 Functions.CreateNewBoss()
@@ -1083,7 +955,9 @@ class MyClient(discord.Client):
                     Classes = Classes[randomClasses]
 
                     Boss_Dead = "Yes"
-                    with open(f"./Stats/EventBoss.txt","w") as file:
+                    with codecs.open(f"./Stats/EventBoss.txt","w"
+                    ,encoding='utf-8', errors='ignore') as file:
+                    # with open(f"./Stats/EventBoss.txt","w") as file:
                         NewDict = {
                             "data": str(today),
                             "maxHealth":0,
@@ -1205,7 +1079,9 @@ class MyClient(discord.Client):
                 return
             if (CurCommandEvent == "BONUS") or (CurCommandEvent == "B") or (CurCommandEvent == "Б") or (CurCommandEvent == "БОНУС"):
                 try:
-                    with open(f"./Stats/EveryDay/{UserName_}.txt","r") as file:
+                    with codecs.open(f"./Stats/EveryDay/{UserName_}.txt","r"
+                    ,encoding='utf-8', errors='ignore') as file:
+                    # with open(f"./Stats/EveryDay/{UserName_}.txt","r") as file:
                         NowDayForUser = file.readline()
                         EarlierTakeGem = file.readline()
                         if int(NowDayForUser) != NowTime.day:
@@ -1213,14 +1089,18 @@ class MyClient(discord.Client):
                             GoldPlayer += RandomAddMoney
                             Functions.WriteMainParametrs(username=UserName_,money=GoldPlayer)
                             await message.channel.send(f"{UserName_} взял(а) ежедневный бонус, в {RandomAddMoney}:moneybag:")
-                            with open(f"./Stats/EveryDay/{UserName_}.txt","w") as fileTwo:
+                            with codecs.open(f"./Stats/EveryDay/{UserName_}.txt","w"
+                            ,encoding='utf-8', errors='ignore') as file:
+                            # with open(f"./Stats/EveryDay/{UserName_}.txt","w") as fileTwo:
                                 fileTwo.writelines(str(NowTime.day))
                                 fileTwo.writelines(f"\n{str(RandomAddMoney)}")
                         else:
                             await message.channel.send(f"{UserName_}, вы уже брали ежедневный бонус в размере {EarlierTakeGem}:moneybag:")
                         
                 except FileNotFoundError:
-                    with open(f"./Stats/EveryDay/{UserName_}.txt","w") as file:
+                    with codecs.open(f"./Stats/EveryDay/{UserName_}.txt","w"
+                    ,encoding='utf-8', errors='ignore') as file:
+                    # with open(f"./Stats/EveryDay/{UserName_}.txt","w") as file:
                         file.writelines(str(NowTime.day))
                         RandomAddMoney = random.randint(5,100)
                         file.writelines(f"\n{str(RandomAddMoney)}")
@@ -1272,11 +1152,10 @@ class MyClient(discord.Client):
                 await message.channel.send(f" ",file = ProfileBoss(today,Boss_MaxHealth,Boss_CurHealth,Boss_GetGold,Boss_Dead))
         if (CurCommand == "ЦИТАТА"):
             await _Message_.delete()
-            NickNameLastMessage = _ReadLastMessage[0] ; NickNameLastMessage = NickNameLastMessage.split() ; NickNameLastMessage = NickNameLastMessage[0]
-            await message.channel.send(f" ",file=Create_quotes(NickNameLastMessage,_ReadLastMessage[1],_ReadLastMessage[2]))
-        
-        Year = NowTime.strftime("%Y-%m-%d,%H:%M")
-        WriteLastMessage(UserName_,msg,Year)
+            # NickNameLastMessage = _ReadLastMessage[0] ; NickNameLastMessage = NickNameLastMessage.split() ; NickNameLastMessage = NickNameLastMessage[0]
+            # await message.channel.send(f" ",file=Create_quotes(NickNameLastMessage,_ReadLastMessage[1],_ReadLastMessage[2]))
+            await message.channel.send(f"(временно не работает)")
+
         Functions.WriteBossStats(data=today,maxHealth=Boss_MaxHealth,curHealth=Boss_CurHealth,getGold=Boss_GetGold,dead=Boss_Dead)
     async def botStandart(self,message):
         UserName_ = message.author.name
@@ -1468,7 +1347,10 @@ class MyClient(discord.Client):
 
         # AboutTextThenCommand = ""
         try:
-            with open(f"{Resurses}{UserName_}.webp","r"): pass
+            with codecs.open(f"{Resurses}{UserName_}.webp","r"
+            ,encoding='utf-8', errors='ignore') as file:
+            # with open(f"{Resurses}{UserName_}.webp","r"):
+                pass
         except:
             DownloadFile = requests.get(_Player_.avatar_url, stream=True)
             with open(f"{Resurses}{UserName_}.webp","bw") as file:
@@ -1749,14 +1631,12 @@ class MyClient(discord.Client):
         if CurCommand == "DELETEINFO":
             await _Message_.delete()
             if CurCommandPlayer == "":
-                nullWrite(UserName_,False)
                 await message.channel.send(":tools: `Вы успешно сбросили собственный аккаунт` :tools:",delete_after=2)
                 return
             else:
                 if UserName_ != "KOT32500":
                     await message.channel.send(":no_entry: `У вас нет прав на это` :lock:",delete_after=2)
                 else:
-                    nullWrite(CurCommandPlayer,False)
                     await message.channel.send(f":pencil2: {UserName_} `сбросил аккаунт у` {CurCommandPlayer} :pencil2:",delete_after=2)
                     return
 
@@ -2869,8 +2749,10 @@ class MyClient(discord.Client):
             try:
                 async for message in Channel.history(limit=10):
                     Message = str(message.content)
-                    Command = Message.split()[0].upper()
-                    Mention = message.mentions
+                    try:
+                        Command = Message.split()[0].upper()
+                        Mention = message.mentions
+                    except IndexError: pass
                     if Message not in historyMessages: #Команда не повторяется
                         historyMessages.append(Message)
                         if Command == "Add".upper():
@@ -2899,7 +2781,7 @@ class MyClient(discord.Client):
         Times = MaxTime
         historyMessages = list()
         while Times > 0:
-            await asyncio.sleep(0.010)
+            await asyncio.sleep(10)
             NewMessages = False
             try:
                 async for message in Channel.history(limit=100):
