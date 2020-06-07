@@ -1938,7 +1938,7 @@ def CreateImageInventor(**fields):
     #130 30
     ItemPath = f"{PATH}Item.png"
     SaveImage = f"{PATH}ItemEdit.png"
-    Avatar = f"./Resurses/{username}.webp"
+    Avatar = f"./Resurses/{username}.png"
     Item_Sword = f"{PATH}Sword.png"
     Item_Armor = f"{PATH}Armor.png"
     Item_SwordTwo = f"{PATH}SwordTwo.png"

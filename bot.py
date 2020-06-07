@@ -324,7 +324,7 @@ def _AgentWrite(_UserName_,__url__,BackGround : bool):
 
             try:
                 logo = urllib.request.urlopen(__url__).read()
-                with open(f"{Resurses}{_UserName_}.webp", "wb") as fileTwo:
+                with open(f"{Resurses}{_UserName_}.png", "wb") as fileTwo:
                     fileTwo.write(logo)
             except Exception:
                 pass
@@ -338,7 +338,7 @@ def _AgentWrite(_UserName_,__url__,BackGround : bool):
 
             try:
                 logo = urllib.request.urlopen(__url__).read()
-                with open(f"{Resurses}BackGround_{_UserName_}.webp", "wb") as fileTwo:
+                with open(f"{Resurses}BackGround_{_UserName_}.png", "wb") as fileTwo:
                     fileTwo.write(logo)
             except Exception:
                 pass
@@ -387,12 +387,12 @@ def profileEdit(_UserName_):
     Messages = int(ShopAgent.pop("messages"))
     Gold = int(ShopAgent.pop("money"))
     try:
-        BackGround = Image.open(f"{Resurses}BackGround_{_UserName_}.webp")
-    except: BackGround = Image.open(f"{Resurses}BackGround_StandartBackGround.webp")
+        BackGround = Image.open(f"{Resurses}BackGround_{_UserName_}.png")
+    except: BackGround = Image.open(f"{Resurses}BackGround_StandartBackGround.png")
 
-    img = Image.open(Resurses + "Main.webp")
+    img = Image.open(Resurses + "Main.png")
     try:
-        N_Ava = Image.open(Resurses + _UserName_ + ".webp")
+        N_Ava = Image.open(Resurses + _UserName_ + ".png")
     except:
         raise ErrorAvatar("Отсустует аватарка")
 
@@ -552,7 +552,7 @@ def profileEdit(_UserName_):
 
 def RatingSystem():
     Positions = 0
-    MainPicture = Image.open(Resurses + "rating statistics.webp")
+    MainPicture = Image.open(Resurses + "rating statistics.png")
     Position = 0
 
     _allMvps = AllMVPs()
@@ -584,10 +584,10 @@ def RatingSystem():
 
                     Positions = (500 * (PositionRange - 1))
 
-                    Picture = Image.open(Resurses + "a Place.webp")
+                    Picture = Image.open(Resurses + "a Place.png")
                     PictureDraw = ImageDraw.Draw(Picture)
 
-                    Ava = Image.open(Resurses + _UserName_ + ".webp")
+                    Ava = Image.open(Resurses + _UserName_ + ".png")
                     Ava = Ava.resize((391,481))
                     area = (0,0)
                     Picture.paste(Ava,area)
@@ -603,7 +603,7 @@ def RatingSystem():
 
                     area = (218,222 + Positions)
                     MainPicture.paste(Picture,area)
-                    nameSave = "RatingSystem.webp"
+                    nameSave = "RatingSystem.png"
 
     MainPicture.save(nameSave)
     sf = discord.File(nameSave,nameSave)
@@ -828,6 +828,7 @@ class MyClient(discord.Client):
         # await Channel.send(" ",file=df)
         # df = discord.File("Трактат правил.png","Трактат правил.png")
         # await Channel.send(" ",file=df)
+        self.DevelopGuild = await self.fetch_guild(716945063351156736)
         self.SoundsWas = []
         RegenerationBoss = asyncio.create_task(self.BossesRegeneration())
         asyncio.gather(RegenerationBoss)
@@ -1347,13 +1348,13 @@ class MyClient(discord.Client):
 
         # AboutTextThenCommand = ""
         try:
-            with codecs.open(f"{Resurses}{UserName_}.webp","r"
+            with codecs.open(f"{Resurses}{UserName_}.png","r"
             ,encoding='utf-8', errors='ignore') as file:
-            # with open(f"{Resurses}{UserName_}.webp","r"):
+            # with open(f"{Resurses}{UserName_}.png","r"):
                 pass
         except:
             DownloadFile = requests.get(_Player_.avatar_url, stream=True)
-            with open(f"{Resurses}{UserName_}.webp","bw") as file:
+            with open(f"{Resurses}{UserName_}.png","bw") as file:
                 for chunk in DownloadFile.iter_content(12288):
                     file.write(chunk)
                     pass
@@ -1404,8 +1405,23 @@ class MyClient(discord.Client):
             await _Message_.delete()
             await message.channel.send(":poultry_leg: **`ЫАЫ`** :poultry_leg:",delete_after=2)
         if CurCommand == "ГАБРИЭЛЬ":
-            await _Message_.add_reaction("🇵") ; await _Message_.add_reaction("🇷") ; await _Message_.add_reaction("🇦") ; await _Message_.add_reaction("🇮") ; await _Message_.add_reaction("🇸") ; await _Message_.add_reaction("🇪")
-            pass
+            for emodji in self.DevelopGuild.emojis:
+                Names = ["Letter_A2","Letter_L","Letter_B","Letter_A","Letter_C"]
+                if emodji.name in "Letter_A2":
+                    Letter_A2 = emodji
+                if emodji.name in "Letter_L":
+                    Letter_L = emodji
+                if emodji.name in "Letter_B":
+                    Letter_B = emodji
+                if emodji.name in "Letter_A":
+                    Letter_A = emodji
+                if emodji.name in "Letter_C":
+                    Letter_C = emodji
+            await _Message_.add_reaction(Letter_C)
+            await _Message_.add_reaction(Letter_L)
+            await _Message_.add_reaction(Letter_A)
+            await _Message_.add_reaction(Letter_B)
+            await _Message_.add_reaction(Letter_A2)
         try:
             if CurCommand == "GS":
                 try:
@@ -1452,7 +1468,7 @@ class MyClient(discord.Client):
                 except ErrorAvatar:
                     DownloadFile = requests.get(_Player_.avatar_url, stream=True)
                     # print(f"новая аватарка в {Resurses}{_Player_.name}")
-                    with open(f"{Resurses}{UserName_}.webp","bw") as file:
+                    with open(f"{Resurses}{UserName_}.png","bw") as file:
                         for chunk in DownloadFile.iter_content(12288):
                             file.write(chunk)
                             pass

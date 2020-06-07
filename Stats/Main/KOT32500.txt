@@ -1,1 +1,1 @@
-{'exp': 43, 'lvl': 20, 'maxHealth': 100, 'curHealth': 100, 'damage': 39, 'description': '', 'money': 3371, 'messages': 2, 'maxLevel': 20, 'strength': 1.0, 'agility': 1.0, 'intelligence': 1.0, 'plus': 20}
+{'exp': 58, 'lvl': 20, 'maxHealth': 100, 'curHealth': 100, 'damage': 39, 'description': '', 'money': 3374, 'messages': 2, 'maxLevel': 20, 'strength': 1.0, 'agility': 1.0, 'intelligence': 1.0, 'plus': 20}
