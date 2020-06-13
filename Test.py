@@ -1,9 +1,9 @@
 import discord
 import BazaDate
-from discord import user
 import time
 import random
 import asyncio
+import aiohttp
 
 class Error():
     pass
@@ -39,21 +39,30 @@ class MyClient(discord.Client):
         print("Конец")
     async def on_ready(self):
         print(f"Loggined")
-        Guild = await self.fetch_guild(419879599363850251)
-        Channels = [721150391445749882,721150365361242138,721150111320899586]
-        NewPlayer = await Guild.fetch_member(414150542017953793)
-        Tasks = list()
-        for Channel in Channels:
-            Members = list()
-            Channel = await self.fetch_channel(Channel)
-            for Member in Channel.members:
-                Permissions = Channel.permissions_for(Member)
-                if Permissions.administrator == False:
-                    Members.append(Member)
-            for Member in Members:
-                task = asyncio.create_task(self._TimeShow(Member,Channel))
-                Tasks.append(task)
-        asyncio.gather(*Tasks)
+        # WebHook = discord.Webhook(721170179010199592,"SecCttffdkCnj7FaCuvWJX3t2KM9rKWSWe3I73ffj6kQjuhadIXTklDMvsXhdndLif9U")
+        # WebHook.send("da")
+        # async with aiohttp.ClientSession() as session:
+        #     webhook = Webhook.from_url('https://discordapp.com/api/webhooks/721170179010199592/SecCttffdkCnj7FaCuvWJX3t2KM9rKWSWe3I73ffj6kQjuhadIXTklDMvsXhdndLif9U', adapter=AsyncWebhookAdapter(session))
+        #     await webhook.send('Hello World', username='Foo')
+
+        # Guild = await self.fetch_guild(419879599363850251)
+        # print(await Guild.webhooks())
+        WebHook = await self.fetch_webhook(721168721326112838)
+        await WebHook.send("```Вот такую интересную фишку)\nИ не, дело не в том что это бот, а в том что у него нет профиля. Нажми Пкм по нему, и убедись сам)```")
+        # Channels = [721150391445749882,721150365361242138,721150111320899586]
+        # NewPlayer = await Guild.fetch_member(414150542017953793)
+        # Tasks = list()
+        # for Channel in Channels:
+        #     Members = list()
+        #     Channel = await self.fetch_channel(Channel)
+        #     for Member in Channel.members:
+        #         Permissions = Channel.permissions_for(Member)
+        #         if Permissions.administrator == False:
+        #             Members.append(Member)
+        #     for Member in Members:
+        #         task = asyncio.create_task(self._TimeShow(Member,Channel))
+        #         Tasks.append(task)
+        # asyncio.gather(*Tasks)
 InternetActive()
 
 while True:
