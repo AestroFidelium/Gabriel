@@ -3085,7 +3085,6 @@ class Talant():
         try:
             with codecs.open(f"{self.path}.txt","r"
             ,encoding='utf-8', errors='ignore') as file:
-            # with open(f"{self.path}.txt","r"): 
                 pass
         except FileNotFoundError:
             self.Create()
@@ -3097,9 +3096,18 @@ class Talant():
     def Create(self):
         with codecs.open(f"{self.path}.txt","w"
         ,encoding='utf-8', errors='ignore') as file:
-        # with open(f"{self.path}.txt","w") as file:
             BlankList = {
                 "Talants" : {
+                    "Heroic Level" : {
+                            "Name" : "Героический уровень",
+                            "Description" : "Увеличивает ваши характеристики. За каждый уровень навыка : \n Сила += 0.1% \n Ловкость += 0.2% \n Интеллект += 0.3% \n Здоровье += 320 ед. \n Опыт += 100 ед. \n Уровень += 1 \nТребуется для : ",
+                            "Level" : 0,
+                            "MaxLevel" : 100,
+                            "Exp" : 0,
+                            "NeedExp" : 1000,
+                            "Lock" : 0,
+                            "Description_Lock" : ""
+                            },
                     "More Exp" : {
                             "Name" : "Больше опыта",
                             "Description" : "Каждое сообщение дает больше единиц опыта, за каждый уровень этого умения",
@@ -3107,6 +3115,8 @@ class Talant():
                             "MaxLevel" : 10,
                             "Exp" : 0,
                             "NeedExp" : 10,
+                            "Lock" : 0,
+                            "Description_Lock" : ""
                             },
                     "More Gold" : {
                             "Name" : "Больше золота",
@@ -3115,7 +3125,159 @@ class Talant():
                             "MaxLevel" : 5,
                             "Exp" : 0,
                             "NeedExp" : 10,
-                            }
+                            "Lock" : 0,
+                            "Description_Lock" : ""
+                            },
+                    "More Damage" : {
+                            "Name" : "Усиленный урон",
+                            "Description" : "За каждый уровень навыка : \n Увеличивает урон на 5%",
+                            "Level" : 0,
+                            "MaxLevel" : 10,
+                            "Exp" : 0,
+                            "NeedExp" : 100,
+                            "Lock" : 0,
+                            "Description_Lock" : ""
+                            },
+                    "More Protect" : {
+                            "Name" : "Броня",
+                            "Description" : "За каждый уровень навыка : \n Увеличивает броню на 2.5%",
+                            "Level" : 0,
+                            "MaxLevel" : 20,
+                            "Exp" : 0,
+                            "NeedExp" : 50,
+                            "Lock" : 0,
+                            "Description_Lock" : ""
+                            },
+                    "Passive Generator" : {
+                            "Name" : "Пассивный генератор опыта",
+                            "Description" : "Персонаж получает возможность пассивно набирать опыт. Стандартное значение 1 ед./час.",
+                            "Level" : 0,
+                            "MaxLevel" : 1,
+                            "Exp" : 0,
+                            "NeedExp" : 1000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nГероический уровень : 3 уровня."
+                            },
+                    "Updater Generator Amount" : {
+                            "Name" : "Генератор Опыта",
+                            "Description" : "За каждый уровень навыка : \n Увеличивает пассивную генерацию опыта на 10 ед.",
+                            "Level" : 0,
+                            "MaxLevel" : 4,
+                            "Exp" : 0,
+                            "NeedExp" : 700,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nПассивный генератор опыта"
+                            },
+                    "Updater Generator Speed" : {
+                            "Name" : "Улучшенный Генератор Опыта",
+                            "Description" : "За каждый уровень навыка : \n Уменьшает время на получение опыта на 1 минуту",
+                            "Level" : 0,
+                            "MaxLevel" : 40,
+                            "Exp" : 0,
+                            "NeedExp" : 2000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nПассивный генератор опыта"
+                            },
+                    "Regeneration" : {
+                            "Name" : "Регенерация",
+                            "Description" : "Открывает навыки регенерации \nСтандартная регенерация : 0 ед./мин.",
+                            "Level" : 0,
+                            "MaxLevel" : 1,
+                            "Exp" : 0,
+                            "NeedExp" : 300,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nГероический уровень : 1 уровня."
+                            },
+                    "Regeneration Amount" : {
+                            "Name" : "Получаемая Регенерация",
+                            "Description" : "За каждый уровень навыка : \nУвеличивает регенерацию на 5 ед.",
+                            "Level" : 0,
+                            "MaxLevel" : 100,
+                            "Exp" : 0,
+                            "NeedExp" : 300,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nРегенерация"
+                            },
+                    "Regeneration Speed" : {
+                            "Name" : "Ускорене Регенерация",
+                            "Description" : "За каждый уровень навыка : \nУменьшает время на получение регенерации на 1 секунду.",
+                            "Level" : 0,
+                            "MaxLevel" : 30,
+                            "Exp" : 0,
+                            "NeedExp" : 600,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nРегенерация"
+                            },
+                    "Blacksmith" : {
+                            "Name" : "Кузнец",
+                            "Description" : "За каждый уровень навыка : \nУвеличивает минимальные статистики у будущих предметов на 2%",
+                            "Level" : 0,
+                            "MaxLevel" : 20,
+                            "Exp" : 0,
+                            "NeedExp" : 600,
+                            "Lock" : 0,
+                            "Description_Lock" : ""
+                            },
+                    "Immunity" : {
+                            "Name" : "Иммунитет",
+                            "Description" : "Развить иммунитет \nПосле развития откроются следующие навыки : \nИммунитет от Яда",
+                            "Level" : 0,
+                            "MaxLevel" : 1,
+                            "Exp" : 0,
+                            "NeedExp" : 25,
+                            "Lock" : 0,
+                            "Description_Lock" : ""
+                            },
+                    "Immunity from poison" : {
+                            "Name" : "Иммунитет От Яда",
+                            "Description" : "За каждый уровень навыка : \nУменьшает получаемый урон от яда на 2%",
+                            "Level" : 0,
+                            "MaxLevel" : 50,
+                            "Exp" : 0,
+                            "NeedExp" : 100,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nИммунитет"
+                            },
+                    "Bonus" : {
+                            "Name" : "Бонусы",
+                            "Description" : "За каждый уровень навыка : \nУвеличивает максимальную ежедневную награду на 30 золотых",
+                            "Level" : 0,
+                            "MaxLevel" : 10,
+                            "Exp" : 0,
+                            "NeedExp" : 100,
+                            "Lock" : 0,
+                            "Description_Lock" : ""
+                            },
+                    "The Change Of Role" : {
+                            "Name" : "Смена роли",
+                            "Description" : "Открывает возможность выбрать новую фракцию между Демоном или Ангелом.",
+                            "Level" : 0,
+                            "MaxLevel" : 10,
+                            "Exp" : 0,
+                            "NeedExp" : 50000,
+                            "Lock" : 0,
+                            "Description_Lock" : ""
+                            },
+                    "Demons" : {
+                            "Name" : "Демоны",
+                            "Description" : "За каждый уровень навыка : \nУвеличивает статус Демона",
+                            "Level" : 0,
+                            "MaxLevel" : 3,
+                            "Exp" : 0,
+                            "NeedExp" : 50000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nСмена роли"
+                            },
+                    "Angels" : {
+                            "Name" : "Ангелы",
+                            "Description" : "За каждый уровень навыка : \nУвеличивает статус Ангела",
+                            "Level" : 0,
+                            "MaxLevel" : 3,
+                            "Exp" : 0,
+                            "NeedExp" : 50000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nСмена роли"
+                            },
                     },
                 "Stats" : {
                     "Exp" : 0
@@ -3206,6 +3368,6 @@ if __name__ == "__main__":
     #     armor=999999,
     #     damage=1,
     #     )
-    # Talant_ = Talant("KOT32500")
+    Talant_ = Talant("KOT32500")
     pass
     
