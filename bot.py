@@ -721,7 +721,9 @@ class MyClient(discord.Client):
         if CurCommand == "G":
             try: await _Message_.delete()
             except: pass
-            Step = int(CurCommandPlayer)
+            try:
+                Step = int(CurCommandPlayer)
+            except: Step = random.randint(1,30)
             try:
                 Status = []
                 Chat = self.Chat
@@ -731,7 +733,6 @@ class MyClient(discord.Client):
             except self.Gabriel.TooManyWords:
                 await message.channel.send("Столько слов я не знаю ;c",delete_after=5)
                 return
-            # print(f"message : {msg} \nreadWords : {messages}")
             try:
                 await message.channel.send(msg)
             except discord.errors.HTTPException:
@@ -741,26 +742,28 @@ class MyClient(discord.Client):
             SavedChat = self.Chat.SavedChat()
             ChannelPossible = SavedChat["Activity"]
             if _Channel_.id in ChannelPossible:
-                Commands = ['PROFILE','ПРОФИЛЬ','P','П',
-                'Ы',
-                'ATTACK','A','АТАКА','АТКОВАТЬ','АТАКУЮ',
-                'ABOUT_ME',
-                'NEW_AVATAR',
-                'NEW_BACKGROUND',
-                'DELETEINFO',
-                'TOP',
-                'INV',
-                'WEAR',
-                'UPGRADE_ITEM',
-                'G','GABRIELE',"GS",
-                'ГАБРИЭЛЬ',
-                'КУПИТЬ','BUY','К','B',
-                'TALANT',"ТАЛАНТ",
-                "SELL_ITEM","S_I",
-                "EVENT","E","Е","ИВЕНТ",
-                "AU","AUCTION","АУКЦИОН",
-                "GABRIEL_CONFIG","GABRIEL_CONFIG_EDIT",
-                "CREATEHARDBOSS","HARDBOSS_ATTACK","SHOWHARDBOSS"]
+                Commands = [
+                    'PROFILE','ПРОФИЛЬ','P','П',
+                    'Ы',
+                    'ATTACK','A','АТАКА','АТКОВАТЬ','АТАКУЮ',
+                    'ABOUT_ME',
+                    'NEW_AVATAR',
+                    'NEW_BACKGROUND',
+                    'DELETEINFO',
+                    'TOP',
+                    'INV',
+                    'WEAR',
+                    'UPGRADE_ITEM',
+                    'G','GABRIELE',"GS",
+                    'ГАБРИЭЛЬ',
+                    'КУПИТЬ','BUY','К','B',
+                    'TALANT',"ТАЛАНТ",
+                    "SELL_ITEM","S_I",
+                    "EVENT","E","Е","ИВЕНТ",
+                    "AU","AUCTION","АУКЦИОН",
+                    "GABRIEL_CONFIG","GABRIEL_CONFIG_EDIT",
+                    "CREATEHARDBOSS","HARDBOSS_ATTACK","SHOWHARDBOSS"
+                ]
                 if CurCommand not in Commands:
                     SavedChat = self.Chat.SavedChat()
                     Status = SavedChat["Status"]
@@ -783,58 +786,81 @@ class MyClient(discord.Client):
     
     async def on_ready(self):
         print(f"Logged on as , {self.user} MODULE : bot.py")
+        Tasks = list()
         randomStatus = random.randint(0,7)
-        if randomStatus == 0:
+        Working = True
+        if Working == False:
+            if randomStatus == 0:
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.listening, 
+                        name="твои истории"))
+            elif randomStatus == 1:
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.listening, 
+                        name="твои проблемы"))
+            elif randomStatus == 2:
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.watching, 
+                        name="в будущее"))
+            elif randomStatus == 3:
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.watching, 
+                        name="в окно"))
+            elif randomStatus == 4:
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.listening, 
+                        name="музыку"))
+            elif randomStatus == 5:
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.watching, 
+                        name="как моляться Богам фпса"))
+            elif randomStatus == 6:
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.watching, 
+                        name="на твою историю браузера ;D"))
+            elif randomStatus == 7:
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.watching, 
+                        name="в даль"))
+        else:
             await self.change_presence(
+                status=discord.Status.dnd,
                 activity=discord.Activity(
-                    type=discord.ActivityType.listening, 
-                    name="твои истории"))
-        elif randomStatus == 1:
-            await self.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.listening, 
-                    name="твои проблемы"))
-        elif randomStatus == 2:
-            await self.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.watching, 
-                    name="в будущее"))
-        elif randomStatus == 3:
-            await self.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.watching, 
-                    name="в окно"))
-        elif randomStatus == 4:
-            await self.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.listening, 
-                    name="музыку"))
-        elif randomStatus == 5:
-            await self.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.watching, 
-                    name="как моляться Богам фпса"))
-        elif randomStatus == 6:
-            await self.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.watching, 
-                    name="на твою историю браузера ;D"))
-        elif randomStatus == 7:
-            await self.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.watching, 
-                    name="в даль"))
+                    type=discord.ActivityType.playing, 
+                    name="технические работы"))
         # Channel = await self.fetch_channel(691750825030320218)
         # df = discord.File("LogoGuild.png","Логотип Гильдии.png")
         # await Channel.send(" ",file=df)
         # df = discord.File("Трактат правил.png","Трактат правил.png")
         # await Channel.send(" ",file=df)
+
+        Rooms = await self.fetch_channel(717131388867838002)
+
+        for Channel in Rooms.channels:
+            if Channel.topic != "Создание текстовой личной комнаты" and Channel.name != "комната":
+                Tasks.append(asyncio.create_task(
+                    self.NotMessagesInRoom(Channel)))
+                Tasks.append(asyncio.create_task(
+                    self.CommandInCustomRoom(Channel)))
+            
+
+
+
+
         self.DevelopGuild = await self.fetch_guild(716945063351156736)
         self.SoundsWas = []
         self.WebHook = await self.fetch_webhook(721168721326112838)
-        RegenerationBoss = asyncio.create_task(self.BossesRegeneration())
+        Tasks.append(asyncio.create_task(self.BossesRegeneration()))
         Channels = [721150391445749882,721150111320899586]
-        Tasks = list()
+        
         for Channel in Channels:
             Members = list()
             Channel = await self.fetch_channel(Channel)
@@ -845,7 +871,7 @@ class MyClient(discord.Client):
             for Member in Members:
                 task = asyncio.create_task(self._TimeShow(Member,Channel))
                 Tasks.append(task)
-        asyncio.gather(RegenerationBoss,*Tasks)
+        asyncio.gather(*Tasks)
     async def botEvent(self,message):
         MiniGame = self.get_channel(629267102070472714 )
         _Channel_ = None
@@ -2275,7 +2301,12 @@ class MyClient(discord.Client):
     
     async def on_message(self, message):
         self.Gabriel = Functions.Gabriel()
-        Guild = await self.fetch_guild(message.channel.guild.id)
+        try:
+            Guild = await self.fetch_guild(message.channel.guild.id)
+        except:
+            if message.author != self.user:
+                await message.channel.send(f"Я не работаю, в личных сообщениях. Пожалуйста, обратитесь за помощью на сервер")
+            return
         self.Config = self.Gabriel.Config()
         await self.Config.Start(Guild.id,self)
         self.Chat = self.Gabriel.Chat(Guild,self)
@@ -2624,7 +2655,7 @@ class MyClient(discord.Client):
             Standart = Guild.get_role(610078093260095488)
             StartRole = Guild.get_role(691735620346970123)
             MainChannel = self.get_channel(419879599363850253)
-            # await MainChannel.send(f"{Player.mention} присоединился на сервер",delete_after=600)
+            await MainChannel.send(f"{Player.mention} присоединился на сервер",delete_after=600)
             if str(Emoji.name) == "⚫":
                 Role = Guild.get_role(713477362058002535)
                 await Member.add_roles(Standart,Role,reason="Прошел регистацию")
@@ -2661,6 +2692,20 @@ class MyClient(discord.Client):
                 Role = Guild.get_role(713477378214592603)
                 await Member.add_roles(Standart,Role,reason="Прошел регистацию")
                 await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            Msg = f"""
+            ```fix
+            Поздравляю.```
+            ```
+            Вы успешно присоединились на сервер!
+            Теперь вам доступен ранее недоступный контент.
+            Советую пройти обучение, оно поможет ознакомиться с сервером, 
+            И стать полноценным участником, покажет и поможет в начале.
+            Но прежде чем ты пойдешь его проходить, спешу сообщить о том, что время
+            На выполнения обучения ограничено часом, этого вполне хватит чтобы прочитать
+            А после это меню автоматически уберёться, и не будет мешать вам быть 
+            Полноценным участником сервера!```
+            """
+            await Member.send(Msg)
             Channels = [721150391445749882,721150111320899586]
             Tasks = list()
             for Channel in Channels:
@@ -2739,6 +2784,7 @@ class MyClient(discord.Client):
 
     async def _CreateRoom(self,GetChannel, User):
         Guild = await self.fetch_guild(419879599363850251)
+        Member = await Guild.fetch_member(User.id)
         # Channel = await self.fetch_channel(717131413828403212)
         # print(GetChannel.topic)
         topic = "Создание текстовой личной комнаты"
@@ -2747,12 +2793,17 @@ class MyClient(discord.Client):
             Position = GetChannel.position
             Position -= 1
             # await GetChannel.trigger_typing()
+            Guard = Guild.get_role(610078093260095488)
+            overwrites = {
+                Guard: discord.PermissionOverwrite(read_messages=True,send_messages=True,read_message_history=True)
+            }
             NewRoom = await Guild.create_text_channel(
                 name = "комната",
                 category = Category,
                 position = Position,
                 topic = topic,
-                reason = "Новая комната"
+                reason = "Новая комната",
+                overwrites=overwrites
                 )
             Message = "Написав что либо в эту комнату, вы её создадите"
             NewMessage = await NewRoom.send(Message)
@@ -2764,23 +2815,34 @@ class MyClient(discord.Client):
                             content=Message,
                             reason = "Уведомление о успешной созданной комнате"
                             )
+            # overwrites = {
+            #     Guard: discord.PermissionOverwrite(read_messages=False,send_messages=False,read_message_history=False),
+            #     User: discord.PermissionOverwrite(read_messages=True,send_messages=True,read_message_history=True)
+            # }
             await GetChannel.edit(
                 name = f"{User.name}",
                 topic = f"Комната игрока {User.name}",
                 category = Category,
-                reason = "Игрок создал новую комнату"
+                reason = "Игрок создал новую комнату",
             )
+            overwrite = discord.PermissionOverwrite()
+            overwrite.send_messages = False
+            overwrite.read_messages = False
+            await GetChannel.set_permissions(Guard,overwrite=overwrite)
+            overwrite.send_messages = True
+            overwrite.read_messages = True
+            await GetChannel.set_permissions(Member,overwrite=overwrite)
             task1 = asyncio.create_task(
-                self.NotMessagesInRoom(User,GetChannel))
+                self.NotMessagesInRoom(GetChannel))
             task2 = asyncio.create_task(
-                self.CommandInCustomRoom(User,GetChannel))
+                self.CommandInCustomRoom(GetChannel))
             asyncio.gather(task1,task2)
 
     async def on_typing(self,GetChannel, User, When):
         if GetChannel.topic == "Создание текстовой личной комнаты":
             await self._CreateRoom(GetChannel,User)
 
-    async def CommandInCustomRoom(self,User : discord.User,Channel : discord.TextChannel):
+    async def CommandInCustomRoom(self,Channel : discord.TextChannel):
         historyMessages = list()
         while Channel.topic != "Комната удалена":
             try:
@@ -2813,8 +2875,8 @@ class MyClient(discord.Client):
             except discord.errors.NotFound: 
                 break
 
-    async def NotMessagesInRoom(self,User,Channel):
-        MaxTime = 100
+    async def NotMessagesInRoom(self,Channel):
+        MaxTime = 900
         Times = MaxTime
         historyMessages = list()
         while Times > 0:
@@ -2830,12 +2892,12 @@ class MyClient(discord.Client):
                     Times -= 1
             except discord.errors.NotFound:
                 Times = 0
-
-        await Channel.edit(
-            topic = "Комната удалена"
-        )
-
-        await Channel.delete(reason="Комната не взаимодейсвует")
+        try:
+            await Channel.edit(
+                topic = "Комната удалена"
+            )
+            await Channel.delete(reason="Комната не взаимодейсвует")
+        except: pass
     async def _TimeShow(self,Member,Channel):
         Timer = 3600
         while Timer > 0:

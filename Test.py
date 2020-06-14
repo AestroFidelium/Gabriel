@@ -30,19 +30,20 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print(f"Loggined")
         Guild = await self.fetch_guild(419879599363850251)
-        Channels = await Guild.fetch_channels()
+        # Channels = await Guild.fetch_channels()
+        # Rooms = list()
+        # Add = False
+        # for Channel in Channels:
+        #     Type = Channel.type
+        #     print(f"Текущий : {Channel} \n Тип : {Type}\n\n")
+        #     if Type == discord.ChannelType.category:
+        #         if Channel.name == "Комнаты":
+        #             Add = True
+        #         else:
+        #             Add = False
+        #     if Add == True:
+        #         print(Channel)
 
-        Rooms = list()
-        Add = False
-        for Channel in Channels:
-            Type = Channel.type
-            if Type == discord.ChannelType.category:
-                if Channel.name == "Комнаты":
-                    Add = True
-                else:
-                    Add = False
-            if Add == True:
-                print(Channel)
 
 
 

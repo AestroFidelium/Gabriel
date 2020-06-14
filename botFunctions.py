@@ -347,6 +347,8 @@ class Gabriel():
         BadWords = [
             '\n'
         ]
+        BadSymvol = ["""
+""", "\n"]
         while Count < CountMessages:
             try:
                 RandomLine = random.randint(1,len(Lines) - 2)
@@ -354,8 +356,8 @@ class Gabriel():
                 Words = Lines.pop(RandomLine)
                 MainLine.append(Words.split(" "))
                 for word in MainLine[0]:
-                    Write = randomBool(0,1,1)
-                    if Write == True:
+                    Write = randomBool(0,3,1)
+                    if Write == False:
                         URL = CheckMessage(word,"https://")
                         URL = URL.Start()
                         if URL == None:
@@ -366,20 +368,21 @@ class Gabriel():
                                 WordSplit = list(); WordSplit.extend(word)
                                 for wordSplit in WordSplit: 
                                     if wordSplit != ")":
-                                        Message += wordSplit
+                                        if wordSplit not in BadSymvol:
+                                            Message += wordSplit
                                 Message += f" "
                                 Count += 1
                                 # print(f"{Count} {word}")
                                 if Count >= CountMessages:
                                     return Message
-                    WriteOtherLine = randomBool(0,1,1)
+                    WriteOtherLine = randomBool(0,2,1)
                     if WriteOtherLine == True:
                         RandomLine = random.randint(1,len(Lines) - 2)
                         OtherLine = list()
                         Words = Lines.pop(RandomLine)
                         OtherLine.append(Words.split(" "))
                         for word2 in OtherLine[0]:
-                            Write = randomBool(0,1,1)
+                            Write = randomBool(0,3,1)
                             if Write == True:
                                 URL = CheckMessage(word,"https://")
                                 URL = URL.Start()
@@ -391,7 +394,8 @@ class Gabriel():
                                         WordSplit = list(); WordSplit.extend(word2)
                                         for wordSplit in WordSplit: 
                                             if wordSplit != ")":
-                                                Message += wordSplit
+                                                if wordSplit not in BadSymvol:
+                                                    Message += wordSplit
                                         Message += f" "
                                         Count += 1
                                         # print(f"{Count} {word2}")
