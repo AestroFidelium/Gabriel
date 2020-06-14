@@ -47,8 +47,6 @@ class MyClient(discord.Client):
 
         # Guild = await self.fetch_guild(419879599363850251)
         # print(await Guild.webhooks())
-        WebHook = await self.fetch_webhook(721168721326112838)
-        await WebHook.send("```Вот такую интересную фишку)\nИ не, дело не в том что это бот, а в том что у него нет профиля. Нажми Пкм по нему, и убедись сам)```")
         # Channels = [721150391445749882,721150365361242138,721150111320899586]
         # NewPlayer = await Guild.fetch_member(414150542017953793)
         # Tasks = list()

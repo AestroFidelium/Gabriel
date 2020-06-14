@@ -29,6 +29,7 @@ import datetime
 import asyncio
 from PIL import Image, ImageDraw , ImageFont
 import botFunctions as Functions
+import codecs
 
 Resurses = "./Resurses/"
 StandartURL = "https://pbs.twimg.com/profile_images/589387776740593664/24AVkUCB_400x400.jpg"
@@ -830,6 +831,7 @@ class MyClient(discord.Client):
         # await Channel.send(" ",file=df)
         self.DevelopGuild = await self.fetch_guild(716945063351156736)
         self.SoundsWas = []
+        self.WebHook = await self.fetch_webhook(721168721326112838)
         RegenerationBoss = asyncio.create_task(self.BossesRegeneration())
         asyncio.gather(RegenerationBoss)
     async def botEvent(self,message):
