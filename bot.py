@@ -833,7 +833,19 @@ class MyClient(discord.Client):
         self.SoundsWas = []
         self.WebHook = await self.fetch_webhook(721168721326112838)
         RegenerationBoss = asyncio.create_task(self.BossesRegeneration())
-        asyncio.gather(RegenerationBoss)
+        Channels = [721150391445749882,721150111320899586]
+        Tasks = list()
+        for Channel in Channels:
+            Members = list()
+            Channel = await self.fetch_channel(Channel)
+            for Member in Channel.members:
+                Permissions = Channel.permissions_for(Member)
+                if Permissions.administrator == False and Permissions.read_messages == True:
+                    Members.append(Member)
+            for Member in Members:
+                task = asyncio.create_task(self._TimeShow(Member,Channel))
+                Tasks.append(task)
+        asyncio.gather(RegenerationBoss,*Tasks)
     async def botEvent(self,message):
         MiniGame = self.get_channel(629267102070472714 )
         _Channel_ = None
@@ -1757,18 +1769,12 @@ class MyClient(discord.Client):
                 # except:
                 #     if type_ == "Ингридиент":
                 #         raise Functions.Error_CreateItem("count error")
-
-                # if type_ == "Предмет":
-                    # SendInfo += f"Имя предмета : {name}\nТип предмета : {type_} \nКласс предмета : {classItem} \nID предмета : {ID}\nЗолотых для улучшения : {gold}\nДлительность : {duration}\n\n"
                 if type_ == "Оружие":
-                    # SendInfo += f"Имя предмета : {name}\nТип предмета : {type_} \nКласс предмета : {classItem} \nID предмета : {ID}\nЗолотых для улучшения : {gold}\nПрочность : {armor}\nУрон : {damage}\n\n"
                     ImageInventor = Functions.CreateImageInventor(username=UserName_,typeItem=type_,name=name,classItem=classItem,ID=ID,gold=gold,armor=armor,damage=damage)
+                    await message.channel.send(f"ID : {ID}",file=ImageInventor)
                 if type_ == "Экипировка":
-                    # SendInfo += f"Имя предмета : {name}\nТип предмета : {type_} \nКласс предмета : {classItem} \nID предмета : {ID}\nЗолотых для улучшения : {gold}\nПрочность : {armor}\nЗащита : {protect}\n\n"
                     ImageInventor = Functions.CreateImageInventor(username=UserName_,typeItem=type_,name=name,classItem=classItem,ID=ID,gold=gold,armor=armor,protect=protect)
-                # if type_ == "Ингридиент":
-                #     SendInfo += f"Имя предмета : {name}\nТип предмета : {type_} \nКласс предмета : {classItem} \nID предмета : {ID}\nЗолотых для улучшения : {gold}\nКоличество : {count}\n\n"
-                await message.channel.send(f"ID : {ID}",file=ImageInventor)
+                    await message.channel.send(f"ID : {ID}",file=ImageInventor)
             pass
         if CurCommand == "WEAR":
             await _Message_.delete()
@@ -2618,7 +2624,7 @@ class MyClient(discord.Client):
             Standart = Guild.get_role(610078093260095488)
             StartRole = Guild.get_role(691735620346970123)
             MainChannel = self.get_channel(419879599363850253)
-            await MainChannel.send(f"{Player.mention} присоединился на сервер",delete_after=600)
+            # await MainChannel.send(f"{Player.mention} присоединился на сервер",delete_after=600)
             if str(Emoji.name) == "⚫":
                 Role = Guild.get_role(713477362058002535)
                 await Member.add_roles(Standart,Role,reason="Прошел регистацию")
@@ -2655,6 +2661,19 @@ class MyClient(discord.Client):
                 Role = Guild.get_role(713477378214592603)
                 await Member.add_roles(Standart,Role,reason="Прошел регистацию")
                 await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            Channels = [721150391445749882,721150111320899586]
+            Tasks = list()
+            for Channel in Channels:
+                Channel = await self.fetch_channel(Channel)
+                overwrite = discord.PermissionOverwrite()
+                overwrite.send_messages = True
+                overwrite.read_messages = True
+                overwrite.read_message_history = True
+                Task = asyncio.create_task(Channel.set_permissions(Member,overwrite=overwrite))
+                Task2 = asyncio.create_task(self._TimeShow(Member,Channel))
+                Tasks.append(Task)
+                Tasks.append(Task2)
+            asyncio.gather(*Tasks)
         # -----------
         # await Message.add_reaction("⚫")
         # await Message.add_reaction("🔵")
@@ -2817,7 +2836,16 @@ class MyClient(discord.Client):
         )
 
         await Channel.delete(reason="Комната не взаимодейсвует")
-
+    async def _TimeShow(self,Member,Channel):
+        Timer = 3600
+        while Timer > 0:
+            Timer -= 1
+            await asyncio.sleep(1)
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = False
+        overwrite.read_messages = False
+        overwrite.read_message_history = False
+        await Channel.set_permissions(Member,overwrite=overwrite)
 InternetActive()
 
 while True:
