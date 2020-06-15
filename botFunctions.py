@@ -3079,32 +3079,107 @@ class PlayerClass():
                 WriteMainParametrs(username=Target,curHealth=Enemy_Health)
             await asyncio.sleep(Time)
 
+
 class Talant():
     """
     Таланты.
     """
+
+    def GetTalants(self):
+        Talants = self.Info["Talants"]
+        return Talants
+    
+    def GetStats(self):
+        Stats = self.Info["Stats"]
+        return Stats
+
+    async def _Update(self):
+        while True:
+            Stats = self.Info.get("Stats")
+            Talants = self.Info.get("Talants")
+            Pick = str(Stats.get("Pick"))
+            for _Talant_ in Talants:
+                _Talant = Talants[_Talant_]
+                Name = str(_Talant["Name"])
+                Lock = int(_Talant["Lock"])
+                if Name == Pick and Lock == 0:
+                    Exp = int(_Talant["Exp"])
+                    GetExp = int(Stats["GetExp"])
+                    Exp += GetExp
+                    NeedExp = int(_Talant["NeedExp"])
+                    Level = int(_Talant["Level"])
+                    MaxLevel = int(_Talant["MaxLevel"])
+                    if Exp >= NeedExp and Level < MaxLevel:
+                        Exp -= NeedExp
+                        if Exp < 0: Exp = 0
+                        else:
+                            while Exp > 0:
+                                Exp -= NeedExp
+                                if Exp < 0: Exp = 0
+                                Level += 1
+                                if Level > MaxLevel:
+                                    Level = MaxLevel
+                                    break
+                    NewBlank = {
+                        "Exp" : Exp,
+                        "Level" : Level
+                    }
+                    _Talant.update(NewBlank)
+                    NewBlank2 = {
+                        _Talant_ : _Talant
+                    }
+                    Talants.update(NewBlank2)
+                    NewInfo = {
+                        "Talants" : Talants,
+                        "Stats" : Stats
+                    }
+                    with open(f"{self.path}.txt","w") as file:
+                        file.write(str(NewInfo))
+            await asyncio.sleep(60)
+
     def __init__(self,Player : str):
         self.Player = Player
         self.path = f"./Stats/Talants/{Player}"
         try:
-            with codecs.open(f"{self.path}.txt","r"
-            ,encoding='utf-8', errors='ignore') as file:
-                pass
+            with open(f"{self.path}.txt","r") as file:
+                self.Info = StrToDict(str=str(file.readline()))
         except FileNotFoundError:
             self.Create()
 
-    def Edit(self):
+    def __Add_New_Talant__(self):
+        """
+        Создает новую ветвь талантов
+        """
         pass
 
+    def PickTalant(self,TalantName):
+        Pick = str(TalantName)
+        NewBlank = {
+            "Pick" : Pick
+        }
+        Stats = self.Info.get("Stats")
+        Talants = self.Info.get("Talants")
+        Stats.update(NewBlank)
+        NewInfo = {
+            "Talants" : Talants,
+            "Stats" : Stats
+        }
+        with open(f"{self.path}.txt","w") as file:
+            file.write(str(NewInfo))
+        
 
     def Create(self):
-        with codecs.open(f"{self.path}.txt","w"
-        ,encoding='utf-8', errors='ignore') as file:
+        with open(f"{self.path}.txt","w") as file:
+            InvincibleDescription = """
+При фатальном ударе, вы не погибаете, вместо этого количество количество здоровья станоситься 50 ед.
+Фатальный урон : Урон, из за которого вы должны были погибнуть. (Он должен быть больше чем здоровья которое вы получаете от исциления с помощью этого навыка)
+"""
             BlankList = {
                 "Talants" : {
                     "Heroic Level" : {
                             "Name" : "Героический уровень",
-                            "Description" : "Увеличивает ваши характеристики. За каждый уровень навыка : \n Сила += 0.1% \n Ловкость += 0.2% \n Интеллект += 0.3% \n Здоровье += 320 ед. \n Опыт += 100 ед. \n Уровень += 1 \nТребуется для : ",
+                            "Description" : "Увеличивает ваши характеристики.\nТребуется для других талантов",
+                            "PerLevel" : "Сила += 0.1%\nЛовкость += 0.2%\nИнтеллект += 0.3%\nЗдоровье += 320 ед.\nОпыт += 100 ед.\nУровень += 1",
                             "Level" : 0,
                             "MaxLevel" : 100,
                             "Exp" : 0,
@@ -3114,7 +3189,8 @@ class Talant():
                             },
                     "More Exp" : {
                             "Name" : "Больше опыта",
-                            "Description" : "Каждое сообщение дает больше единиц опыта, за каждый уровень этого умения",
+                            "Description" : "Больше опыта за сообщения",
+                            "PerLevel" : "Увеличивает количество получаемого опыта",
                             "Level" : 0,
                             "MaxLevel" : 10,
                             "Exp" : 0,
@@ -3124,7 +3200,8 @@ class Talant():
                             },
                     "More Gold" : {
                             "Name" : "Больше золота",
-                            "Description" : "Уменьшает необходимое количество сообщений, чтобы получить золото",
+                            "Description" : "Получение золота требует меньшее количество золота",
+                            "PerLevel" : "Уменьшает требования на 1 сообщение",
                             "Level" : 0,
                             "MaxLevel" : 5,
                             "Exp" : 0,
@@ -3134,7 +3211,8 @@ class Talant():
                             },
                     "More Damage" : {
                             "Name" : "Усиленный урон",
-                            "Description" : "За каждый уровень навыка : \n Увеличивает урон на 5%",
+                            "Description" : "Вы наносите больше урона",
+                            "PerLevel" : "Увеличивает урон на 5%",
                             "Level" : 0,
                             "MaxLevel" : 10,
                             "Exp" : 0,
@@ -3144,7 +3222,8 @@ class Talant():
                             },
                     "More Protect" : {
                             "Name" : "Броня",
-                            "Description" : "За каждый уровень навыка : \n Увеличивает броню на 2.5%",
+                            "Description" : "Вы получаете меньше урона",
+                            "PerLevel" : "Уменьшает получаемый урон на 2.5%",
                             "Level" : 0,
                             "MaxLevel" : 20,
                             "Exp" : 0,
@@ -3155,6 +3234,7 @@ class Talant():
                     "Passive Generator" : {
                             "Name" : "Пассивный генератор опыта",
                             "Description" : "Персонаж получает возможность пассивно набирать опыт. Стандартное значение 1 ед./час.",
+                            "PerLevel" : "",
                             "Level" : 0,
                             "MaxLevel" : 1,
                             "Exp" : 0,
@@ -3164,7 +3244,8 @@ class Talant():
                             },
                     "Updater Generator Amount" : {
                             "Name" : "Генератор Опыта",
-                            "Description" : "За каждый уровень навыка : \n Увеличивает пассивную генерацию опыта на 10 ед.",
+                            "Description" : "Усиливает генератор опыта",
+                            "PerLevel" : "Увеличивает опыт на 10 ед.",
                             "Level" : 0,
                             "MaxLevel" : 4,
                             "Exp" : 0,
@@ -3174,7 +3255,8 @@ class Talant():
                             },
                     "Updater Generator Speed" : {
                             "Name" : "Улучшенный Генератор Опыта",
-                            "Description" : "За каждый уровень навыка : \n Уменьшает время на получение опыта на 1 минуту",
+                            "Description" : "Ускоряет генератор опыта",
+                            "PerLevel" : "Уменьшает время на 1 минуту",
                             "Level" : 0,
                             "MaxLevel" : 40,
                             "Exp" : 0,
@@ -3185,6 +3267,7 @@ class Talant():
                     "Regeneration" : {
                             "Name" : "Регенерация",
                             "Description" : "Открывает навыки регенерации \nСтандартная регенерация : 0 ед./мин.",
+                            "PerLevel" : "",
                             "Level" : 0,
                             "MaxLevel" : 1,
                             "Exp" : 0,
@@ -3193,8 +3276,9 @@ class Talant():
                             "Description_Lock" : "Требуется : \nГероический уровень : 1 уровня."
                             },
                     "Regeneration Amount" : {
-                            "Name" : "Получаемая Регенерация",
-                            "Description" : "За каждый уровень навыка : \nУвеличивает регенерацию на 5 ед.",
+                            "Name" : "Усиленная Регенерация",
+                            "Description" : "Усиливает регенерацию здоровья",
+                            "PerLevel" : "Увеличивает на 10 ед. регенерацию",
                             "Level" : 0,
                             "MaxLevel" : 100,
                             "Exp" : 0,
@@ -3203,8 +3287,9 @@ class Talant():
                             "Description_Lock" : "Требуется : \nРегенерация"
                             },
                     "Regeneration Speed" : {
-                            "Name" : "Ускорене Регенерация",
-                            "Description" : "За каждый уровень навыка : \nУменьшает время на получение регенерации на 1 секунду.",
+                            "Name" : "Ускоренная Регенерация",
+                            "Description" : "Ускоряет получение регенерации здоровья",
+                            "PerLevel" : "Уменьшает время получение регенерации на 1 секунду",
                             "Level" : 0,
                             "MaxLevel" : 30,
                             "Exp" : 0,
@@ -3214,7 +3299,8 @@ class Talant():
                             },
                     "Blacksmith" : {
                             "Name" : "Кузнец",
-                            "Description" : "За каждый уровень навыка : \nУвеличивает минимальные статистики у будущих предметов на 2%",
+                            "Description" : "Минимальная сила предметов становиться сильнее",
+                            "PerLevel" : "Увеличивает минимальную силу у будущих предметов на 2%",
                             "Level" : 0,
                             "MaxLevel" : 20,
                             "Exp" : 0,
@@ -3225,6 +3311,7 @@ class Talant():
                     "Immunity" : {
                             "Name" : "Иммунитет",
                             "Description" : "Развить иммунитет \nПосле развития откроются следующие навыки : \nИммунитет от Яда",
+                            "PerLevel" : "",
                             "Level" : 0,
                             "MaxLevel" : 1,
                             "Exp" : 0,
@@ -3234,7 +3321,8 @@ class Talant():
                             },
                     "Immunity from poison" : {
                             "Name" : "Иммунитет От Яда",
-                            "Description" : "За каждый уровень навыка : \nУменьшает получаемый урон от яда на 2%",
+                            "Description" : "Вы получаете меньше урона от яда",
+                            "PerLevel" : "Уменьшает получаемый урон от яда на 2%",
                             "Level" : 0,
                             "MaxLevel" : 50,
                             "Exp" : 0,
@@ -3244,7 +3332,8 @@ class Talant():
                             },
                     "Bonus" : {
                             "Name" : "Бонусы",
-                            "Description" : "За каждый уровень навыка : \nУвеличивает максимальную ежедневную награду на 30 золотых",
+                            "Description" : "Увеличивает ежедневную награду",
+                            "PerLevel" : "Увеличивает ежедневную награду на 30 золотых",
                             "Level" : 0,
                             "MaxLevel" : 10,
                             "Exp" : 0,
@@ -3255,6 +3344,7 @@ class Talant():
                     "The Change Of Role" : {
                             "Name" : "Смена роли",
                             "Description" : "Открывает возможность выбрать новую фракцию между Демоном или Ангелом.",
+                            "PerLevel" : "",
                             "Level" : 0,
                             "MaxLevel" : 10,
                             "Exp" : 0,
@@ -3264,7 +3354,8 @@ class Talant():
                             },
                     "Demons" : {
                             "Name" : "Демоны",
-                            "Description" : "За каждый уровень навыка : \nУвеличивает статус Демона",
+                            "Description" : "Ваш статус Демона растёт",
+                            "PerLevel" : "Увеличивает статус Демона",
                             "Level" : 0,
                             "MaxLevel" : 3,
                             "Exp" : 0,
@@ -3274,7 +3365,8 @@ class Talant():
                             },
                     "Angels" : {
                             "Name" : "Ангелы",
-                            "Description" : "За каждый уровень навыка : \nУвеличивает статус Ангела",
+                            "Description" : "Ваш статус Ангела растёт",
+                            "PerLevel" : "Увеличивает статус Ангела",
                             "Level" : 0,
                             "MaxLevel" : 3,
                             "Exp" : 0,
@@ -3282,13 +3374,85 @@ class Talant():
                             "Lock" : 1,
                             "Description_Lock" : "Требуется : \nСмена роли"
                             },
+                    "Spells" : {
+                            "Name" : "Способности",
+                            "Description" : "Открывает возможность получить способности",
+                            "PerLevel" : "",
+                            "Level" : 0,
+                            "MaxLevel" : 3,
+                            "Exp" : 0,
+                            "NeedExp" : 3000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nГероический уровень : 4 уровень"
+                            },
+                    "Berserk" : {
+                            "Name" : "Берсерк",
+                            "Description" : "Чем меньше количество здоровья, тем больше наносите урона",
+                            "PerLevel" : "Увеличивает урон на 1%",
+                            "Level" : 0,
+                            "MaxLevel" : 10,
+                            "Exp" : 0,
+                            "NeedExp" : 1000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nСпособности"
+                            },
+                    "Invincible" : {
+                            "Name" : "Непобедимый",
+                            "Description" : InvincibleDescription,
+                            "PerLevel" : "Увеличивает исцеление после навыка на 50 ед.",
+                            "Level" : 0,
+                            "MaxLevel" : 5,
+                            "Exp" : 0,
+                            "NeedExp" : 3000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nСпособности"
+                            },
+                    "Annihilator" : {
+                            "Name" : "Уничтожитель",
+                            "Description" : "Шанс нанести (х5) кратный урон",
+                            "PerLevel" : "Увеличивает шанс на 0.1%",
+                            "Level" : 0,
+                            "MaxLevel" : 50,
+                            "Exp" : 0,
+                            "NeedExp" : 5000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nСпособности"
+                            },
+                    "Repair" : {
+                            "Name" : "Починка",
+                            "Description" : "Предметы которые экипированные, начинают чиниться со временем. (Каждые 10 минут)",
+                            "PerLevel" : "Увеличивает получаемую прочность на 3 ед.",
+                            "Level" : 0,
+                            "MaxLevel" : 6,
+                            "Exp" : 0,
+                            "NeedExp" : 1300,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nСпособности \nКузнец : Последнего уровня"
+                            },
+                    "Determination" : {
+                            "Name" : "Решимость",
+                            "Description" : "Вы наполняетесь решимостью, из за чего большая часть характеристик увеличивается, однако вы теряете возможность получения очков навыков\nУвеличивает : \nУрон на 100%\nБроню на 100%\nПолучаемое исциление на 100%\nУменьшает : \nЗдоровье до 5%",
+                            "PerLevel" : "",
+                            "Level" : 0,
+                            "MaxLevel" : 1,
+                            "Exp" : 0,
+                            "NeedExp" : 100000,
+                            "Lock" : 1,
+                            "Description_Lock" : "Требуется : \nСпособности\nГероический уровень : 100 уровня\nУсиленный урон : 10 уровня\nБроня : 20 уровня"
+                            },
                     },
                 "Stats" : {
-                    "Exp" : 0
+                    "Exp" : 0,
+                    "GetExp" : 1,
+                    "Pick" : "Отсутствует"
                 }
                 }
             file.write(str(BlankList))
-            pass
+            self.Info = BlankList
+
+
+async def main():
+    pass
 
 
 if __name__ == "__main__":
@@ -3372,6 +3536,7 @@ if __name__ == "__main__":
     #     armor=999999,
     #     damage=1,
     #     )
-    Talant_ = Talant("KOT32500")
+    
+    asyncio.run(main())
     pass
     

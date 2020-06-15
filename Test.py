@@ -4,6 +4,7 @@ import time
 import random
 import asyncio
 import aiohttp
+from botFunctions import *
 
 class Error():
     pass
@@ -30,19 +31,10 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print(f"Loggined")
         Guild = await self.fetch_guild(419879599363850251)
-        # Channels = await Guild.fetch_channels()
-        # Rooms = list()
-        # Add = False
-        # for Channel in Channels:
-        #     Type = Channel.type
-        #     print(f"Текущий : {Channel} \n Тип : {Type}\n\n")
-        #     if Type == discord.ChannelType.category:
-        #         if Channel.name == "Комнаты":
-        #             Add = True
-        #         else:
-        #             Add = False
-        #     if Add == True:
-        #         print(Channel)
+        Talant_ = Talant("KOT32500")
+        Talant_.PickTalant("Героический уровень")
+        Task1 = asyncio.create_task(Talant_._Update())
+        asyncio.gather(Task1)
 
 
 

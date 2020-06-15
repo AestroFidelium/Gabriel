@@ -852,7 +852,9 @@ class MyClient(discord.Client):
                     self.CommandInCustomRoom(Channel)))
             
 
-
+        for Player in os.listdir(f"./Stats/Main/"):
+            _Talant = Functions.Talant(str(Player).split(".txt")[0])
+            Tasks.append(_Talant._Update())
 
 
         self.DevelopGuild = await self.fetch_guild(716945063351156736)
@@ -1989,9 +1991,60 @@ class MyClient(discord.Client):
                     Functions.WriteMainParametrs(username=UserName_,intelligence=intelligence,plus=plus)
                     await message.channel.send(f"Вы успешно повысили интеллект, на {Number} ед.",delete_after=5)
                 pass
-            pass
-        
-        
+            if CurCommandPlayer == "SHOW":
+                __Talant__ = Functions.Talant(UserName_)
+                Info = __Talant__.Info
+                Stats = Info["Stats"]
+                Talants = Info["Talants"]
+                GetExp = int(Stats["GetExp"])
+                Pick = str(Stats["Pick"])
+                MessageSend = f"```\nТаланты {message.author.name}\nОпыт : {GetExp}/мин.\nВыбранный навык : {Pick}```"
+                Author = message.author
+                await Author.send(MessageSend)
+                for _Talant in Talants:
+                    Talant = Talants[_Talant]
+
+                    Name = str(Talant["Name"])
+                    Description = str(Talant["Description"])
+                    PerLevel = str(Talant["PerLevel"])
+
+                    Level = int(Talant["Level"])
+                    MaxLevel = int(Talant["MaxLevel"])
+
+                    Exp = int(Talant["Exp"])
+                    NeedExp = int(Talant["NeedExp"])
+
+                    Lock = int(Talant["Lock"])
+                    if Lock == 0:
+                        Lock = "Доступно"
+                    else:
+                        Lock = "Не доступно"
+                    Description_Lock = str(Talant["Description_Lock"])
+                    MessageSend = f"```\n{Name}\n{Description}\nЗа каждый уровень : \n{PerLevel}\nУровень : {Level}\nМаксимальный уровень : {MaxLevel}\nОпыт : {Exp}/{NeedExp}\nДоступен : {Lock}\n{Description_Lock}```"
+                    await Author.send(MessageSend)
+            if CurCommandPlayer == "PICK":
+                Talant = Functions.Talant(UserName_)
+                Text_ = str(message.content).split()[2::]
+                Text = ""
+                count = int(len(Text_))
+                for text in Text_:
+                    count -= 1
+                    if count > 0:
+                        Text += f"{text} "
+                    else: Text += text
+                Be = False
+                Talants = Talant.GetTalants()
+                for _Talant_ in Talants:
+                    Talants = Talant.Info["Talants"]
+                    _Talant = Talants[_Talant_]
+                    Name = str(_Talant["Name"])
+                    if Name == Text:
+                        Be = True
+                if Be == True:
+                    Talant.PickTalant(Text)
+                    await message.channel.send(f"Вы успено поставили '{Text}' в качестве навыков")
+                else:
+                    await message.channel.send(f"Таланта '{Text}' не существует")
         if CurCommand == "AU":
             _Auction = Functions.Auction()
             CurCommandPlayer = str(CurCommandPlayer).upper()
@@ -2694,16 +2747,18 @@ class MyClient(discord.Client):
                 await Member.remove_roles(StartRole,reason="Прошел регистрацию")
             Msg = f"""
             ```fix
-            Поздравляю.```
-            ```
-            Вы успешно присоединились на сервер!
-            Теперь вам доступен ранее недоступный контент.
-            Советую пройти обучение, оно поможет ознакомиться с сервером, 
-            И стать полноценным участником, покажет и поможет в начале.
-            Но прежде чем ты пойдешь его проходить, спешу сообщить о том, что время
-            На выполнения обучения ограничено часом, этого вполне хватит чтобы прочитать
-            А после это меню автоматически уберёться, и не будет мешать вам быть 
-            Полноценным участником сервера!```
+Поздравляю.
+```
+```
+Вы успешно присоединились на сервер!
+Теперь вам доступен ранее недоступный контент.
+Советую пройти обучение, оно поможет ознакомиться с сервером, 
+И стать полноценным участником, покажет и поможет в начале.
+Но прежде чем ты пойдешь его проходить, спешу сообщить о том, что время
+На выполнения обучения ограничено часом, этого вполне хватит чтобы прочитать
+А после это меню автоматически уберёться, и не будет мешать вам быть 
+Полноценным участником сервера!
+```
             """
             await Member.send(Msg)
             Channels = [721150391445749882,721150111320899586]
