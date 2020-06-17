@@ -3125,6 +3125,32 @@ class Talant():
                                     Exp -= NeedExp
                                     if Exp < 0: Exp = 0
                                     Level += 1
+                                    if Name == "Героический уровень":
+                                        Parametrs = ReadMainParametrs(username=self.Player)
+                                        strength = float(Parametrs[strength]) + 0.1
+                                        agility  = float(Parametrs[agility]) + 0.2
+                                        intelligence  = float(Parametrs[intelligence]) + 0.3
+                                        exp = int(Parametrs[exp]) + 100
+                                        maxHealth = int(Parametrs[maxHealth]) + 320
+                                        curHealth = int(Parametrs[curHealth]) + 320
+                                        lvl = int(Parametrs[lvl]) + 1
+                                        maxLevel = int(Parametrs[maxLevel])
+                                        plus = int(Parametrs[plus])
+                                        if lvl > maxLevel:
+                                            maxLevel += 1
+                                            plus += 1
+                                        WriteMainParametrs(
+                                            username=self.Player,
+                                            strength = strength,
+                                            agility = agility,
+                                            intelligence = intelligence,
+                                            exp = exp,
+                                            maxHealth = maxHealth,
+                                            curHealth = curHealth,
+                                            lvl = lvl,
+                                            maxLevel = maxLevel,
+                                            plus = plus
+                                        )
                                     if Level > MaxLevel:
                                         Level = MaxLevel
                                         break
@@ -3425,29 +3451,6 @@ class Talant():
                             "Lock" : 0,
                             "Description_Lock" : ""
                             },
-                    "The Change Of Role" : {
-                            "Name" : "Смена роли",
-                            "Description" : "Открывает возможность выбрать новую фракцию между Демоном или Ангелом.",
-                            "PerLevel" : "",
-                            "Level" : 0,
-                            "MaxLevel" : 10,
-                            "Exp" : 0,
-                            "NeedExp" : 50000,
-                            "Lock" : 0,
-                            "Description_Lock" : ""
-                            },
-                    "Demons" : {
-                            "Name" : "Демоны",
-                            "Description" : "Ваш статус Демона растёт",
-                            "PerLevel" : "Увеличивает статус Демона",
-                            "Level" : 0,
-                            "MaxLevel" : 3,
-                            "Exp" : 0,
-                            "NeedExp" : 50000,
-                            "Lock" : 1,
-                            "Description_Lock" : "Требуется : \nСмена роли"
-                            },
-                    "Angels" : {
                             "Name" : "Ангелы",
                             "Description" : "Ваш статус Ангела растёт",
                             "PerLevel" : "Увеличивает статус Ангела",
