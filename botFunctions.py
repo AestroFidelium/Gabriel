@@ -2736,6 +2736,9 @@ class PlayerInventor():
                 "magic" : magic
             }
         if type_ == "Оружие":
+            Talant_ = Talant(self.Player)
+            Blacksmith = Talant_.CheckTalantLevel("Кузнец")
+            damage += int(damage * ((2 * int(Blacksmith["Level"])) / 100))
             newItem = {
                 "type" : type_,
                 "name" : name,
@@ -3091,60 +3094,117 @@ class Talant():
     
     def GetStats(self):
         Stats = self.Info["Stats"]
+        self.Stats = Stats
         return Stats
 
     async def _Update(self):
         while True:
-            Stats = self.Info.get("Stats")
-            Talants = self.Info.get("Talants")
-            Pick = str(Stats.get("Pick"))
+            with open(f"{self.path}.txt","r") as file:
+                self.Info = StrToDict(str=str(file.readline()))
+            Stats = self.Info["Stats"]
+            Talants = self.Info["Talants"]
+            Pick = str(Stats["Pick"])
             for _Talant_ in Talants:
                 _Talant = Talants[_Talant_]
                 Name = str(_Talant["Name"])
                 Lock = int(_Talant["Lock"])
-                if Name == Pick and Lock == 0:
-                    Exp = int(_Talant["Exp"])
-                    GetExp = int(Stats["GetExp"])
-                    Exp += GetExp
-                    NeedExp = int(_Talant["NeedExp"])
-                    Level = int(_Talant["Level"])
-                    MaxLevel = int(_Talant["MaxLevel"])
-                    if Exp >= NeedExp and Level < MaxLevel:
-                        Exp -= NeedExp
-                        if Exp < 0: Exp = 0
+
+                if Name == Pick:
+                    if Lock == 0:
+                        Exp = int(_Talant["Exp"])
+                        GetExp = int(Stats["GetExp"])
+                        Exp += GetExp
+                        NeedExp = int(_Talant["NeedExp"])
+                        Level = int(_Talant["Level"])
+                        MaxLevel = int(_Talant["MaxLevel"])
+                        if Exp >= NeedExp and Level < MaxLevel:
+                            Exp -= NeedExp
+                            if Exp < 0: Exp = 0
+                            else:
+                                while Exp > 0:
+                                    Exp -= NeedExp
+                                    if Exp < 0: Exp = 0
+                                    Level += 1
+                                    if Level > MaxLevel:
+                                        Level = MaxLevel
+                                        break
+                        NewBlank = {
+                            "Exp" : Exp,
+                            "Level" : Level
+                        }
+                        _Talant.update(NewBlank)
+                        NewBlank2 = {
+                            _Talant_ : _Talant
+                        }
+                        Talants.update(NewBlank2)
+                        NewInfo = {
+                            "Talants" : Talants,
+                            "Stats" : Stats
+                        }
+                        with open(f"{self.path}.txt","w") as file:
+                            file.write(str(NewInfo))
+                    else:
+                        Description_Lock = str(_Talant["Description_Lock"])
+                        AllLocks = Description_Lock.split("\n")
+                        Ready = 0
+                        for Locker in AllLocks:
+                            NameLocker = str(Locker).split(" : ")[0]
+                            LevelLocker = 1
+                            try:
+                                LevelLocker = int(str(Locker).split(" : ")[1].split(" ")[0])
+                            except: pass
+                            for _Talant_ in self.Talants:
+                                _Talant = self.Talants[_Talant_]
+                                _TalantName = str(_Talant["Name"])
+                                if _TalantName == NameLocker:
+                                    Ready += 1
+                                    for __Talant__ in self.Talants:
+                                        __Talant = self.Talants[__Talant__]
+                                        __TalantName = str(__Talant["Name"])
+                                        if __TalantName == NameLocker:
+                                            __TalantLevel = int(__Talant["Level"])
+                                            if __TalantLevel >= LevelLocker:
+                                                Ready -= 1
+                                                print(f"{NameLocker} готов")
+                                            else:
+                                                print(f"{NameLocker} не готов")
+                        if Ready == 0:
+                            print("Навык полностью готов")
+                            for _Talant_ in Talants:
+                                _Talant = Talants[_Talant_]
+                                TalantName = str(_Talant["Name"])
+                                if TalantName == Name:
+                                    Updater = {
+                                        "Lock" : 0
+                                    }
+                                    _Talant.update(Updater)
+                                    Updater = {
+                                        _Talant_ : _Talant
+                                    }
+                                    Talants.update(Updater)
+                                    NewInfo = {
+                                        "Talants" : Talants,
+                                        "Stats" : Stats
+                                    }
+                                    with open(f"{self.path}.txt","w") as file:
+                                        file.write(str(NewInfo))
                         else:
-                            while Exp > 0:
-                                Exp -= NeedExp
-                                if Exp < 0: Exp = 0
-                                Level += 1
-                                if Level > MaxLevel:
-                                    Level = MaxLevel
-                                    break
-                    NewBlank = {
-                        "Exp" : Exp,
-                        "Level" : Level
-                    }
-                    _Talant.update(NewBlank)
-                    NewBlank2 = {
-                        _Talant_ : _Talant
-                    }
-                    Talants.update(NewBlank2)
-                    NewInfo = {
-                        "Talants" : Talants,
-                        "Stats" : Stats
-                    }
-                    with open(f"{self.path}.txt","w") as file:
-                        file.write(str(NewInfo))
+                            print("Навыки не готов")
+                                
             await asyncio.sleep(60)
 
     def __init__(self,Player : str):
         self.Player = Player
         self.path = f"./Stats/Talants/{Player}"
+        Stats = ReadMainParametrs(username=Player)
+        self.Intelligence = round(Stats["intelligence"])
         try:
             with open(f"{self.path}.txt","r") as file:
                 self.Info = StrToDict(str=str(file.readline()))
         except FileNotFoundError:
             self.Create()
+        self.Stats = self.GetStats()
+        self.Talants = self.GetTalants()
 
     def __Add_New_Talant__(self):
         """
@@ -3155,7 +3215,8 @@ class Talant():
     def PickTalant(self,TalantName):
         Pick = str(TalantName)
         NewBlank = {
-            "Pick" : Pick
+            "Pick" : Pick,
+            "GetExp" : self.Intelligence
         }
         Stats = self.Info.get("Stats")
         Talants = self.Info.get("Talants")
@@ -3164,9 +3225,32 @@ class Talant():
             "Talants" : Talants,
             "Stats" : Stats
         }
+        self.Info = NewInfo
         with open(f"{self.path}.txt","w") as file:
             file.write(str(NewInfo))
         
+    def CheckTalantLevel(self,TalantName):
+        for _Talant in self.Talants:
+            Talant = self.Talants[_Talant]
+            Name = str(Talant["Name"])
+            if Name == TalantName:
+                Level = int(Talant["Level"])
+                Level = int(Talant["Level"])
+                MaxLevel = int(Talant["MaxLevel"])
+
+                if Level == MaxLevel:
+                    Ready = True
+                else:
+                    Ready = False
+
+                Lock = int(Talant["Lock"])
+
+                NewDict = {
+                    "Level" : Level,
+                    "Ready" : Ready,
+                    "Lock" : Lock
+                }
+                return NewDict
 
     def Create(self):
         with open(f"{self.path}.txt","w") as file:
@@ -3299,8 +3383,8 @@ class Talant():
                             },
                     "Blacksmith" : {
                             "Name" : "Кузнец",
-                            "Description" : "Минимальная сила предметов становиться сильнее",
-                            "PerLevel" : "Увеличивает минимальную силу у будущих предметов на 2%",
+                            "Description" : "Сила предметов становиться сильнее",
+                            "PerLevel" : "Увеличивает силу у будущих предметов на 2%",
                             "Level" : 0,
                             "MaxLevel" : 20,
                             "Exp" : 0,
@@ -3442,8 +3526,7 @@ class Talant():
                             },
                     },
                 "Stats" : {
-                    "Exp" : 0,
-                    "GetExp" : 1,
+                    "GetExp" : self.Intelligence,
                     "Pick" : "Отсутствует"
                 }
                 }

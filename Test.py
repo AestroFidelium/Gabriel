@@ -31,10 +31,12 @@ class MyClient(discord.Client):
     async def on_ready(self):
         print(f"Loggined")
         Guild = await self.fetch_guild(419879599363850251)
-        Talant_ = Talant("KOT32500")
-        Talant_.PickTalant("Героический уровень")
-        Task1 = asyncio.create_task(Talant_._Update())
-        asyncio.gather(Task1)
+        Damage = 1000
+        LevelProcent = 5
+        LevelProcent /= 100
+
+        Damage = int(Damage * LevelProcent)
+        print(Damage)
 
 
 

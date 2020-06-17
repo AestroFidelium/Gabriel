@@ -986,6 +986,13 @@ class MyClient(discord.Client):
                     pass
                 YourDamage = random.randint(1,IntMaxDamage + DamageItem)
 
+                MoreDamage = self.Talant_.CheckTalantLevel("Усиленный урон")
+
+                Level = int(MoreDamage["Level"])
+                PlusProcentDamage = (5 * Level) / 100
+                PlusProcentDamage = YourDamage * PlusProcentDamage
+                YourDamage += PlusProcentDamage
+
                 Boss_CurHealth -= YourDamage
 
                 if (Boss_CurHealth <= 0) and (Boss_Dead == "No"):
@@ -1122,34 +1129,35 @@ class MyClient(discord.Client):
                 return
             if (CurCommandEvent == "BONUS") or (CurCommandEvent == "B") or (CurCommandEvent == "Б") or (CurCommandEvent == "БОНУС"):
                 try:
-                    with codecs.open(f"./Stats/EveryDay/{UserName_}.txt","r"
-                    ,encoding='utf-8', errors='ignore') as file:
-                    # with open(f"./Stats/EveryDay/{UserName_}.txt","r") as file:
+                    with open(f"./Stats/EveryDay/{UserName_}.txt","r") as file:
                         NowDayForUser = file.readline()
                         EarlierTakeGem = file.readline()
                         if int(NowDayForUser) != NowTime.day:
                             RandomAddMoney = random.randint(5,100)
-                            GoldPlayer += RandomAddMoney
+                            BonusTalant = self.Talant_.CheckTalantLevel("Бонусы")
+                            TalantLevel = int(BonusTalant["Level"])
+                            BonusForTalant = 30 * TalantLevel
+                            GoldPlayer += RandomAddMoney + BonusForTalant
                             Functions.WriteMainParametrs(username=UserName_,money=GoldPlayer)
-                            await message.channel.send(f"{UserName_} взял(а) ежедневный бонус, в {RandomAddMoney}:moneybag:")
+                            await message.channel.send(f"{UserName_} взял(а) ежедневный бонус, в {RandomAddMoney}:moneybag: \n(+{BonusForTalant}:moneybag: за {TalantLevel} уровень таланта Бонусы)")
                             with codecs.open(f"./Stats/EveryDay/{UserName_}.txt","w"
-                            ,encoding='utf-8', errors='ignore') as file:
-                            # with open(f"./Stats/EveryDay/{UserName_}.txt","w") as fileTwo:
+                            ,encoding='utf-8', errors='ignore') as fileTwo:
                                 fileTwo.writelines(str(NowTime.day))
-                                fileTwo.writelines(f"\n{str(RandomAddMoney)}")
+                                fileTwo.writelines(f"\n{str(RandomAddMoney + BonusForTalant)}")
                         else:
                             await message.channel.send(f"{UserName_}, вы уже брали ежедневный бонус в размере {EarlierTakeGem}:moneybag:")
                         
                 except FileNotFoundError:
-                    with codecs.open(f"./Stats/EveryDay/{UserName_}.txt","w"
-                    ,encoding='utf-8', errors='ignore') as file:
-                    # with open(f"./Stats/EveryDay/{UserName_}.txt","w") as file:
+                    with open(f"./Stats/EveryDay/{UserName_}.txt","w") as file:
                         file.writelines(str(NowTime.day))
+                        BonusTalant = self.Talant_.CheckTalantLevel("Бонусы")
                         RandomAddMoney = random.randint(5,100)
-                        file.writelines(f"\n{str(RandomAddMoney)}")
-                        GoldPlayer += RandomAddMoney
+                        TalantLevel = int(BonusTalant["Level"])
+                        BonusForTalant = 30 * TalantLevel
+                        file.writelines(f"\n{str(RandomAddMoney + BonusForTalant)}")
+                        GoldPlayer += RandomAddMoney + BonusForTalant
                         Functions.WriteMainParametrs(username=UserName_,money=GoldPlayer)
-                        await message.channel.send(f"{UserName_} взял(а) ежедневный бонус, в {RandomAddMoney}:moneybag:")
+                        await message.channel.send(f"{UserName_} взял(а) ежедневный бонус, в {RandomAddMoney}:moneybag: \n(+{BonusForTalant}:moneybag: за {TalantLevel} уровень таланта Бонусы)")
             time.sleep(0.01)
             # if (CurCommandEvent == "CASINO") or (CurCommandEvent == "C"):
             #     MainStats = Functions.ReadMainParametrs(username=UserName_)
@@ -1350,7 +1358,8 @@ class MyClient(discord.Client):
         IntMaxHealth = int(YourProfilParamerts.pop("maxHealth"))
         IntCurHealth = int(YourProfilParamerts.pop("curHealth"))
         IntMaxDamage = int(YourProfilParamerts.pop("damage"))
-        IntCurExp += 1
+        MoreExp = self.Talant_.CheckTalantLevel("Больше опыта")
+        IntCurExp += 1 + int(MoreExp["Level"])
         Functions.WriteMainParametrs(username=UserName_,exp=IntCurExp)
         if IntCurExp > Level * 5:
             Level += 1
@@ -1562,7 +1571,6 @@ class MyClient(discord.Client):
                     #         txt += f"{Stat}"
                     # txt += '\n'
 
-
                 StatsEnemy = Functions.ReadMainParametrs(username=CurCommandPlayer)
                 EnIntCurLvl = int(StatsEnemy.pop("lvl"))
                 EnIntMaxHealth = int(StatsEnemy.pop("maxHealth"))
@@ -1659,7 +1667,7 @@ class MyClient(discord.Client):
                     try:
                         await message.channel.send(" ",file=profileEdit(CurCommandPlayer))
                     except:
-                        await message.channel.send(":warning: `Профиль не найден, или этого ирока просто не существует` :warning:",delete_after=2)
+                        await message.channel.send(":warning: `Профиль не найден, или этого игрока просто не существует` :warning:",delete_after=2)
                 except ErrorAvatar:
                     await message.channel.send("У пользователя нет аватарки. Это связано с : \n1) Пользователь имеет ошибку в аватарке \n2) Пользователь не открывал свой профиль, ни разу",delete_after=5)
 
@@ -2163,7 +2171,9 @@ class MyClient(discord.Client):
         
         Msages += 1
 
-        if Msages >= 5:
+        MoreGold = self.Talant_.CheckTalantLevel("Больше золота")
+
+        if Msages >= 5 - int(MoreGold["Level"]):
             Gold += 1
             Msages = 0
 
@@ -2351,7 +2361,8 @@ class MyClient(discord.Client):
                 Functions._Gold(username=UserName_,do="Убавить",count=int(Index))
                 Boss.Create(int(Index))
                 await message.channel.send(f"Босс успешно был призван",delete_after=10)
-    
+
+
     async def on_message(self, message):
         self.Gabriel = Functions.Gabriel()
         try:
@@ -2365,6 +2376,15 @@ class MyClient(discord.Client):
         self.Chat = self.Gabriel.Chat(Guild,self)
         self.Setting = self.Config.Read(message.channel.guild.name)
         self.ThisGuild = await self.fetch_guild(message.channel.guild.id)
+        UserName_ = message.author.name
+        UserName_ = str.split(UserName_)
+        UserName__ = str()
+        for word in UserName_:
+            UserName__ += word
+        UserName_ = str(UserName__)
+        self.Talant_ = Functions.Talant(UserName_)
+        self.Talants = self.Talant_.GetTalants()
+        self.TalantStats = self.Talant_.GetStats()
         Dialog = asyncio.create_task(self.Dialog(message))
         botEvent = asyncio.create_task(self.botEvent(message))
         botStandart = asyncio.create_task(self.botStandart(message))
