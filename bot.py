@@ -788,7 +788,7 @@ class MyClient(discord.Client):
         print(f"Logged on as , {self.user} MODULE : bot.py")
         Tasks = list()
         randomStatus = random.randint(0,7)
-        Working = True
+        Working = False
         if Working == False:
             if randomStatus == 0:
                 await self.change_presence(

@@ -3451,16 +3451,6 @@ class Talant():
                             "Lock" : 0,
                             "Description_Lock" : ""
                             },
-                            "Name" : "Ангелы",
-                            "Description" : "Ваш статус Ангела растёт",
-                            "PerLevel" : "Увеличивает статус Ангела",
-                            "Level" : 0,
-                            "MaxLevel" : 3,
-                            "Exp" : 0,
-                            "NeedExp" : 50000,
-                            "Lock" : 1,
-                            "Description_Lock" : "Требуется : \nСмена роли"
-                            },
                     "Spells" : {
                             "Name" : "Способности",
                             "Description" : "Открывает возможность получить способности",
