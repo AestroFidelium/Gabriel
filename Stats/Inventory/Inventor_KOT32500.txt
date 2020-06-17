@@ -1,3 +1,0 @@
-{'type': 'Оружие', 'name': 'Проверка Аукциона', 'classItem': 'Сломанный', 'ID': 1, 'gold': 1, 'maxGold': 1, 'armor': 999999, 'damage': 1, 'magic': {}}
-{'type': 'Оружие', 'name': 'Проверка Аукциона', 'classItem': 'Сломанный', 'ID': 15, 'gold': 1, 'maxGold': 1, 'armor': 999999, 'damage': 1, 'magic': {}}
-{'type': 'Оружие', 'name': 'Проверка Аукциона', 'classItem': 'Сломанный', 'ID': 10, 'gold': 1, 'maxGold': 1, 'armor': 999999, 'damage': 1, 'magic': {}}

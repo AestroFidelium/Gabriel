@@ -1,1 +1,0 @@
-{'exp': 629, 'lvl': 174, 'maxHealth': 1710, 'curHealth': 1710, 'damage': 2822, 'description': '', 'money': 8934, 'messages': 2, 'maxLevel': 174, 'strength': 1.0, 'agility': 1.0, 'intelligence': 1.0, 'plus': 174}
