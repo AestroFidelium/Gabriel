@@ -1,7 +1,12 @@
-
+Stats/
+Servers/
+Resurses/
+Configs/
+StatsPl.png
 Translator.exe
 BazaDate.py
 BazaDate.py
 BazaDate.py
 BazaDate2.py
 __pycache__/BazaDate.cpython-38.pyc
+*.txt
