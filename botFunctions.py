@@ -3209,6 +3209,16 @@ class Talant():
                                         )
                                     if Name == "Починка" and Level == 1:
                                         await self.Repair()
+                                    if Name == "Решимость":
+                                        Parametrs = ReadMainParametrs(username=self.Player)
+                                        maxHealth = int(Parametrs["maxHealth"])
+                                        Procent = 5 / 100
+                                        maxHealth *= Procent
+                                        WriteMainParametrs(
+                                            username=self.Player,
+                                            maxHealth = int(maxHealth),
+                                            curHealth = int(maxHealth)
+                                            )
                                     if Level > MaxLevel:
                                         Level = MaxLevel
                                         break
