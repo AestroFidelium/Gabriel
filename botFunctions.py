@@ -3155,7 +3155,7 @@ class Talant():
 
     async def _Update(self):
         while True:
-            with open(f"{self.path}.txt","r") as file:
+            with codecs.open(f"{self.path}.txt","r",encoding='utf-8', errors='ignore') as file:
                 Info = StrToDict(str=str(file.readline()))
             Stats = Info["Stats"]
             Talants = Info["Talants"]
@@ -3270,7 +3270,7 @@ class Talant():
                                         "Talants" : Talants,
                                         "Stats" : Stats
                                     }
-                                    with open(f"{self.path}.txt","w") as file:
+                                    with codecs.open(f"{self.path}.txt","w",encoding='utf-8', errors='ignore') as file:
                                         file.write(str(NewInfo))
                         else:
                             print("Навыки не готов")
@@ -3337,7 +3337,7 @@ class Talant():
                 return NewDict
 
     def Create(self):
-        with open(f"{self.path}.txt","w") as file:
+        with codecs.open(f"{self.path}.txt","w",encoding='utf-8', errors='ignore') as file:
             InvincibleDescription = """При фатальном ударе, вы не погибаете, вместо этого количество количество здоровья станоситься 50 ед.\nФатальный урон : Урон, из за которого вы должны были погибнуть. (Он должен быть больше чем здоровья которое вы получаете от исциления с помощью этого навыка)"""
             BlankList = {
                 "Talants" : {
