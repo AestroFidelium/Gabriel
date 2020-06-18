@@ -994,6 +994,11 @@ class MyClient(discord.Client):
 
                 Determination = self.Talant_.CheckTalantLevel("Решимость")
 
+                Annihilator = self.Talant_.CheckTalantLevel("Уничтожитель")
+                AnnihilatorLevel = int(Annihilator["Level"])
+                Random = random.randint(0,1000 - (10 * AnnihilatorLevel))
+                if Random >= 0 and Random <= 10:
+                    YourDamage *= 5
                 if Determination["Ready"] == True:
                     YourDamage *= 2
 
