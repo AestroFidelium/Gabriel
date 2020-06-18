@@ -855,8 +855,10 @@ class MyClient(discord.Client):
 
         for Player in os.listdir(f"./Stats/Main/"):
             _Talant = Functions.Talant(str(Player).split(".txt")[0])
-            Tasks.append(_Talant._Update())
-            Tasks.append(_Talant.Repair())
+            task = asyncio.create_task(_Talant._Update())
+            task1 = asyncio.create_task(_Talant.Repair())
+            Tasks.append(task)
+            Tasks.append(task1)
 
 
         self.DevelopGuild = await self.fetch_guild(716945063351156736)
