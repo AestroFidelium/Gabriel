@@ -788,8 +788,9 @@ class MyClient(discord.Client):
         print(f"Logged on as , {self.user} MODULE : bot.py")
         Tasks = list()
         randomStatus = random.randint(0,7)
-        Working = False
-        if Working == False:
+        with open(f"Ready.txt","r") as file:
+            Working = str(file.readline())
+        if Working == "-":
             if randomStatus == 0:
                 await self.change_presence(
                     activity=discord.Activity(
@@ -855,6 +856,7 @@ class MyClient(discord.Client):
         for Player in os.listdir(f"./Stats/Main/"):
             _Talant = Functions.Talant(str(Player).split(".txt")[0])
             Tasks.append(_Talant._Update())
+            Tasks.append(_Talant.Repair())
 
 
         self.DevelopGuild = await self.fetch_guild(716945063351156736)
@@ -987,6 +989,11 @@ class MyClient(discord.Client):
                 YourDamage = random.randint(1,IntMaxDamage + DamageItem)
 
                 MoreDamage = self.Talant_.CheckTalantLevel("Усиленный урон")
+
+                Determination = self.Talant_.CheckTalantLevel("Решимость")
+
+                if Determination["Ready"] == True:
+                    YourDamage *= 2
 
                 Level = int(MoreDamage["Level"])
                 PlusProcentDamage = (5 * Level) / 100
@@ -1367,7 +1374,9 @@ class MyClient(discord.Client):
             plus = int(YourProfilParamerts.pop("plus"))
             if maxLevel < Level:
                 maxLevel = Level
-                plus += 1
+                Reshumost = self.Talant_.CheckTalantLevel("Решимость")
+                if Reshumost["Ready"] == False:
+                    plus += 1
             LevelUp = Functions.LevelUp(count=1)
             health = LevelUp.pop("health")
             damage = LevelUp.pop('damage')
@@ -1616,7 +1625,9 @@ class MyClient(discord.Client):
                     Item_ID = Functions.ReadEquipment(username=CurCommandPlayer,type="Экипировка")
                     ItemProtect = Functions.CheckParametrsEquipment(username=CurCommandPlayer,ID=Item_ID)
                     protect = int(ItemProtect["protect"])
-
+                    Determination = self.Talant_.CheckTalantLevel("Решимость")
+                    if Determination["Ready"] == True:
+                        protect *= 2
                     GetDamage -= protect
                 except: pass
                 if GetDamage <= 0:
@@ -1634,8 +1645,10 @@ class MyClient(discord.Client):
                     plus = int(MainStats.pop("plus"))
                     maxLevel = int(MainStats.pop("maxLevel"))
                     if IntCurLvl > maxLevel:
-                        plus += maxLevel - IntCurLvl
-                        maxLevel = plus
+                        Reshumost = self.Talant_.CheckTalantLevel("Решимость")
+                        if Reshumost["Ready"] == False:
+                            plus += maxLevel - IntCurLvl
+                            maxLevel = plus
 
 
                     # await BotInisializator.AttackMessage(CurCommandPlayer,IntCurLvl,EnIntCurHealth,EnIntMaxHealth,FreeLvlHA,GetDamage,CurChannel)
@@ -2263,7 +2276,9 @@ class MyClient(discord.Client):
                                 IntCurHealth = IntMaxHealth
                             IntCurExp -= WasExpNeed
                             if maxLevel < IntCurLvl:
-                                Plus += 1
+                                Reshumost = self.Talant_.CheckTalantLevel("Решимость")
+                                if Reshumost["Ready"] == False:
+                                    Plus += 1
                         if target_list < 0:
                             print("ERROR")
                     await message.channel.send(str1)
@@ -2290,7 +2305,9 @@ class MyClient(discord.Client):
                             else:
                                 IntCurHealth = IntMaxHealth
                             if maxLevel < IntCurLvl:
-                                Plus += 1
+                                Reshumost = self.Talant_.CheckTalantLevel("Решимость")
+                                if Reshumost["Ready"] == False:
+                                    Plus += 1
                         if target_list < 0:
                             print("ERROR")
                     await message.channel.send(str1)

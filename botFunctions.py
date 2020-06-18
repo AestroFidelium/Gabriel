@@ -2871,7 +2871,6 @@ class PlayerInventor():
         ListItems = list()
         with codecs.open(f"./Stats/Inventory/Inventor_{username}.txt","r"
             ,encoding='utf-8', errors='ignore') as file:
-        # with open(f"./Stats/Inventory/Inventor_{username}.txt","r") as file:
             for item in file.readlines():
                 itemDict = StrToDict(str=item)
                 itemDictStandart = StrToDict(str=item)
@@ -3007,6 +3006,7 @@ class PlayerClass():
     def __init__(self,Player :str,Client):
         self.Player = Player
         self.Client = Client
+        self.Talant_ = Talant(self.Player)
     
     async def Regeneration(self,Time : int,Health : int):
         """
@@ -3022,6 +3022,9 @@ class PlayerClass():
             Stats = ReadMainParametrs(username=self.Player)
             HealthHero = int(Stats["curHealth"])
             maxHealth = int(Stats["maxHealth"])
+            Determination = self.Talant_.CheckTalantLevel("Решимость")
+            if Determination["Ready"] == True:
+                HealthHero += HealthPerTick
             HealthHero += HealthPerTick
             if HealthHero > maxHealth: HealthHero = maxHealth
             WriteMainParametrs(username=self.Player,curHealth=HealthHero)
@@ -3096,13 +3099,66 @@ class Talant():
         Stats = self.Info["Stats"]
         self.Stats = Stats
         return Stats
+    
+    async def Repair(self):
+        Repair = self.CheckTalantLevel("Починка")
+        Level = int(Repair["Level"])
+        if Level >= 1:
+            print("Пoчинка пошла")
+            while True:
+                types = ["Оружие","Экипировка"]
+                for type_ in types:
+                    Equipment = ReadEquipment(username=self.Player,type=type_)
+                    Equipment = CheckParametrsEquipment(username=self.Player,ID=Equipment)
+                   
+                    Armor = int(Equipment["armor"])
+                    type = Equipment["type"]
+                    name = Equipment["name"]
+                    classItem = Equipment["classItem"]
+                    ID = Equipment["ID"]
+                    gold = Equipment["gold"]
+                    maxGold = Equipment["maxGold"]
+
+                    Armor += int(3 * Level)
+                    print(f"{Armor} брони стало")
+                    if type_ == types[0]:
+                        damage = Equipment["damage"]
+                        magic = Equipment["magic"]
+                        PlayerInventor_ = PlayerInventor(self.Player)
+                        item = PlayerInventor_.SellItem(ID = Equipment)
+                        PlayerInventor_.WriteInventor(
+                            type = type,
+                            name = name,
+                            classItem = classItem,
+                            ID = ID,
+                            gold = gold,
+                            maxGold = maxGold,
+                            armor = Armor,
+                            damage = damage,
+                            magic = magic
+                        )
+                    else:
+                        protect = Equipment["protect"]
+                        PlayerInventor_ = PlayerInventor(self.Player)
+                        PlayerInventor_.DeleteItem(ID = Equipment)
+                        PlayerInventor_.WriteInventor(
+                            type = type,
+                            name = name,
+                            classItem = classItem,
+                            ID = ID,
+                            gold = gold,
+                            maxGold = maxGold,
+                            armor = Armor,
+                            protect = protect
+                        )
+                await asyncio.sleep(600)
 
     async def _Update(self):
         while True:
             with open(f"{self.path}.txt","r") as file:
-                self.Info = StrToDict(str=str(file.readline()))
-            Stats = self.Info["Stats"]
-            Talants = self.Info["Talants"]
+                Info = StrToDict(str=str(file.readline()))
+            Stats = Info["Stats"]
+            Talants = Info["Talants"]
             Pick = str(Stats["Pick"])
             for _Talant_ in Talants:
                 _Talant = Talants[_Talant_]
@@ -3151,6 +3207,8 @@ class Talant():
                                             maxLevel = maxLevel,
                                             plus = plus
                                         )
+                                    if Name == "Починка" and Level == 1:
+                                        await self.Repair()
                                     if Level > MaxLevel:
                                         Level = MaxLevel
                                         break
@@ -3280,10 +3338,7 @@ class Talant():
 
     def Create(self):
         with open(f"{self.path}.txt","w") as file:
-            InvincibleDescription = """
-При фатальном ударе, вы не погибаете, вместо этого количество количество здоровья станоситься 50 ед.
-Фатальный урон : Урон, из за которого вы должны были погибнуть. (Он должен быть больше чем здоровья которое вы получаете от исциления с помощью этого навыка)
-"""
+            InvincibleDescription = """При фатальном ударе, вы не погибаете, вместо этого количество количество здоровья станоситься 50 ед.\nФатальный урон : Урон, из за которого вы должны были погибнуть. (Он должен быть больше чем здоровья которое вы получаете от исциления с помощью этого навыка)"""
             BlankList = {
                 "Talants" : {
                     "Heroic Level" : {
@@ -3504,7 +3559,7 @@ class Talant():
                             "Exp" : 0,
                             "NeedExp" : 1300,
                             "Lock" : 1,
-                            "Description_Lock" : "Требуется : \nСпособности \nКузнец : Последнего уровня"
+                            "Description_Lock" : "Требуется : \nСпособности \nКузнец : 20 уровня"
                             },
                     "Determination" : {
                             "Name" : "Решимость",
