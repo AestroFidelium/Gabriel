@@ -2747,7 +2747,7 @@ class MyClient(discord.Client):
             Standart = Guild.get_role(610078093260095488)
             StartRole = Guild.get_role(691735620346970123)
             MainChannel = self.get_channel(419879599363850253)
-            await MainChannel.send(f"{Player.mention} присоединился на сервер",delete_after=600)
+            await MainChannel.send(f"{Player.mention} присоединился на сервер")
             if str(Emoji.name) == "⚫":
                 Role = Guild.get_role(713477362058002535)
                 await Member.add_roles(Standart,Role,reason="Прошел регистацию")
