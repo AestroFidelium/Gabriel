@@ -3155,6 +3155,7 @@ class Talant():
 
     async def _Update(self):
         while True:
+            # with open(f"{self.path}.txt","w") as file:
             with codecs.open(f"{self.path}.txt","r",encoding='utf-8', errors='ignore') as file:
                 Info = StrToDict(str=str(file.readline()))
             Stats = Info["Stats"]
@@ -3235,7 +3236,7 @@ class Talant():
                             "Talants" : Talants,
                             "Stats" : Stats
                         }
-                        with open(f"{self.path}.txt","w") as file:
+                        with codecs.open(f"{self.path}.txt","w",encoding='utf-8', errors='ignore') as file:
                             file.write(str(NewInfo))
                     else:
                         Description_Lock = str(_Talant["Description_Lock"])
@@ -3287,13 +3288,54 @@ class Talant():
                                 
             await asyncio.sleep(60)
 
+    class Mode():
+        class OnlyOne():
+            """
+            Вы получаете только 1 попавшийся объект
+            """
+            pass
+        class AllOne():
+            """
+            Вы вытаскиваете все объекты
+            """
+            pass
+
+    def AllLocks(self,Description_Lock : str,mode):
+        AllLocks = Description_Lock.split("\n")
+        for Locker in AllLocks:
+            try:
+                Level = Locker.split(" : ")[1]
+                Level = int(Level.split(" ")[0])
+                Locker = Locker.split(" : ")[0]
+            except: pass
+            Be = False
+            for _Talant_ in self.Talants:
+                _Talant = self.Talants[_Talant_]
+                Name = str(_Talant["Name"])
+                TalantLevel = int(_Talant["Level"])
+                if Locker == Name:
+                    Be = True
+                    print(f"{TalantLevel}   {Level}")
+            if Be == True:
+                Stats = {
+                    "Name" : Locker,
+                    "Level" : Level
+                    }
+                if mode == self.Mode.OnlyOne:
+                    return Stats
+        
+        
+        
+        pass
+
     def __init__(self,Player : str):
         self.Player = Player
         self.path = f"./Stats/Talants/{Player}"
         Stats = ReadMainParametrs(username=Player)
         self.Intelligence = round(Stats["intelligence"])
         try:
-            with open(f"{self.path}.txt","r") as file:
+            with codecs.open(f"{self.path}.txt","r",encoding='utf-8', errors='ignore') as file:
+            # with open(f"{self.path}.txt","r") as file:
                 self.Info = StrToDict(str=str(file.readline()))
         except FileNotFoundError:
             self.Create()
@@ -3320,7 +3362,7 @@ class Talant():
             "Stats" : Stats
         }
         self.Info = NewInfo
-        with open(f"{self.path}.txt","w") as file:
+        with codecs.open(f"{self.path}.txt","w",encoding='utf-8', errors='ignore') as file:
             file.write(str(NewInfo))
         
     def CheckTalantLevel(self,TalantName):
@@ -3593,8 +3635,10 @@ class Talant():
 
 
 async def main():
+    Talant_ = Talant("KOT32500")
+    _Talant_ = Talant_.AllLocks("Требуется : \nГероический уровень : 3 уровня.",Talant.Mode.OnlyOne)
+    print(_Talant_)
     pass
-
 
 if __name__ == "__main__":
 

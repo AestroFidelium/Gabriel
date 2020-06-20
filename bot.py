@@ -658,10 +658,7 @@ def is_internet():
         return False
 def InternetActive():
     client = MyClient()
-    try:
-        client.run(BazaDate.token)
-    except: 
-        print("Нет подключения к интернету")
+    client.run(BazaDate.token)
 class MyClient(discord.Client):
     _VoiceClient = None
     async def Dialog(self,message):
@@ -854,11 +851,14 @@ class MyClient(discord.Client):
             
 
         for Player in os.listdir(f"./Stats/Main/"):
-            _Talant = Functions.Talant(str(Player).split(".txt")[0])
-            task = asyncio.create_task(_Talant._Update())
-            task1 = asyncio.create_task(_Talant.Repair())
-            Tasks.append(task)
-            Tasks.append(task1)
+            try:
+                _Talant = Functions.Talant(str(Player).split(".txt")[0])
+                task = asyncio.create_task(_Talant._Update())
+                task1 = asyncio.create_task(_Talant.Repair())
+                Tasks.append(task)
+                Tasks.append(task1)
+            except UnicodeDecodeError: 
+                print(Player)
 
 
         self.DevelopGuild = await self.fetch_guild(716945063351156736)
@@ -932,6 +932,7 @@ class MyClient(discord.Client):
         MainStats = Functions.ReadMainParametrs(username=UserName_)
         IntMaxDamage = int(MainStats.pop("damage"))
         GoldPlayer = int(MainStats.pop("money"))
+        curHealth = int(MainStats["curHealth"])
         BossStats = Functions.ReadBossStats()
         today = BossStats.pop("data")
         Boss_MaxHealth = int(BossStats.pop("maxHealth"))
@@ -995,12 +996,17 @@ class MyClient(discord.Client):
                 Determination = self.Talant_.CheckTalantLevel("Решимость")
 
                 Annihilator = self.Talant_.CheckTalantLevel("Уничтожитель")
-                AnnihilatorLevel = int(Annihilator["Level"])
-                Random = random.randint(0,1000 - (10 * AnnihilatorLevel))
+                Level = int(Annihilator["Level"])
+                Random = random.randint(0,1000 - (10 * Level))
                 if Random >= 0 and Random <= 10:
                     YourDamage *= 5
                 if Determination["Ready"] == True:
                     YourDamage *= 2
+
+                Berserk = self.Talant_.CheckTalantLevel("Берсерк")
+                Level = int(Berserk["Level"])
+
+
 
                 Level = int(MoreDamage["Level"])
                 PlusProcentDamage = (5 * Level) / 100
@@ -2060,17 +2066,35 @@ class MyClient(discord.Client):
                     if count > 0:
                         Text += f"{text} "
                     else: Text += text
-                Be = False
+                Be = {
+                    "Have" : False,
+                    "Lock": 0,
+                    "Description_Lock" : ""
+                }
                 Talants = Talant.GetTalants()
                 for _Talant_ in Talants:
                     Talants = Talant.Info["Talants"]
                     _Talant = Talants[_Talant_]
                     Name = str(_Talant["Name"])
+                    Lock = int(_Talant["Lock"])
+                    Description_Lock = str(_Talant["Description_Lock"])
                     if Name == Text:
-                        Be = True
-                if Be == True:
-                    Talant.PickTalant(Text)
-                    await message.channel.send(f"Вы успено поставили '{Text}' в качестве навыков")
+                        Be = {
+                            "Have" : True,
+                            "Lock": Lock,
+                            "Description_Lock" : Description_Lock
+                        }
+                if Be["Have"] == True:
+                    if Be["Lock"] == 0:
+                        Talant.PickTalant(Text)
+                        await message.channel.send(f"Вы успено поставили `{Text}` в качестве навыков")
+                    elif Be["Lock"] == 1:
+                        Description_Lock = str(Be["Description_Lock"])
+                        _Stats = self.Talant_.AllLocks(Description_Lock,self.Talant_.Mode.OnlyOne)
+                        print(_Stats)
+                        TalantName = str(_Stats["Name"])
+                        Talant.PickTalant(TalantName)
+                        await message.channel.send(f"Навык `{Text}` не был установлен. По требованию навыка был установлен `{TalantName}`")
                 else:
                     await message.channel.send(f"Таланта '{Text}' не существует")
         if CurCommand == "AU":
@@ -2192,8 +2216,10 @@ class MyClient(discord.Client):
         Msages += 1
 
         MoreGold = self.Talant_.CheckTalantLevel("Больше золота")
+        
+        Level = int(MoreGold['Level'])
 
-        if Msages >= 5 - int(MoreGold["Level"]):
+        if Msages >= 5 - Level:
             Gold += 1
             Msages = 0
 
@@ -2789,21 +2815,8 @@ class MyClient(discord.Client):
                 Role = Guild.get_role(713477378214592603)
                 await Member.add_roles(Standart,Role,reason="Прошел регистацию")
                 await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            Msg = f"""
-            ```fix
-Поздравляю.
-```
-```
-Вы успешно присоединились на сервер!
-Теперь вам доступен ранее недоступный контент.
-Советую пройти обучение, оно поможет ознакомиться с сервером, 
-И стать полноценным участником, покажет и поможет в начале.
-Но прежде чем ты пойдешь его проходить, спешу сообщить о том, что время
-На выполнения обучения ограничено часом, этого вполне хватит чтобы прочитать
-А после это меню автоматически уберёться, и не будет мешать вам быть 
-Полноценным участником сервера!
-```
-            """
+            Msg = f"""```fix\nПоздравляю.``````\nВы успешно присоединились на сервер!\nТеперь вам доступен ранее недоступный контент.\nСоветую пройти обучение, оно поможет ознакомиться с сервером, \nИ стать полноценным участником, покажет и поможет в начале.\nНо прежде чем ты пойдешь его проходить, спешу сообщить о том, что время\nНа выполнения обучения ограничено часом, этого вполне хватит чтобы прочитать\nА после это меню автоматически уберёться, и не будет мешать вам быть \nПолноценным участником сервера!```
+                """
             await Member.send(Msg)
             Channels = [721150391445749882,721150111320899586]
             Tasks = list()
@@ -3007,10 +3020,9 @@ class MyClient(discord.Client):
         overwrite.read_messages = False
         overwrite.read_message_history = False
         await Channel.set_permissions(Member,overwrite=overwrite)
-InternetActive()
+
 
 while True:
-    time.sleep(1)
     if is_internet():
         if(internetWasOff == True):
             print("Internet is active")
@@ -3018,3 +3030,4 @@ while True:
             internetWasOff = False
     else:
         internetWasOff = True
+    time.sleep(1)
