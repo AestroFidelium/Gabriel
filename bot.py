@@ -855,8 +855,10 @@ class MyClient(discord.Client):
                 _Talant = Functions.Talant(str(Player).split(".txt")[0])
                 task = asyncio.create_task(_Talant._Update())
                 task1 = asyncio.create_task(_Talant.Repair())
+                # task2 = asyncio.create_task(_Talant.Generator_Exp())
                 Tasks.append(task)
                 Tasks.append(task1)
+                # Tasks.append(task2)
             except UnicodeDecodeError: 
                 print(Player)
 
@@ -2542,7 +2544,7 @@ class MyClient(discord.Client):
         # for Emodji in EmodjsInDevelop:
         #     await Message.add_reaction(Emodji)
         Emoji = payload.emoji
-        # print(Emoji)
+        print(Emoji)
         # await Message.add_reaction(Emoji)
         #Босс 2
         if Message.id == 713440081863639130:

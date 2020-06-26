@@ -3099,7 +3099,33 @@ class Talant():
         Stats = self.Info["Stats"]
         self.Stats = Stats
         return Stats
-    
+
+    async def Generator_Exp(self):
+        PassiveGenerator = self.CheckTalantLevel("Пассивный генератор опыта")
+        if PassiveGenerator["Ready"] == True:
+            PassiveGenerator = self.CheckTalantLevel("Генератор Опыта")
+            Level = int(PassiveGenerator["Level"])
+            GetExp = 1 + (10 * Level)
+            Parametrs = ReadMainParametrs(username=self.Player)
+            Exp = int(Parametrs["exp"]) + GetExp
+            PlayerLvl = int(Parametrs["lvl"])
+            damage = int(Parametrs["damage"])
+            maxHealth  = int(Parametrs["maxHealth"])
+            if Exp >= PlayerLvl * 5:
+                PlayerLvl += 1
+                Exp = 0
+                Stats = LevelUp(count=1)
+                damage += int(Stats["damage"])
+                maxHealth += int(Stats["health"])
+            
+            WriteMainParametrs(
+                username=self.Player,
+                exp=Exp,
+                maxHealth = maxHealth,
+                curHealth = maxHealth,
+                damage = damage
+            )
+
     async def Repair(self):
         Repair = self.CheckTalantLevel("Починка")
         Level = int(Repair["Level"])
@@ -3323,10 +3349,7 @@ class Talant():
                     }
                 if mode == self.Mode.OnlyOne:
                     return Stats
-        
-        
-        
-        pass
+
 
     def __init__(self,Player : str):
         self.Player = Player
@@ -3635,9 +3658,8 @@ class Talant():
 
 
 async def main():
-    Talant_ = Talant("KOT32500")
-    _Talant_ = Talant_.AllLocks("Требуется : \nГероический уровень : 3 уровня.",Talant.Mode.OnlyOne)
-    print(_Talant_)
+    # Talant_ = Talant("KOT32500")
+    # _Talant_ = Talant_.Generator_Exp()
     pass
 
 if __name__ == "__main__":
