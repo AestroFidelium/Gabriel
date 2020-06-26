@@ -37,7 +37,7 @@ class MyClient(discord.Client):
                     try:
                         print(f"{image}")
                         File = discord.File(f"./Resurses/loli/{image}",f"./Resurses/loli/{image}")
-                        Message = await self.LoliWebhook.send(
+                        await self.LoliWebhook.send(
                             content = "", file = File
                             )
                         print(f"{image} отправлено")
@@ -101,7 +101,7 @@ class MyClient(discord.Client):
         #     txt = file.split(".")[-1]
         #     if txt != "txt" and file != "OldLolies":
         #         os.remove(f"./Resurses/loli/{file}")
-        OurGuild = await self.fetch_guild(419879599363850251)
+        # OurGuild = await self.fetch_guild(419879599363850251)
         self.LoliChannel = await self.fetch_channel(578611164016017408)
         for Webhook in await self.LoliChannel.webhooks():
             if Webhook.name == "Лоля":
