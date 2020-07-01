@@ -10,9 +10,62 @@ import os
 import codecs
 import random
 from myConfg import * 
+import discord
 
 class Error(BaseException):
     pass
+
+
+def ReplaceNumber(Number):
+    """
+    Показывает цифры более компактно
+    
+    Пример : 
+        100 000 = 100К
+        312 434 = 312К
+        1 232 542 = 1М
+        1 231 123 153 = 1B
+        1 300 000 000 000 = 1T
+        ----------------------
+        -100 000 = -100К
+        -312 434 = -312К
+        -1 232 542 = -1М
+        -1 231 123 153 = -1B
+        -1 300 000 000 000 = -1T
+    """
+    Minus = False
+    if Number < 0:
+        Minus = True
+        Number *= -1
+    if Number >= 1000000000000:
+        NumberSplit = Number / 1000000000000
+        Number = int(NumberSplit)
+        if Minus == True:
+            Number = f"-{Number}T"
+        else:
+            Number = f"{Number}T"
+    elif Number >= 1000000000:
+        NumberSplit = Number / 1000000000
+        Number = int(NumberSplit)
+        if Minus == True:
+            Number = f"-{Number}B"
+        else:
+            Number = f"{Number}B"
+    elif Number >= 1000000:
+        NumberSplit = Number / 1000000
+        Number = int(NumberSplit)
+        if Minus == True:
+            Number = f"-{Number}M"
+        else:
+            Number = f"{Number}M"
+    elif Number >= 10000:
+        NumberSplit = Number / 1000
+        Number = int(NumberSplit)
+        if Minus == True:
+            Number = f"-{Number}K"
+        else:
+            Number = f"{Number}K"
+    return Number
 
 
 class C_Player():
@@ -40,7 +93,24 @@ class C_Player():
             "Everyday bonus" : {
                     "Time" : None,
                     "Gold" : None
-                }
+                },
+            "Inventor" : [],
+            "Equipped" : {
+                "Head" : None,
+                "Body" : None,
+                "Legs" : None,
+                "Boot" : None,
+                "Left hand" : None,
+                "Right hand" : None,
+                "Ring 1" : None,
+                "Ring 2" : None,
+                "Ring 3" : None,
+                "Ring 4" : None,
+                "Ring 5" : None,
+            },
+            "Quests" : [],
+            "Talants" : [],
+            "Effects" : []
         }
         try:
             with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","r",encoding="utf-8") as file:
@@ -70,13 +140,17 @@ class C_Player():
         self.Plus = int(self.Stats_main["Plus"])
         self.Class = str(self.Stats_main["Class"])
 
+
     def Edit(self,**fields):
+        """
+        Edit = "Main" , "Room" , "Everyday bonus"
+        """
         Edit = str(fields.pop("Edit"))
         
         EditStats = self.Stats[Edit]
         EditStats.update(fields)
 
-        self.Stats.update(EditStats)
+        # self.Stats.update(EditStats)
         
         with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","w",encoding="utf-8") as file:
             file.write(str(self.Stats))
@@ -84,12 +158,11 @@ class C_Player():
         self._selfStats()
     
     class mode():
-        class ErrorNoClass(Error): pass
         class one(): pass
         class multiply(): 
             class ErrorNoCount(Error): pass
     
-    def LevelUp(self,**mode):
+    def LevelUp(self,mode,**fields):
         """
         Моды : (mode)
             mode.one : 
@@ -100,13 +173,10 @@ class C_Player():
                 требуется : count 
         """
         count = 1
-        try:
-            Mode = mode['mode']
-        except ValueError: 
-            raise self.mode.ErrorNoClass("Требуется указать модификацию")
-        if Mode == self.mode.multiply:
+
+        if mode == self.mode.multiply:
             try:
-                count = int(mode["count"])
+                count = int(fields["count"])
             except KeyError: 
                 raise self.mode.multiply.ErrorNoCount("Требуется указать count")
         
@@ -120,9 +190,9 @@ class C_Player():
         if self.Level > self.MaxLevel:
             self.Plus += self.Level - self.MaxLevel
             self.MaxLevel = self.Level
-        self.Strength += random.random() / 10
-        self.Agility += random.random() / 9
-        self.Intelligence += random.random() / 6
+        self.Strength += (random.random() / 10) * count
+        self.Agility += (random.random() / 9) * count
+        self.Intelligence += (random.random() / 6) * count
         self.Edit(
             Edit="Main",
             Health = self.Health,
@@ -135,225 +205,182 @@ class C_Player():
             Agility = self.Agility,
             Intelligence = self.Intelligence
         )
-    def _writeInPicture(self,area,content,font,draw,color):
-        draw.text(area,content,font=font,fill=color)
+    def LostLevel(self,count):
+        lostHealth = random.randint(55,100) * count
+        self.Health -= lostHealth
+        self.MaxHealth -= lostHealth
+        if self.Health <= 0:
+            self.Health = 35
+        if self.MaxHealth <= 0:
+            self.MaxHealth = 35
+        lostDamage = random.randint(8,35) * count
+        self.Damage -= lostDamage
+        if self.Damage <= 0:
+            self.Damage = 5
+        
+        lostLevel = 1 * count
+        self.Level -=lostLevel
+        if self.Level <= 0:
+            self.Level = 0
+
+        self.Exp = 0
+
+        lostStrength = (random.random() / 10) * count
+        self.Strength -= lostStrength
+        if self.Strength < 1.0:
+            self.Strength = 1.0
+        
+        lostAgility = (random.random() / 9) * count
+        self.Agility -= lostAgility
+        if self.Agility < 1.0:
+            self.Agility = 1.0
+
+        lostIntelligence = (random.random() / 6) * count
+        self.Intelligence -= lostIntelligence
+        if self.Intelligence < 1.0:
+            self.Intelligence = 1.0
+        self.Edit(
+            Edit="Main",
+            Health = self.Health,
+            MaxHealth = self.MaxHealth,
+            Damage = self.Damage,
+            Level = self.Level,
+            Exp = self.Exp,
+            Plus = self.Plus,
+            Strength = self.Strength,
+            Agility = self.Agility,
+            Intelligence = self.Intelligence
+        )
+        LostStatus = {
+            "Status" : "Dead",
+            "Level" : lostLevel - self.Level,
+            "Damage" : lostDamage - self.Damage,
+            "Health" : lostHealth - self.Health,
+            "Agility" : lostAgility - self.Agility,
+            "Intelligence" : lostIntelligence - self.Intelligence,
+            "Strength" : lostStrength - self.Strength
+        }
+        return LostStatus
     def Profile(self):
-        BackGroud = Image(f"./Resurses/BackGround_{self.Name}.png")
-        Main = Image(f"./Resurses/Main.png")
+        try:
+            BackGround = Image.open(f"./Resurses/BackGround_{self.Name}.png")
+        except: BackGround = Image.open(f"./Resurses/BackGround_StandartBackGround.png")
+        Main = Image.open(f"./Resurses/Main.png")
         Ava = Image.open(f"./Resurses/{self.Name}.png")
-        Ava.resize((264,264))
+        Ava = Ava.resize((264,264))
         draw = ImageDraw.Draw(Main)
-        Main.save("StatsPl.png")
+        
+        font = ImageFont.truetype("arial.ttf",50)
+        Level = ReplaceNumber(self.Level)
+        self._writeInPicture((163,309),Level,font,draw,"black")
+
+        font = ImageFont.truetype("arial.ttf",100)
+        self._writeInPicture((370,155),self.Name,font,draw,(200,210,255))
+
+        font = ImageFont.truetype("arial.ttf",35)
+        Health = ReplaceNumber(self.Health)
+        MaxHealth = ReplaceNumber(self.MaxHealth)
+        self._writeInPicture((550,276),f"Здоровье : {Health} ед./ {MaxHealth}",font,draw,"black")
+
+        font = ImageFont.truetype("arial.ttf",35)
+        Damage = ReplaceNumber(self.Damage)
+        self._writeInPicture((550,328),f"Урон : {Damage}",font,draw,"black")
+
+        font = ImageFont.truetype("arial.ttf",35)
+        LevelNeed = self.Level * 500
+        LevelNeed = ReplaceNumber(LevelNeed)
+        self._writeInPicture((380,743),f"Опыт : {self.Exp} / {LevelNeed}",font,draw,"black")
+
+        font = ImageFont.truetype("arial.ttf",30)
+        Plus = ReplaceNumber(self.Plus)
+        self._writeInPicture((700,700),f"Талант очки : {Plus}",font,draw,"black")
+
+        font = ImageFont.truetype("arial.ttf",50)
+        Strength = round(self.Strength)
+        Strength = ReplaceNumber(Strength)
+        self._writeInPicture((38,393),f"Сила : \n{Strength}",font,draw,(255,100,0))
+
+        font = ImageFont.truetype("arial.ttf",50)
+        Agility = round(self.Agility)
+        Agility = ReplaceNumber(Agility)
+        self._writeInPicture((38,471),f"Ловкость : \n{Agility}",font,draw,(0,255,0))
+
+        font = ImageFont.truetype("arial.ttf",50)
+        Intelligence = round(self.Intelligence)
+        Intelligence = ReplaceNumber(Intelligence)
+        self._writeInPicture((38,570),f"Интеллект : \n{Intelligence}",font,draw,(0,255,255))
+
+        font = ImageFont.truetype("arial.ttf",35)
+        Gold = ReplaceNumber(self.Gold)
+        self._writeInPicture((550,380),f"Золота : {Gold} / {self.Messages}",font,draw,"black")
+
+        font = ImageFont.truetype("arial.ttf",60)
+        self._writeInPicture((380,500),self.Description,font,draw,"black")
+
+        font = ImageFont.truetype("arial.ttf",35)
+        self._writeInPicture((380,470),"О себе : \n",font,draw,"black")
+
+        Main.paste(Ava,(46,8))
+        BackGround = BackGround.resize((1000,1450))
+        BackGround.paste(Main.convert("RGB"),(0,550),Main)
+        
+
+
+
+        BackGround.save("StatsPl.png")
         df = discord.File("StatsPl.png","StatsPl.png")
+
         return df
 
-    def profileEdit(_UserName_):
-        """
-        Меняет профиль игрока. Относиться к команде Profile
-
-
-        Вход :
-            _UserName_ = Имя игрока. Str формат
-        Выход :
-            Файл = Discord.File
-        """
-        # MainStats = _readStats(_UserName_)
-        MainStats = Functions.ReadMainParametrs(username=_UserName_)
-        IntCurExp = int(MainStats.pop("exp"))
-        IntCurLvl = int(MainStats.pop("lvl"))
-        IntMaxHealth = int(MainStats.pop("maxHealth"))
-        IntCurHealth = int(MainStats.pop("curHealth"))
-        IntMaxDamage = int(MainStats.pop("damage"))
-        Description = str(MainStats.pop("description"))
-        DescriptionSplit = Description.split()
-        Description = ""
-        for target_list in DescriptionSplit:
-            ABM = str.upper(target_list)
-            if ABM != "ABOUT_ME":
-                Description += target_list + " "
-        
-        AllLatters = list()
-        AllLatters.extend(Description)
-        Description = ""
-        countLatter = 0
-        for Latter in AllLatters:
-            countLatter += 1
-            if countLatter == 32:
-                countLatter = 0
-                Description += f"\n{Latter}"
-            else:
-                Description += Latter
-        
-        ShopAgent = Functions.ReadMainParametrs(username=_UserName_)
-        Messages = int(ShopAgent.pop("messages"))
-        Gold = int(ShopAgent.pop("money"))
-        try:
-            BackGround = Image.open(f"{Resurses}BackGround_{_UserName_}.png")
-        except: BackGround = Image.open(f"{Resurses}BackGround_StandartBackGround.png")
-
-        img = Image.open(Resurses + "Main.png")
-        try:
-            N_Ava = Image.open(Resurses + _UserName_ + ".png")
-        except:
-            raise ErrorAvatar("Отсустует аватарка")
-
-        Ava = N_Ava.resize((264,264)) #76 76
-
-        draw = ImageDraw.Draw(img)
-        count = 10
-        counts = 0
-        ElseCount = 0
-        Scaling = 50
-        for target_list in range(int(IntCurLvl)):
-            if target_list < -5:
-                print("ERROR")
-            counts += 1
-            if counts >= int(count):
-                count = str(count) + "0"
-                counts = 0
-                ElseCount += 5
-                Scaling -= 1
-
-        areaT = (163 - ElseCount,309) #121 153
-        font = ImageFont.truetype("arial.ttf",Scaling)
-        draw.text(areaT,str(IntCurLvl),font=font,fill="black")
-
-
-
-        #AgentConfig = _AgentReadConfig(_UserName_)
-
-        area = (370,155)
-        Color = (200,210,255)
-        # Color = AgentConfig
-        font = ImageFont.truetype("arial.ttf",100)
-        draw.text(area,_UserName_,font=font,fill=Color)
-        try:
-            Item_ID = Functions.ReadEquipment(username=_UserName_,type="Экипировка")
-            ItemProtect = Functions.CheckParametrsEquipment(username=_UserName_,ID=Item_ID)
-            protect = ItemProtect["protect"]
-            area = (570 - 20,289 - 13)
-            Color = (0,0,0)
-            font = ImageFont.truetype("arial.ttf",35)
-            txt = str(f"Здоровье : {str(IntCurHealth)} ед./ {str(IntMaxHealth)} ({protect})")
-            draw.text(area,txt,font=font,fill=Color)
-        except:
-            area = (570 - 20,289 - 13)
-            Color = (0,0,0)
-            font = ImageFont.truetype("arial.ttf",35)
-            txt = str(f"Здоровье : {str(IntCurHealth)} ед./ {str(IntMaxHealth)}")
-            draw.text(area,txt,font=font,fill=Color)
-
-        area = (570 - 20,341 - 13)
-        Color = (0,0,0)
-        font = ImageFont.truetype("arial.ttf",35)
-        try:
-            DmgItemID = Functions.ReadEquipment(username=_UserName_,type="Оружие")
-            Item = Functions.CheckParametrsEquipment(username=_UserName_,ID=DmgItemID)
-            DamageItem = Item.pop('damage')
-        except:
-            DamageItem = 0
-        
-        txt = str(f"Урон : {str(IntMaxDamage)} +({DamageItem}) ед.")
-        draw.text(area,txt,font=font,fill=Color)
-
-
-        #Slider Exp
-        # 686 = 100%
-        # 342 = 0%
-        # 35% 
-        # 500 = 35%
-        EndPoint = 686 - 342
-        EndPoint /= 100
-        Procent = IntCurExp * 100
-        Procent /= IntCurLvl * 5
-        EndPoint *= Procent
-        EndPoint += 342
-        fstPoints = (342,761,EndPoint,761)
-        # EndPoints = (686,743,686,780)
-        
-        Color = (255,0,255)
-        draw.line(fstPoints,fill=Color,width=37)
-        #Slider Exp
-        
-        area = (380,743)
-        Color = (0,0,0)
-
-        font = ImageFont.truetype("arial.ttf",35)
-        txt = str(f"Опыт : {IntCurExp} / {IntCurLvl * 5}")
-        draw.text(area,txt,font=font,fill=Color)
-
-        Main_characteristics = Functions.ReadMainParametrs(username=_UserName_)
-
-        strength = float(Main_characteristics.pop("strength"))
-        agility = float(Main_characteristics.pop("agility"))
-        intelligence = float(Main_characteristics.pop("intelligence"))
-        plus = int(Main_characteristics.pop("plus"))
-        if plus > 0:
-            area = (700,700)
-            Color = (100,110,90)
-            font = ImageFont.truetype("arial.ttf",30)
-            txt = str(f"Талант очки : {plus}")
-            draw.text(area,txt,font=font,fill=Color)
-
-
-        Color = (255,100,0)
-        area = (38,393)
-        font = ImageFont.truetype("arial.ttf",50)
-        txt = str(f"Сила : \n{strength}")
-        draw.text(area,txt,font=font,fill=Color)
-        # draw.line((25 - 5,195,100 - 5,195),fill=Color,width=5)
-
-        Color = (0,255,0)
-        area = (38,471)
-        font = ImageFont.truetype("arial.ttf",50)
-        txt = str(f"Ловкость : \n{agility}")
-        draw.text(area,txt,font=font,fill=Color)
-
-        Color = (0,255,255)
-        area = (38,570)
-        font = ImageFont.truetype("arial.ttf",50)
-        txt = str(f"Интеллект : \n{intelligence}")
-        draw.text(area,txt,font=font,fill=Color)
-
-        
-                
-        
-
-        area = (570 - 20,393 - 13)
-        Color = (0,0,0)
-        font = ImageFont.truetype("arial.ttf",35)
-        txt = str("Золота : " + str(Gold) + " / " + str(Messages))
-        draw.text(area,txt,font=font,fill=Color)
-
-        Color = (0,0,0)
-        The_number_of_letters = list()
-
-        area = (380,500)
-        font = ImageFont.truetype("arial.ttf",10 + 50)
-        txt = str(Description)
-        draw.text(area,txt,font=font,fill=Color)
-
-        area = (380,470)
-        font = ImageFont.truetype("arial.ttf",35)
-        txt = str("О себе : \n")
-        draw.text(area,txt,font=font,fill=Color)
-
-        areaAva = (46,8)
-
-        img.paste(Ava,areaAva)
-        nameSave = "StatsPl.png"
-        BackGround = BackGround.resize((1000,1450)) #(358,481)
-        area = (0,550)
-        
-        BackGround.paste(img.convert('RGB'), area, img)
-        BackGround.save(nameSave)
-
-        sf = discord.File(nameSave,nameSave)
-        return sf
+    def Attack(self,Target):
+        """Атаковать указанную цель"""
+        GetDamage = random.randint(1,self.Damage)
+        Target.Health -= GetDamage
+        if Target.Health <= 0:
+            Count = int(Target.Level / 5)
+            LostStatus = Target.LostLevel(Count)
+            self.LevelUp(self.mode.multiply,count=Count)
+            LostStatus.update({"GetDamage":GetDamage})
+            return LostStatus
+        else:
+            Target.Edit(
+                Edit="Main",
+                Health = Target.Health
+                )
+            AttackStatus = {
+                "Status" : "Attack",
+                "GetDamage" : GetDamage,
+                "Health" : Target.Health
+            }
+            return AttackStatus
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    def _writeInPicture(self,area,content,font,draw,color):
+        draw.text(area,str(content),font=font,fill=color)
+
+
+class Boss():
+    pass
 
 
 
