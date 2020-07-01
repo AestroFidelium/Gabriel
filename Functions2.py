@@ -11,6 +11,7 @@ import codecs
 import random
 from myConfg import * 
 import discord
+import datetime
 
 class Error(BaseException):
     pass
@@ -107,7 +108,7 @@ class C_Player():
                 "Ring 3" : None,
                 "Ring 4" : None,
                 "Ring 5" : None,
-            },
+                },
             "Quests" : [],
             "Talants" : [],
             "Effects" : []
@@ -355,36 +356,247 @@ class C_Player():
             return AttackStatus
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    def _writeInPicture(self,area,content,font,draw,color):
-        draw.text(area,str(content),font=font,fill=color)
-
+def _writeInPicture(area,content,font,draw,color):
+    draw.text(area,str(content),font=font,fill=color)
 
 class Boss():
-    pass
+    class Stady():
+        class Easy(): 
+            """
+            Легкий босс
+                Выпадает : 
+                    Первоначальное снаряжение, которое отлично подойдет для старта игры
+                Особенности : 
+                    Не атакует. Не имеет брони.
+                Время жизни : 1:00:00
+            """
+            pass
+        class Medium(): 
+            """
+            Средний босс
+                Выпадает : 
+                    Среднее снаряжение, которое не тяжело выбить.
+                Особенности : 
+                    Атакует. Не имеет брони.
+                Время жизни : 0:50:00
+            """
+            pass
+        class Hard():
+            """
+            Сложный босс
+                Выпадает : 
+                    Одно из лучших снаряжений.
+                    Можно выбить кольца.
+                Особенности : 
+                    Атакует. Имеет бронь.
+                Время жизни : 0:40:00
+            """ 
+            pass
+        class HardPlus():
+            """
+            Сложный босс++
+            Выпадает :
+                Предпоследний уровень снаряжений.
+                Можно выбить кольца.
+            Особенности : 
+                Атакует. Имеет бронь.
+                Имеет регенерацию в 5М за 10с.
+            Время жизни : 0:30:00
+            """
+        class Relic():
+            """
+            Самый сложный босс
+            Выпадает :
+                Зачарованное оружие, или же реликвии.
+                Можно выбить кольца.
+                `Зачарованное оружие` : 
+                    Оружие которое наносит сокрушительный урон.
+                    А так же, имеет магические свойства.
+                    Только оружие этого типа, можно зачаровать.
+            Особенности : 
+                Атакует. Имеет бронь.
+                
+                Имеет регенерацию в 500М за 1м.
+                
+                Каждый удар по боссу, уничтожает прочность предмета на 1%
+                    Если прочность упадет ниже 0% предмет полностью пропадает.
+                
+                Оглушает на 5-10 секунд.
+                
+                Отражает 5% вашего урона по вам же. ( не может нанести больше 100 млн. )
+                
+                В случае если по боссу не идет урона в течении минуты
+                он пропадает.
+            Время жизни : 0:20:00
+            """
+            pass
+    def __init__(self):
+        self.PATH_VERSION = "./Version 6"
+        self.Read()
+        self._selfStats()
+    def Create(self):
+        Different = ["Easy","Medium","Hard","Hard+"]
+        Different = Different[random.randint(0,len(Different) - 1)]
+        with open(f"{self.PATH_VERSION}/Boss/Boss.txt","w") as file:
+            BossImage = os.listdir(f"./Resurses/Bosses/{Different}/")
+            BossImage = BossImage[random.randint(0,len(BossImage) - 1)]
+            if Different == "Easy":
+                MaxHealth = random.randint(80000,500000)
+                self.Stats = {
+                    "Different" : "Easy",
+                    "Image" : BossImage,
+                    "Health" : MaxHealth,
+                    "MaxHealth" : MaxHealth,
+                    "Damage" : 0,
+                    "Armor" : 0,
+                    "Time" : "1:00:00",
+                    "Murder" : None,
+                    "Status" : "Life"
+                }
+                file.write(str(self.Stats))
+            elif Different == "Medium":
+                MaxHealth = random.randint(5000000,8000000)
+                self.Stats = {
+                    "Different" : "Medium",
+                    "Image" : BossImage,
+                    "Health" : MaxHealth,
+                    "MaxHealth" : MaxHealth,
+                    "Damage" : random.randint(15000,50000),
+                    "Armor" : 0,
+                    "Time" : "0:50:00",
+                    "Murder" : None,
+                    "Status" : "Life"
+                }
+                file.write(str(self.Stats))
+            elif Different == "Hard":
+                MaxHealth = random.randint(80000000,999999999)
+                self.Stats = {
+                    "Different" : "Hard",
+                    "Image" : BossImage,
+                    "Health" : MaxHealth,
+                    "MaxHealth" : MaxHealth,
+                    "Damage" : random.randint(4000000,57000000),
+                    "Armor" : random.randint(900000,2900000),
+                    "Time" : "0:40:00",
+                    "Murder" : None,
+                    "Status" : "Life"
+                }
+            elif Different == "Hard+":
+                MaxHealth = random.randint(9999999999,9999999999999)
+                self.Stats = {
+                    "Different" : "Hard+",
+                    "Image" : BossImage,
+                    "Health" : MaxHealth,
+                    "MaxHealth" : MaxHealth,
+                    "Damage" : random.randint(5700000000,57000000000),
+                    "Armor" : random.randint(90000000,290000000),
+                    "Time" : "0:30:00",
+                    "Murder" : None,
+                    "Status" : "Life"
+                }
+            file.write(str(self.Stats))
+    def Read(self):
+        try:
+            with open(f"{self.PATH_VERSION}/Boss/Boss.txt","r") as file:
+                self.Stats = StrToDict(str(file.readline()))
+        except FileNotFoundError: self.Create()
+    def Edit(self,**fields):
+        self.Stats.update(fields)
+        with open(f"{self.PATH_VERSION}/Boss/Boss.txt","w") as file:
+            file.write(str(self.Stats))
+    
+    def _selfStats(self):
+        self.Different = self.Stats["Different"]
+        self.Image = self.Stats["Image"]
+        self.Health = self.Stats["Health"]
+        self.MaxHealth = self.Stats["MaxHealth"]
+        self.Damage = self.Stats["Damage"]
+        self.Armor = self.Stats["Armor"]
+        self.Time = self.Stats["Time"]
+        self.Murder = self.Stats["Murder"]
+        self.Status = self.Stats["Status"]
+        self.Gold = 500
+        if self.MaxHealth >= 1000000000000:
+            for a in range(int(self.MaxHealth / 100000000000)):
+                try:
+                    self.Gold += random.randint(66666666, 999999999 * a)
+                except: pass
+        elif self.MaxHealth >= 1000000000:
+            for a in range(int(self.MaxHealth / 100000000)):
+                try:
+                    self.Gold += random.randint(666666, 9999999 * a)
+                except: pass
+        elif self.MaxHealth >= 1000000:
+            for a in range(int(self.MaxHealth / 100000)):
+                try:
+                    self.Gold += random.randint(6666, 99999 * a)
+                except: pass
+        elif self.MaxHealth >= 100000:
+            for a in range(int(self.MaxHealth / 10000)):
+                try:
+                    self.Gold += random.randint(666, 9999 * a)
+                except: pass
+        elif self.MaxHealth >= 1000:
+            for a in range(int(self.MaxHealth / 100)):
+                try:
+                    self.Gold += random.randint(6, 99 * a)
+                except: pass
+
+    def Profile(self):
+        NowTime = datetime.datetime.today()
+
+        BackGround = Image.open(f"./Resurses/Bosses/{self.Different}/{self.Image}")
+        BackGround = BackGround.resize((800,600))
+        draw = ImageDraw.Draw(BackGround)
+        if self.Status == "Life":
+            font = ImageFont.truetype("arial.ttf",35)
+            Gold = ReplaceNumber(self.Gold)
+            _writeInPicture((270,230),f"{Gold} золотых",font,draw,(42,0,0))
+
+            StartX = 100
+            StartY = 275
+
+            EndX = (((self.Health * 100) / self.MaxHealth) * 7)
+            EndY = 374
+            RedRand = random.randint(0,255)
+            GreenRand = random.randint(0,255)
+            BlueRand = random.randint(0,255)
+            ColorSlider = ( RedRand , GreenRand , BlueRand )
+            for XPos in range(int(EndX - StartX)):
+                for YPos in range(int(EndY - StartY)):
+                    BackGround.putpixel((StartX + XPos,StartY + YPos),ColorSlider)
+            
+            font = ImageFont.truetype("arial.ttf",40)
+            Health = ReplaceNumber(self.Health)
+            MaxHealth = ReplaceNumber(self.MaxHealth)
+            _writeInPicture((105,300),f"{Health} / {MaxHealth} ед. здоровья",font,draw,(42,0,0))
+
+            Color = (0,0,0)
+            area = [(99,274),(701,274)]
+            draw.line(area,fill=Color,width=1)
+            area = [(701,274),((701,375))]
+            draw.line(area,fill=Color,width=1)
+            area = [(701,375),((99,375))]
+            draw.line(area,fill=Color,width=1)
+            area = [(99,375),((99,274))]
+            draw.line(area,fill=Color,width=1)
+        else:
+            font = ImageFont.truetype("arial.ttf",80)
+            _writeInPicture((50,280),f"БОСС ПОВЕРЖЕН",font,draw,(84,0,0))
 
 
+            font = ImageFont.truetype("arial.ttf",35)
+            _writeInPicture((100,230),f"{self.Murder} нанёс последний удар",font,draw,(42,0,0))
+        
+        font = ImageFont.truetype("arial.ttf",45)
+        _writeInPicture((200,400),f"Осталось : {self.Time}",font,draw,(200,150,150))
+        
+        BackGround.save("TheBoss.png")
 
+        df = discord.File("TheBoss.png","TheBoss.png")
 
+        return df
 
+        pass
 if __name__ == "__main__":
     pass

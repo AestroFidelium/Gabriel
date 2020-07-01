@@ -1,19 +1,16 @@
-test = {
-    "main" : {
-        "health": 5,
-        "maxHealth" : 1,
-        "Level" : 5
+stats = {
+    "main":{
+        "fs":312,
+        "ewq":15
     },
-    "d": {
-        "da":"dsa"
-    }
+    "qwe":{
+        "da":5
+    },
+    "Inventor":["ItemDada","122"]
 }
 
 
-main = test["main"]
-udater = {
-    "maxHealth" : 10
-}
-main.update(udater)
-test.update(main)
-print(test)
+Inventor = stats['Inventor']
+Inventor.append("Item113")
+stats.update({"Inventor":Inventor})
+print(stats)

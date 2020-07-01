@@ -1,0 +1,1 @@
+{'Different': 'Hard+', 'Image': 'Boss12.png', 'Health': 9857174072326, 'MaxHealth': 9857174072326, 'Damage': 46107454747, 'Armor': 125707547, 'Time': '0:30:00', 'Murder': None, 'Status': 'Life'}

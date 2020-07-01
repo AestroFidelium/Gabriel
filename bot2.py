@@ -88,8 +88,8 @@ class MyClient(discord.Client):
                 activity=discord.Activity(
                     type=discord.ActivityType.playing, 
                     name="технические работы"))
+   
     async def Command(self):
-        
         if self.Commands[0].upper() == "2Profile".upper():
             # await self.Message.delete()
             try:
@@ -147,7 +147,10 @@ class MyClient(discord.Client):
                     await self.Channel.send(f"`{self.PlayerName}` вы убили `{Target.Name}`, нанеся {GetDamage}\nСтатистика `{Target.Name}` упала на : \nУровень : {LostLevel}\nЗдоровье : {LostHealth}\nУрон : {LostDamage}\nЛовкость : {LostAgility}\nИнтеллект : {LostIntelligence}\nСила : {LostStrength}")
             else:
                 await self.Channel.send("Выбранного игрока не существует")
-    
+        elif self.Commands[0].upper() == "2B".upper():
+            self.Boss.Create()
+        elif self.Commands[0].upper() == "2Bp".upper():
+            await self.Channel.send(" ",file=self.Boss.Profile())
     async def DownloadAvatar(self):
         try:
             with codecs.open(f"./Resurses/{self.PlayerName}.png","r"
@@ -203,6 +206,8 @@ class MyClient(discord.Client):
             Player = Player.split(".txt")[0]
             self.Players.append(Player)
         
+        self.Boss = Boss()
+
         await self.DownloadAvatar()
         await self.Command()
         
