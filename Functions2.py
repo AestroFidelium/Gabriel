@@ -124,7 +124,10 @@ class C_Player():
                     "Plus" : 0,
                     "Class" : None
                 },
-            "Room" : self.Name,
+            "Room" : {
+                "Name" : self.Name,
+                "Permissions" : None
+                },
             "Everyday bonus" : {
                     "Time" : None,
                     "Gold" : None
@@ -135,13 +138,13 @@ class C_Player():
                 "Body" : None,
                 "Legs" : None,
                 "Boot" : None,
-                "Left hand" : None,
-                "Right hand" : None,
-                "Ring 1" : None,
-                "Ring 2" : None,
-                "Ring 3" : None,
-                "Ring 4" : None,
-                "Ring 5" : None,
+                "Left_hand" : None,
+                "Right_hand" : None,
+                "Ring_1" : None,
+                "Ring_2" : None,
+                "Ring_3" : None,
+                "Ring_4" : None,
+                "Ring_5" : None,
                 },
             "Quests" : [],
             "Talants" : [],
@@ -159,6 +162,7 @@ class C_Player():
         self.Stats_main = self.Stats["Main"]
         self.Stats_Room = self.Stats["Room"]
         self.Stats_Everydaybonus = self.Stats["Everyday bonus"]
+        self.Equipped = self.Stats['Equipped']
 
         self.Health = int(self.Stats_main["Health"])
         self.MaxHealth = int(self.Stats_main["MaxHealth"])
@@ -176,6 +180,22 @@ class C_Player():
         self.Class = str(self.Stats_main["Class"])
 
         self.Inventor = self.Stats["Inventor"]
+
+        self.Head = Item(self,self.Equipped["Head"])
+        self.Body = Item(self,self.Equipped["Body"])
+        self.Legs = Item(self,self.Equipped["Legs"])
+        self.Boot = Item(self,self.Equipped["Boot"])
+        self.Left_hand = Item(self,self.Equipped["Left_hand"])
+        self.Right_hand = Item(self,self.Equipped["Right_hand"])
+        self.Ring_1 = Item(self,self.Equipped["Ring_1"])
+        self.Ring_2 = Item(self,self.Equipped["Ring_2"])
+        self.Ring_3 = Item(self,self.Equipped["Ring_3"])
+        self.Ring_4 = Item(self,self.Equipped["Ring_4"])
+        self.Ring_5 = Item(self,self.Equipped["Ring_5"])
+
+
+        self.RoomName = self.Stats_Room["Name"]
+        self.RoomPermissions = self.Stats_Room["Permissions"]
 
     def AddInventor(self,**fields):
         """
@@ -225,6 +245,48 @@ class C_Player():
             Inventor=self.Inventor
         )
         return fields
+    def RemoveInventor(self,ID : int):
+        for item in self.Inventor:
+            itemid = int(item["ID"])
+            if itemid == ID:
+                self.Inventor.remove(item)
+        self.Edit(
+            Inventor = self.Inventor
+        )
+    class NotStandartEquip(Error): pass
+    def EquipmentItem(self,ID,Where):
+        """
+        Экипировать вещь
+        Доступно : 
+            "Head" : None,
+            "Body" : None,
+            "Legs" : None,
+            "Boot" : None,
+            "Left_hand" : None,
+            "Right_hand" : None,
+            "Ring_1" : None,
+            "Ring_2" : None,
+            "Ring_3" : None,
+            "Ring_4" : None,
+            "Ring_5" : None,
+        """
+        for item in self.Inventor:
+            itemID = int(item["ID"])
+            if itemID == ID:
+                if Where == "Head":self.Edit(Edit = "Equipped",Head = item)
+                elif Where == "Body":self.Edit(Edit = "Equipped",Body = item)
+                elif Where == "Legs":self.Edit(Edit = "Equipped",Legs = item)
+                elif Where == "Boot":self.Edit(Edit = "Equipped",Boot = item)
+                elif Where == "Left_hand":self.Edit(Edit = "Equipped",Left_hand = item)
+                elif Where == "Right_hand":self.Edit(Edit = "Equipped",Right_hand = item)
+                elif Where == "Ring_1":self.Edit(Edit = "Equipped",Ring_1 = item)
+                elif Where == "Ring_2":self.Edit(Edit = "Equipped",Ring_2 = item)
+                elif Where == "Ring_3":self.Edit(Edit = "Equipped",Ring_3 = item)
+                elif Where == "Ring_4":self.Edit(Edit = "Equipped",Ring_4 = item)
+                elif Where == "Ring_5":self.Edit(Edit = "Equipped",Ring_5 = item)
+                else:
+                    raise NotStandartEquip("Не указано куда нужно экипировать предмет")
+        self._selfStats()
     def Edit(self,**fields):
         """
         Edit = "Main" , "Room" , "Everyday bonus"
@@ -442,7 +504,8 @@ class C_Player():
             return AttackStatus
     
     def MaxDamage(self):
-        GetDamage = random.randint(1,self.Damage)
+        
+        GetDamage = random.randint(1,self.Damage + self.Left_hand.Damage + self.Right_hand.Damage)
 
         GetDamage *= self.Strength
 
@@ -455,14 +518,33 @@ class Item():
     def __init__(self,Player : C_Player,Stats):
         self.Player = Player
         self.Stats = Stats
-        self.Type = self.Stats["Type"]
-        _Name = self.Stats["Name"]
-        self.Name = str(_Name["Name"])
-        self.Description = str(_Name["Description"])
-        self.Class = str(self.Stats["Class"])
-        self.ID = int(self.Stats["ID"])
-        self.Gold = int(self.Stats["Gold"])
-        self.MaxGold = int(self.Stats["MaxGold"])
+        self.Damage = 0
+        self.Armor = 0
+        self.Magic = None
+        self.Class = None
+        try:
+            self.Type = self.Stats["Type"]
+            _Name = self.Stats["Name"]
+            self.Name = str(_Name["Name"])
+            self.Description = str(_Name["Description"])
+            self.Class = str(self.Stats["Class"])
+            self.ID = int(self.Stats["ID"])
+            self.Gold = int(self.Stats["Gold"])
+            self.MaxGold = int(self.Stats["MaxGold"])
+            Keys = self.Type.keys()
+            for key in Keys:
+                if key == "Weapon":
+                    Stats = self.Type[key]
+                    self.Damage = Stats["Damage"]
+                    self.Armor = Stats["Armor"]
+                    self.Magic = Stats["Magic"]
+                elif key == "Equipment":
+                    Stats = self.Type[key]
+                    self.Protect = Stats["Protect"]
+                    self.Armor = Stats["Armor"]
+                    self.Magic = Stats["Magic"]
+        except TypeError:
+            pass
     @staticmethod
     def CreateName(Name,Description): return {"Name":Name,"Description":Description}
     class Types():
@@ -805,7 +887,7 @@ class Boss():
         if self.Health <= 0 and self.Status == "Life":
             self.Status = "Dead"
             self.Murder = Player.Name
-            Classes = [""]
+            Player.Gold += self.Gold
             if self.Different == "Easy":
                 Names = [
                     Item.CreateName("Медное копье","Не крепкое, легко ломаемое копье, не наносит серьезного урона"),
@@ -873,7 +955,6 @@ class Boss():
                     Gold=0,
                     MaxGold = random.randint(900000,9900000))
 
-        Player.Gold += self.Gold
         Player.Edit(
             Edit = "Main",
             Gold = Player.Gold
@@ -916,14 +997,16 @@ class Boss():
 
 if __name__ == "__main__":
     Iam = C_Player("KOT32500")
-    Iam.AddInventor(
-            Type = Item.Types.Weapon(666,199,None),
-            Name = Item.CreateName("Супер меч","еать он мощь кнш"),
-            Class = Item.Classes.Божественный(),
-            ID=6,
-            Gold=135,
-            MaxGold = 1355,
-            )
-    Iam.GetInventor()
-    for Item in Iam.GetInventored:
-        print(Item.Description)
+    print(ReplaceNumber(Iam.MaxDamage()))
+    # Iam.EquipmentItem(2604438035,"Left_hand")
+    # Iam.GetInventor()
+    # for Item in Iam.GetInventored:
+    #     print(Item.ID)
+
+
+
+
+
+
+
+    pass

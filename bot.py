@@ -2541,11 +2541,8 @@ class MyClient(discord.Client):
         UserName_ = str(UserName__)
         DevelopGabriel = await self.fetch_guild(716945063351156736)
         EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
-        # for Emodji in EmodjsInDevelop:
-        #     await Message.add_reaction(Emodji)
         Emoji = payload.emoji
         print(Emoji)
-        # await Message.add_reaction(Emoji)
         #Босс 2
         if Message.id == 713440081863639130:
             if Player == self.user:
@@ -2834,17 +2831,7 @@ class MyClient(discord.Client):
                 Tasks.append(Task2)
             asyncio.gather(*Tasks)
         # -----------
-        # await Message.add_reaction("⚫")
-        # await Message.add_reaction("🔵")
-        # await Message.add_reaction("🟤")
-        # await Message.add_reaction("🟢")
-        # await Message.add_reaction("🟠")
-        # await Message.add_reaction("🟣")
-        # await Message.add_reaction("🔴")
-        # await Message.add_reaction("⚪")
-        # await Message.add_reaction("🟡")
         #Роли
-        # print(Emoji)
         if Message.id == 714080637648240690:
             # ⚫ - Чёрный
             # 🔵 - Синий

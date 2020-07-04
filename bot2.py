@@ -89,6 +89,7 @@ class MyClient(discord.Client):
         print("работает все да")
    
     async def Command(self):
+        self.Player.GetInventor()
         if self.Commands[0].upper() == "2Profile".upper():
             # await self.Message.delete()
             try:
@@ -158,7 +159,10 @@ class MyClient(discord.Client):
                 try:
                     ItemName = GetAttack_Stats.GetItem.Name
                 except AttributeError: ItemName = ""
-                await self.Channel.send(f"`{self.Player.Name}` нанёс последние {Damage} ед. урона, и убил Босса, получая с него : \n{GetAttack_StatsGold} золотых. \n{ItemName}")
+                await self.Channel.send(f"`{self.Player.Name}` нанёс последние {Damage} ед. урона, и убив Босса, получив с него : \n{GetAttack_StatsGold} золотых. \n{ItemName}")
+        elif self.Commands[0].upper() == "2inv".upper():
+            for item in self.Player.GetInventored:
+                await self.Channel.send(f"Имя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}")
     async def DownloadAvatar(self):
         try:
             with codecs.open(f"./Resurses/{self.PlayerName}.png","r"
@@ -178,7 +182,16 @@ class MyClient(discord.Client):
         self.Content = str(message.content)
         self.Channel = await self.fetch_channel(message.channel.id)
         self.Message = await self.Channel.fetch_message(message.id)
-        self.Guild = await self.fetch_guild(message.channel.guild.id)
+        self.GodsAndCat = await self.fetch_guild(419879599363850251)
+        try:
+            self.Guild = await self.fetch_guild(message.channel.guild.id)
+        except:
+            if message.author != self.user:
+                Reference = await self.fetch_channel(623070280973156353)
+                GeneralChannel = await self.fetch_channel(419879599363850253)
+                GameChannel = await self.fetch_channel(629267102070472714)
+                await message.channel.send(f"Добрый день, извините, но я не работаю в личных сообщениях. Если вам нужна помощь то пожалуйста обратитесь за помощью к Гильдии **Боги и Кот**. \n{Reference.mention} : Канал где можно прочитать основную информацию об Гильдии\n{GeneralChannel.mention} : Канал где можно спросить что либо у участников. \n{GameChannel.mention} : Канал где нужно вводить все игровые команды\nУдачного вам дня.")
+            return
 
         try:
             self.Member = await self.Guild.fetch_member(self.Message.author.id)
@@ -216,8 +229,222 @@ class MyClient(discord.Client):
 
         await self.DownloadAvatar()
         await self.Command()
-        
+    
 
+
+    async def on_voice_state_update(self,_Player_ : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
+        OurServer = await self.fetch_guild(_Player_.guild.id)
+        EveryOne = OurServer.roles[0]
+        Roles = OurServer.get_role(623063847497891840)
+        PlayerName = ""
+        for part in str(_Player_.name).split(" "):
+            PlayerName += part
+        Player = C_Player(PlayerName)
+        try:
+            if after.channel.name == "Создать комнату":
+                try:
+                    if Player.RoomPermissions == None:
+                        overwrites = {
+                            _Player_: discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True)
+                        }
+                    else:
+                        SavedOverwrites = Player.RoomPermissions
+                        overwrites = dict()
+                        for overwrite in SavedOverwrites:
+                            _Member = await OurServer.fetch_member(overwrite)
+                            overwrite = SavedOverwrites[overwrite]
+                            overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
+
+                    NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната", overwrites=overwrites)
+                    
+                    await _Player_.move_to(NewGroup,reason="Новая комната")
+                except:
+                    NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
+                    
+                    await _Player_.move_to(NewGroup,reason="Новая комната")
+            elif after.channel.name == "Создать комнату (Истинный чат)":
+                try:
+                    if Player.RoomPermissions == None:
+                        overwrites = {
+                            _Player_ : discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True),
+                            Roles : discord.PermissionOverwrite(connect=True),
+                            EveryOne : discord.PermissionOverwrite(connect=False)
+                        }
+                    else:
+                        SavedOverwrites = Player.RoomPermissions
+                        overwrites = dict()
+                        for overwrite in SavedOverwrites:
+                            _Member = await OurServer.fetch_member(overwrite)
+                            overwrite = SavedOverwrites[overwrite]
+                            overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
+                    NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",overwrites=overwrites,reason="Новая комната")
+                    await _Player_.move_to(NewGroup,reason="Новая комната")
+                except:
+                    NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
+                    await _Player_.move_to(NewGroup,reason="Новая комната")
+        except Exception: pass
+            #  print(Error)
+        try:
+            CurGroup = await self.fetch_channel(before.channel.id)
+            Members = CurGroup.members
+            NotDeleteChannels = ["Создать комнату","Резерв","Музыка","Создать комнату (Истинный чат)"]
+            if len(Members) == 0 and str(CurGroup.name) not in NotDeleteChannels:
+                await CurGroup.delete(reason="В комнате никого нет")
+        except Exception: pass
+
+
+    async def on_guild_channel_update(self,before,after):
+        overwrites = before.overwrites
+        PermissionsAll = dict()
+        Maines = list()
+        for overwrite in overwrites:
+            try:
+                permissions = overwrite.permissions
+            except AttributeError:
+                permissions = overwrite.permissions_in(before)
+                
+                _Permissions = dict()
+                for Permission in permissions:
+                    _Permissions.update({Permission[0]:Permission[1]})
+                PermissionsAll.update({overwrite.id:_Permissions})
+                if permissions.manage_channels == True:
+                    PlayerName = ""
+                    for part in str(overwrite.name).split(" "):
+                        PlayerName += part
+                    Maines.append(PlayerName)
+        for _PlayerName in Maines:
+            Player = C_Player(_PlayerName)
+            Player.Edit(
+                Edit = "Room",
+                Name = after.name,
+                Permissions = PermissionsAll
+            )
+    
+    async def on_raw_reaction_add(self,payload):   
+        Channel = await self.fetch_channel(payload.channel_id)
+        Message = await Channel.fetch_message(payload.message_id)
+        Guild = await self.fetch_guild(Message.channel.guild.id)
+        Player = await self.fetch_user(payload.user_id)
+        Member = await Guild.fetch_member(Player.id)
+        UserName_ = ""
+        for part in str(Player.name).split(" "):
+            UserName_ += part
+        DevelopGabriel = await self.fetch_guild(716945063351156736)
+        EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
+        Emoji = payload.emoji
+        print(Emoji)
+        if Message.id == 713880721709727754:
+            if Player == self.user:
+                return
+            await Message.remove_reaction(Emoji,Player)
+            Standart = Guild.get_role(610078093260095488)
+            StartRole = Guild.get_role(691735620346970123)
+            MainChannel = self.get_channel(419879599363850253)
+            await MainChannel.send(f"{Player.mention} присоединился на сервер")
+            if str(Emoji.name) == "⚫":
+                Role = Guild.get_role(713477362058002535)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🔵": 
+                Role = Guild.get_role(713477367061938180)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟤": 
+                Role = Guild.get_role(713681425056006154)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟢": 
+                Role = Guild.get_role(713477377644167288)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟠": 
+                Role = Guild.get_role(713477369045712932)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟣": 
+                Role = Guild.get_role(713477376910032897)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🔴": 
+                Role = Guild.get_role(713477364977500220)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "⚪": 
+                Role = Guild.get_role(713477210446757900)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "🟡": 
+                Role = Guild.get_role(713477378214592603)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            Msg = f"""```fix\nПоздравляю.``````\nВы успешно присоединились на сервер!\nТеперь вам доступен ранее недоступный контент.\nСоветую пройти обучение, оно поможет ознакомиться с сервером, \nИ стать полноценным участником, покажет и поможет в начале.\nНо прежде чем ты пойдешь его проходить, спешу сообщить о том, что время\nНа выполнения обучения ограничено часом, этого вполне хватит чтобы прочитать\nА после это меню автоматически уберёться, и не будет мешать вам быть \nПолноценным участником сервера!```
+                """
+            await Member.send(Msg)
+            Channels = [721150391445749882,721150111320899586]
+            Tasks = list()
+            for Channel in Channels:
+                Channel = await self.fetch_channel(Channel)
+                overwrite = discord.PermissionOverwrite()
+                overwrite.send_messages = True
+                overwrite.read_messages = True
+                overwrite.read_message_history = True
+                Task = asyncio.create_task(Channel.set_permissions(Member,overwrite=overwrite))
+                Task2 = asyncio.create_task(self._TimeShow(Member,Channel))
+                Tasks.append(Task)
+                Tasks.append(Task2)
+            asyncio.gather(*Tasks)
+        # -----------
+        #Роли
+        if Message.id == 714080637648240690:
+            if Player == self.user:
+                return
+            await Message.remove_reaction(Emoji,Player)
+            
+            RolesID = [
+                713477210446757900, 713477362058002535, 713477364977500220,
+                713477367061938180, 713477369045712932, 713477376910032897,
+                713477377644167288, 713477378214592603, 713681425056006154,
+                716391511708794951, 716390741475196969, 716391516137848863,
+                716391507980189726, 716391501772488748, 716391505425858641,
+                716390742012199024, 716391505073274920
+
+                    ]
+            RoleList = list()
+            for Role in RolesID:
+                RoleList.append(Guild.get_role(Role))
+            if str(Emoji.name) == "⚫": await self.AddOneRole(713477362058002535,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🔵": await self.AddOneRole(713477367061938180,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟤": await self.AddOneRole(713681425056006154,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟢": await self.AddOneRole(713477377644167288,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟠": await self.AddOneRole(713477369045712932,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟣": await self.AddOneRole(713477376910032897,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🔴": await self.AddOneRole(713477364977500220,Member,Guild,RolesID)
+            elif str(Emoji.name) == "⚪": await self.AddOneRole(713477210446757900,Member,Guild,RolesID)
+            elif str(Emoji.name) == "🟡": await self.AddOneRole(713477378214592603,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Turquoise_circle": await self.AddOneRole(716391511708794951,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Darkpurple_circle": await self.AddOneRole(716390741475196969,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Darkgreen_circle": await self.AddOneRole(716391516137848863,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Brown_circle": await self.AddOneRole(716391507980189726,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Blue_circle": await self.AddOneRole(716391501772488748,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Pink_circle": await self.AddOneRole(716390742012199024,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Scarlet_circle": await self.AddOneRole(716391505425858641,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Golden_circle": await self.AddOneRole(716391505073274920,Member,Guild,RolesID)
+        #----
+    async def AddOneRole(self,ID,Member,Guild,RolesID):
+        Role = Guild.get_role(ID)
+        await Member.add_roles(Role,reason="Выбрал роль")
+        for role in Member.roles:
+            if role.id in RolesID and role != Role:
+                await Member.remove_roles(role,reason="Убрана старая роль")
+
+
+    async def _TimeShow(self,Member,Channel):
+        await asyncio.sleep(5000)
+        overwrite = discord.PermissionOverwrite()
+        overwrite.send_messages = False
+        overwrite.read_messages = False
+        overwrite.read_message_history = False
+        await Channel.set_permissions(Member,overwrite=overwrite)
 def main():
     internetWasOff = True
     while True:
