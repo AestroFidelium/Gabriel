@@ -1,19 +1,12 @@
-import discord
 import ffmpeg
 import BazaDate
 import urllib
 import time
-import random
 import wget
 import PIL
-import os
 import ast
 from bs4 import BeautifulSoup
 import requests
-import datetime
-import asyncio
-import codecs
-from myConfg import *
 from Functions2 import *
 
 def is_internet():
@@ -88,6 +81,12 @@ class MyClient(discord.Client):
                 activity=discord.Activity(
                     type=discord.ActivityType.playing, 
                     name="технические работы"))
+        
+        self.Boss = Boss()
+        Tasks = list()
+        Tasks.append(asyncio.create_task(self.Boss.Respawn()))
+        asyncio.gather(*Tasks)
+        print("работает все да")
    
     async def Command(self):
         if self.Commands[0].upper() == "2Profile".upper():
@@ -107,7 +106,7 @@ class MyClient(discord.Client):
             else:
                 await self.Channel.send(" ", file = self.Player.Profile())
         elif self.Commands[0].upper() == "LevelUpMe".upper():
-            self.Player.LevelUp(C_Player.mode.multiply,count=1000000000)
+            self.Player.LevelUp(C_Player.mode.multiply,count=999999999999)
             await self.Channel.send("Вы успешно получили уровни")
         elif self.Commands[0].upper() == "2Attack".upper():
             try:
@@ -151,6 +150,15 @@ class MyClient(discord.Client):
             self.Boss.Create()
         elif self.Commands[0].upper() == "2Bp".upper():
             await self.Channel.send(" ",file=self.Boss.Profile())
+        elif self.Commands[0].upper() == "2Ba".upper():
+            GetAttack_Stats = self.Boss.GetAttack(self.Player,self.Player.MaxDamage())
+            if GetAttack_Stats.Status == "Dead":
+                Damage = ReplaceNumber(GetAttack_Stats.Damage)
+                GetAttack_StatsGold = ReplaceNumber(GetAttack_Stats.Gold)
+                try:
+                    ItemName = GetAttack_Stats.GetItem.Name
+                except AttributeError: ItemName = ""
+                await self.Channel.send(f"`{self.Player.Name}` нанёс последние {Damage} ед. урона, и убил Босса, получая с него : \n{GetAttack_StatsGold} золотых. \n{ItemName}")
     async def DownloadAvatar(self):
         try:
             with codecs.open(f"./Resurses/{self.PlayerName}.png","r"
@@ -205,8 +213,6 @@ class MyClient(discord.Client):
         for Player in os.listdir(f"{self.PATH_VERSION}/Stats/"):
             Player = Player.split(".txt")[0]
             self.Players.append(Player)
-        
-        self.Boss = Boss()
 
         await self.DownloadAvatar()
         await self.Command()
