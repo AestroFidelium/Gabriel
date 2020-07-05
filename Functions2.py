@@ -17,7 +17,16 @@ import asyncio
 class Error(BaseException):
     pass
 
-
+def randomBool(_min : int,_max : int,_need : int):
+    """
+    Случайное число , в Bool
+    """
+    _Number = random.randint(_min,_max)
+    if _Number == _need:
+        return True
+    else:
+        return False
+    pass
 def ReplaceNumber(Number : int):
     """
     Показывает цифры более компактно
@@ -107,6 +116,14 @@ class C_Player():
     def __init__(self,Name):
         self.PATH_VERSION = "./Version 6"
         self.Name = Name
+
+        """
+        "Room" : {
+                "Name" : self.Name,
+                "Permissions" : None
+                },
+        """
+        
         self.StartStats = {
             "Main" : {
                     "Health" : 35,
@@ -124,10 +141,7 @@ class C_Player():
                     "Plus" : 0,
                     "Class" : None
                 },
-            "Room" : {
-                "Name" : self.Name,
-                "Permissions" : None
-                },
+            "Room" : {},
             "Everyday bonus" : {
                     "Time" : None,
                     "Gold" : None
@@ -146,9 +160,241 @@ class C_Player():
                 "Ring_4" : None,
                 "Ring_5" : None,
                 },
-            "Quests" : [],
-            "Talants" : [],
-            "Effects" : []
+            "Quests" : {},
+            "Talants" : {
+                "Heroic Level":{
+                    "Name" : "Героический уровень",
+                    "Description" : "Увеличивает ваши характеристики.\nТребуется для других талантов",
+                    "PerLevel" : "Сила += 0.1%\nЛовкость += 0.2%\nИнтеллект += 0.3%\nЗдоровье += 320 ед.\nОпыт += 100 ед.\nУровень += 1",
+                    "Level" : 0,
+                    "MaxLevel" : 100,
+                    "Exp" : 0,
+                    "NeedExp" : 1000,
+                    "Lock" : 0,
+                    "NeedAt" : []
+                    },
+                "More Exp" : {
+                    "Name" : "Больше опыта",
+                    "Description" : "Больше опыта за сообщения",
+                    "PerLevel" : "Увеличивает количество получаемого опыта",
+                    "Level" : 0,
+                    "MaxLevel" : 10,
+                    "Exp" : 0,
+                    "NeedExp" : 10,
+                    "Lock" : 0,
+                    "NeedAt" : []
+                    },
+                "More Gold" : {
+                        "Name" : "Больше золота",
+                        "Description" : "Получение золота требует меньшее количество золота",
+                        "PerLevel" : "Уменьшает требования на 1 сообщение",
+                        "Level" : 0,
+                        "MaxLevel" : 5,
+                        "Exp" : 0,
+                        "NeedExp" : 10,
+                        "Lock" : 0,
+                        "NeedAt" : []
+                        },
+                "More Damage" : {
+                        "Name" : "Усиленный урон",
+                        "Description" : "Вы наносите больше урона",
+                        "PerLevel" : "Увеличивает урон на 5%",
+                        "Level" : 0,
+                        "MaxLevel" : 10,
+                        "Exp" : 0,
+                        "NeedExp" : 100,
+                        "Lock" : 0,
+                        "NeedAt" : []
+                        },
+                "More Protect" : {
+                            "Name" : "Броня",
+                            "Description" : "Вы получаете меньше урона",
+                            "PerLevel" : "Уменьшает получаемый урон на 2.5%",
+                            "Level" : 0,
+                            "MaxLevel" : 20,
+                            "Exp" : 0,
+                            "NeedExp" : 50,
+                            "Lock" : 0,
+                            "NeedAt" : []
+                            },
+                "Passive Generator" : {
+                        "Name" : "Пассивный генератор опыта",
+                        "Description" : "Персонаж получает возможность пассивно набирать опыт. Стандартное значение 1 ед./час.",
+                        "PerLevel" : "",
+                        "Level" : 0,
+                        "MaxLevel" : 1,
+                        "Exp" : 0,
+                        "NeedExp" : 1000,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Heroic Level":{"Name":"Героический уровень","Level":3}}]
+                        },
+                "Updater Generator Amount" : {
+                        "Name" : "Генератор Опыта",
+                        "Description" : "Усиливает генератор опыта",
+                        "PerLevel" : "Увеличивает опыт на 10 ед.",
+                        "Level" : 0,
+                        "MaxLevel" : 4,
+                        "Exp" : 0,
+                        "NeedExp" : 700,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Passive Generator":{"Name":"Пассивный генератор опыта","Level":1}}]
+                        },
+                "Updater Generator Speed" : {
+                        "Name" : "Улучшенный Генератор Опыта",
+                        "Description" : "Ускоряет генератор опыта",
+                        "PerLevel" : "Уменьшает время на 1 минуту",
+                        "Level" : 0,
+                        "MaxLevel" : 40,
+                        "Exp" : 0,
+                        "NeedExp" : 2000,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Passive Generator":{"Name":"Пассивный генератор опыта","Level":1}}]
+                        },
+                "Regeneration" : {
+                        "Name" : "Регенерация",
+                        "Description" : "Открывает навыки регенерации \nСтандартная регенерация : 0 ед./мин.",
+                        "PerLevel" : "",
+                        "Level" : 0,
+                        "MaxLevel" : 1,
+                        "Exp" : 0,
+                        "NeedExp" : 300,
+                        "Lock" : 1,
+                        "NeedAt" : {"Heroic Level":{"Name":"Героический уровень","Level":5}}
+                        },
+                "Regeneration Amount" : {
+                        "Name" : "Усиленная Регенерация",
+                        "Description" : "Усиливает регенерацию здоровья",
+                        "PerLevel" : "Увеличивает на 10 ед. регенерацию",
+                        "Level" : 0,
+                        "MaxLevel" : 100,
+                        "Exp" : 0,
+                        "NeedExp" : 300,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Regeneration":{"Name":"Регенерация","Level":1}}]
+                        },
+                "Regeneration Speed" : {
+                        "Name" : "Ускоренная Регенерация",
+                        "Description" : "Ускоряет получение регенерации здоровья",
+                        "PerLevel" : "Уменьшает время получение регенерации на 1 секунду",
+                        "Level" : 0,
+                        "MaxLevel" : 30,
+                        "Exp" : 0,
+                        "NeedExp" : 600,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Regeneration":{"Name":"Регенерация","Level":1}}]
+                        },
+                "Blacksmith" : {
+                        "Name" : "Кузнец",
+                        "Description" : "Сила предметов становиться сильнее",
+                        "PerLevel" : "Увеличивает силу у будущих предметов на 2%",
+                        "Level" : 0,
+                        "MaxLevel" : 20,
+                        "Exp" : 0,
+                        "NeedExp" : 600,
+                        "Lock" : 0,
+                        "NeedAt" : []
+                        },
+                "Immunity" : {
+                        "Name" : "Иммунитет",
+                        "Description" : "Развить иммунитет \nПосле развития откроются следующие навыки : \nИммунитет от Яда",
+                        "PerLevel" : "",
+                        "Level" : 0,
+                        "MaxLevel" : 1,
+                        "Exp" : 0,
+                        "NeedExp" : 25,
+                        "Lock" : 0,
+                        "NeedAt" : []
+                        },
+                "Immunity from poison" : {
+                        "Name" : "Иммунитет От Яда",
+                        "Description" : "Вы получаете меньше урона от яда",
+                        "PerLevel" : "Уменьшает получаемый урон от яда на 2%",
+                        "Level" : 0,
+                        "MaxLevel" : 50,
+                        "Exp" : 0,
+                        "NeedExp" : 100,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Immunity":{"Name":"Иммунитет","Level":1}}]
+                        },
+                "Bonus" : {
+                        "Name" : "Бонусы",
+                        "Description" : "Увеличивает ежедневную награду",
+                        "PerLevel" : "Увеличивает ежедневную награду на 30 золотых",
+                        "Level" : 0,
+                        "MaxLevel" : 10,
+                        "Exp" : 0,
+                        "NeedExp" : 100,
+                        "Lock" : 0,
+                        "NeedAt" : []
+                        },
+                "Spells" : {
+                        "Name" : "Способности",
+                        "Description" : "Открывает возможность получить способности",
+                        "PerLevel" : "",
+                        "Level" : 0,
+                        "MaxLevel" : 3,
+                        "Exp" : 0,
+                        "NeedExp" : 3000,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Heroic Level":{"Name":"Героический уровень","Level":4}}]
+                        },
+                "Berserk" : {
+                        "Name" : "Берсерк",
+                        "Description" : "Чем меньше количество здоровья, тем больше наносите урона",
+                        "PerLevel" : "Увеличивает урон на 1%",
+                        "Level" : 0,
+                        "MaxLevel" : 10,
+                        "Exp" : 0,
+                        "NeedExp" : 1000,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Spells":{"Name":"Способности","Level":1}}]
+                        },
+                "Invincible" : {
+                        "Name" : "Непобедимый",
+                        "Description" : """При фатальном ударе, вы не погибаете, вместо этого количество количество здоровья станоситься 50 ед.\nФатальный урон : Урон, из за которого вы должны были погибнуть. (Он должен быть больше чем здоровья которое вы получаете от исциления с помощью этого навыка)""",
+                        "PerLevel" : "Увеличивает исцеление после навыка на 50 ед.",
+                        "Level" : 0,
+                        "MaxLevel" : 5,
+                        "Exp" : 0,
+                        "NeedExp" : 3000,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Spells":{"Name":"Способности","Level":1}}]
+                        },
+                "Annihilator" : {
+                        "Name" : "Уничтожитель",
+                        "Description" : "Шанс нанести (х5) кратный урон",
+                        "PerLevel" : "Увеличивает шанс на 0.1%",
+                        "Level" : 0,
+                        "MaxLevel" : 50,
+                        "Exp" : 0,
+                        "NeedExp" : 5000,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Spells":{"Name":"Способности","Level":1}}]
+                        },
+                "Repair" : {
+                        "Name" : "Починка",
+                        "Description" : "Предметы которые экипированные, начинают чиниться со временем. (Каждые 10 минут)",
+                        "PerLevel" : "Увеличивает получаемую прочность на 3 ед.",
+                        "Level" : 0,
+                        "MaxLevel" : 6,
+                        "Exp" : 0,
+                        "NeedExp" : 1300,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Spells":{"Name":"Способности","Level":1}},{"Blacksmith":{"Name:":"Кузнец","Level":20}}]
+                        },
+                "Determination" : {
+                        "Name" : "Решимость",
+                        "Description" : "Вы наполняетесь решимостью, из за чего большая часть характеристик увеличивается, однако вы теряете возможность получения очков навыков\nУвеличивает : \nУрон на 100%\nБроню на 100%\nПолучаемое исциление на 100%\nУменьшает : \nЗдоровье до 5%",
+                        "PerLevel" : "",
+                        "Level" : 0,
+                        "MaxLevel" : 1,
+                        "Exp" : 0,
+                        "NeedExp" : 100000,
+                        "Lock" : 1,
+                        "NeedAt" : [{"Spells":{"Name":"Способности","Level":1}},{"Heroic Level":{"Name:":"Героический уровень","Level":100}},{"More Damage":{"Name":"Усиленный урон",'Level':10}},{"More Protect":{"Name":"Броня","Level":20}}]
+                        },
+                },
+            "Effects" : {}
         }
         try:
             with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","r",encoding="utf-8") as file:
@@ -194,8 +440,8 @@ class C_Player():
         self.Ring_5 = Item(self,self.Equipped["Ring_5"])
 
 
-        self.RoomName = self.Stats_Room["Name"]
-        self.RoomPermissions = self.Stats_Room["Permissions"]
+        # self.RoomName = self.Stats_Room["Name"]
+        # self.RoomPermissions = self.Stats_Room["Permissions"]
 
     def AddInventor(self,**fields):
         """
@@ -290,6 +536,7 @@ class C_Player():
     def Edit(self,**fields):
         """
         Edit = "Main" , "Room" , "Everyday bonus"
+        "InRoom"
         """
         try:
             Edit = str(fields.pop("Edit"))
@@ -306,7 +553,25 @@ class C_Player():
         class one(): pass
         class multiply(): 
             class ErrorNoCount(Error): pass
-    
+    def GetGuild(self,Guild):
+        try:
+            Stats = self.Stats_Room[Guild]
+            self.RoomName = Stats["Name"]
+            self.RoomPermissions = Stats["Permissions"]
+        except:
+            self.RoomName = self.Name
+            self.RoomPermissions = None
+            self.Stats_Room.update({Guild:{"Name":self.Name,"Permissions":None}})
+            with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","w",encoding="utf-8") as file:
+                file.write(str(self.Stats))
+    def SaveRoom(self,Guild,Name,Permissions):
+        self.RoomName = Name
+        self.RoomPermissions = Permissions
+        self.Stats_Room.update({Guild:{"Name":self.RoomName,"Permissions":self.RoomPermissions}})
+        with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","w",encoding="utf-8") as file:
+            file.write(str(self.Stats))
+
+        
     def LevelUp(self,mode,**fields):
         """
         Моды : (mode)
@@ -613,8 +878,96 @@ class Item():
                 "Запретный"]
             return List
 
-
-
+class Gabriel():
+    def __init__(self):
+        pass
+    class TooManyWords(Error): pass
+    def Message(self,CountMessages : int,ServerName : str):
+        Lines = []
+        with codecs.open(f"./Servers/{ServerName}/Words.txt","r",encoding='utf-8', errors='ignore') as file:
+            for line in file.readlines():
+                Cannot = [' ','','\n']
+                if line not in Cannot:
+                    CheckMessage_ = CheckMessage(line,"https://")
+                    if CheckMessage_.Start() == None:
+                        Lines.append(str(line))
+        Message = ""
+        Count = 0
+        BadWords = [
+            '\n'
+        ]
+        BadSymvol = ["""""", "\n"]
+        while Count < CountMessages:
+            try:
+                RandomLine = random.randint(1,len(Lines) - 2)
+                MainLine = list()
+                Words = Lines.pop(RandomLine)
+                MainLine.append(Words.split(" "))
+                for word in MainLine[0]:
+                    Write = randomBool(0,3,1)
+                    if Write == False:
+                        URL = CheckMessage(word,"https://")
+                        URL = URL.Start()
+                        if URL == None:
+                            if word not in BadWords:
+                                try:
+                                    word = word.split("\n")[0]
+                                except: pass
+                                WordSplit = list(); WordSplit.extend(word)
+                                for wordSplit in WordSplit: 
+                                    if wordSplit != ")":
+                                        if str(wordSplit) not in BadSymvol:
+                                            Message += wordSplit
+                                Message += f" "
+                                Count += 1
+                                if Count >= CountMessages:
+                                    return Message
+                    WriteOtherLine = randomBool(0,2,1)
+                    if WriteOtherLine == True:
+                        RandomLine = random.randint(1,len(Lines) - 2)
+                        OtherLine = list()
+                        Words = Lines.pop(RandomLine)
+                        OtherLine.append(Words.split(" "))
+                        for word2 in OtherLine[0]:
+                            Write = randomBool(0,3,1)
+                            if Write == True:
+                                URL = CheckMessage(word,"https://")
+                                URL = URL.Start()
+                                if URL == None:
+                                    if word2 not in BadWords:
+                                        try:
+                                            word2 = word2.split("\n")[0]
+                                        except: pass
+                                        WordSplit = list(); WordSplit.extend(word2)
+                                        for wordSplit in WordSplit: 
+                                            if wordSplit != ")":
+                                                if str(wordSplit) not in BadSymvol:
+                                                    Message += wordSplit
+                                        Message += f" "
+                                        Count += 1
+                                        if Count >= CountMessages:
+                                            return Message
+            except ValueError:
+                raise self.TooManyWords("Слишком мало слов я знаю")
+    def ReadWords(self,Server : str):
+        AllWords = str()
+        with codecs.open(f"./Servers/{Server}/Words.txt","r"
+        ,encoding='utf-8', errors='ignore') as file:
+            try:
+                for line in file.readlines():
+                    AllWords += line
+            except:
+                pass
+        return AllWords
+    def SaveWords(self,msg : str,Server : str):
+        """Сохранить слова"""
+        Oldmsg = self.ReadWords(Server)
+        with codecs.open(f"./Servers/{Server}/Words.txt","w"
+        ,encoding='utf-8', errors='ignore') as file:
+            msgSplitLines = msg.split("\n")
+            file.write(f"{Oldmsg}")
+            for line in msgSplitLines:
+                file.writelines(f"\n{line}")
 def _writeInPicture(area,content,font,draw,color):
     draw.text(area,str(content),font=font,fill=color)
 
@@ -998,6 +1351,7 @@ class Boss():
 if __name__ == "__main__":
     Iam = C_Player("KOT32500")
     print(ReplaceNumber(Iam.MaxDamage()))
+    # Iam.Edit(Edit="Talants",Super={"Name":"ara","Description":"))","Level":100,"MaxLevel":500,"PerLevel":"))))+)))","Lock":1,"NeedAt":{"Talant":[{"Name":"dada","Level":5},{"Name":"DADADA","Level":100}]}})
     # Iam.EquipmentItem(2604438035,"Left_hand")
     # Iam.GetInventor()
     # for Item in Iam.GetInventored:

@@ -1,1 +1,1 @@
-{'Different': 'Hard+', 'Image': 'Boss4.png', 'Health': 3213376507424, 'MaxHealth': 3213376507424, 'Damage': 56920708718, 'Armor': 264899919, 'Time': '0:25:0', 'Murder': None, 'Status': 'Life'}
+{'Different': 'Hard', 'Image': 'Boss16.png', 'Health': 647557824, 'MaxHealth': 647557824, 'Damage': 33680762, 'Armor': 2007747, 'Time': '0:10:0', 'Murder': None, 'Status': 'Life'}

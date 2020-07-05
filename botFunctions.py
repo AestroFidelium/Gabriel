@@ -241,7 +241,7 @@ class Gabriel():
                     return StrToDict(str=str(file.readline()))
             except FileNotFoundError:
                 self.File = False
-                return 
+                return
         
         def StatusEdit(self,Status : str):
             """

@@ -163,6 +163,14 @@ class MyClient(discord.Client):
         elif self.Commands[0].upper() == "2inv".upper():
             for item in self.Player.GetInventored:
                 await self.Channel.send(f"Имя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}")
+        elif self.Commands[0].upper() == "2G".upper():
+            try:
+                count = int(self.Commands[1])
+            except: count = random.randint(1,35)
+            Message = self.Gabriel.Message(count,self.Guild.name)
+            await self.Channel.send(Message)
+        else:
+            self.Gabriel.SaveWords(self.Content,self.Guild.name)
     async def DownloadAvatar(self):
         try:
             with codecs.open(f"./Resurses/{self.PlayerName}.png","r"
@@ -183,6 +191,7 @@ class MyClient(discord.Client):
         self.Channel = await self.fetch_channel(message.channel.id)
         self.Message = await self.Channel.fetch_message(message.id)
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
+        self.Gabriel = Gabriel()
         try:
             self.Guild = await self.fetch_guild(message.channel.guild.id)
         except:
@@ -241,6 +250,7 @@ class MyClient(discord.Client):
             PlayerName += part
         Player = C_Player(PlayerName)
         try:
+            Player.GetGuild(after.channel.guild.id)
             if after.channel.name == "Создать комнату":
                 try:
                     if Player.RoomPermissions == None:
@@ -277,13 +287,13 @@ class MyClient(discord.Client):
                             _Member = await OurServer.fetch_member(overwrite)
                             overwrite = SavedOverwrites[overwrite]
                             overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
+                    overwrites.update({Roles : discord.PermissionOverwrite(connect=True)})
                     NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",overwrites=overwrites,reason="Новая комната")
                     await _Player_.move_to(NewGroup,reason="Новая комната")
                 except:
                     NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
                     await _Player_.move_to(NewGroup,reason="Новая комната")
         except Exception: pass
-            #  print(Error)
         try:
             CurGroup = await self.fetch_channel(before.channel.id)
             Members = CurGroup.members
@@ -302,23 +312,22 @@ class MyClient(discord.Client):
                 permissions = overwrite.permissions
             except AttributeError:
                 permissions = overwrite.permissions_in(before)
-                
-                _Permissions = dict()
-                for Permission in permissions:
-                    _Permissions.update({Permission[0]:Permission[1]})
-                PermissionsAll.update({overwrite.id:_Permissions})
+    
                 if permissions.manage_channels == True:
+                    _Permissions = dict()
+                    
+                    for Permission in permissions:
+                        _Permissions.update({Permission[0]:Permission[1]})
+                    PermissionsAll.update({overwrite.id:_Permissions})
+
                     PlayerName = ""
                     for part in str(overwrite.name).split(" "):
                         PlayerName += part
                     Maines.append(PlayerName)
         for _PlayerName in Maines:
             Player = C_Player(_PlayerName)
-            Player.Edit(
-                Edit = "Room",
-                Name = after.name,
-                Permissions = PermissionsAll
-            )
+            print(after.guild.id)
+            Player.SaveRoom(after.guild.id,after.name,PermissionsAll)
     
     async def on_raw_reaction_add(self,payload):   
         Channel = await self.fetch_channel(payload.channel_id)
