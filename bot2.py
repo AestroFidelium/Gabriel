@@ -85,27 +85,36 @@ class MyClient(discord.Client):
         self.Boss = Boss()
         Tasks = list()
         Tasks.append(asyncio.create_task(self.Boss.Respawn()))
+        for Player in os.listdir(f"{self.PATH_VERSION}/Stats/"):
+            Player = Player.split(".txt")[0]
+            Player = C_Player(Player)
+            try:
+                _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
+            except KeyError: pass
+            Tasks.append(asyncio.create_task(_Talant.Update()))
         asyncio.gather(*Tasks)
         print("работает все да")
    
     async def Command(self):
         self.Player.GetInventor()
+        self.Player.GetTalants()
         if self.Commands[0].upper() == "2Profile".upper():
-            # await self.Message.delete()
-            try:
-                Player2 = self.Commands[1]
-            except: Player2 = ""
-            if Player2 != "":
-                Be = False
-                for Player in self.Players:
-                    if Player2.upper() == Player.upper():
-                        Player = C_Player(Player)
-                        Be = True
-                        await self.Channel.send(" ", file = Player.Profile())
-                if Be == False:
-                    await self.Channel.send("Такого пользователя не существует")
-            else:
-                await self.Channel.send(" ", file = self.Player.Profile())
+            await self.Message.delete()
+            async with self.Channel.typing():
+                try:
+                    Player2 = self.Commands[1]
+                except: Player2 = ""
+                if Player2 != "":
+                    Be = False
+                    for Player in self.Players:
+                        if Player2.upper() == Player.upper():
+                            Player = C_Player(Player)
+                            Be = True
+                            await self.Channel.send(" ", file = Player.Profile())
+                    if Be == False:
+                        await self.Channel.send("Такого пользователя не существует")
+                else:
+                    await self.Channel.send(" ", file = self.Player.Profile())
         elif self.Commands[0].upper() == "LevelUpMe".upper():
             self.Player.LevelUp(C_Player.mode.multiply,count=999999999999)
             await self.Channel.send("Вы успешно получили уровни")
@@ -150,25 +159,41 @@ class MyClient(discord.Client):
         elif self.Commands[0].upper() == "2B".upper():
             self.Boss.Create()
         elif self.Commands[0].upper() == "2Bp".upper():
-            await self.Channel.send(" ",file=self.Boss.Profile())
+            async with self.Channel.typing():
+                await self.Channel.send(" ",file=self.Boss.Profile())
         elif self.Commands[0].upper() == "2Ba".upper():
             GetAttack_Stats = self.Boss.GetAttack(self.Player,self.Player.MaxDamage())
             if GetAttack_Stats.Status == "Dead":
-                Damage = ReplaceNumber(GetAttack_Stats.Damage)
-                GetAttack_StatsGold = ReplaceNumber(GetAttack_Stats.Gold)
-                try:
-                    ItemName = GetAttack_Stats.GetItem.Name
-                except AttributeError: ItemName = ""
-                await self.Channel.send(f"`{self.Player.Name}` нанёс последние {Damage} ед. урона, и убив Босса, получив с него : \n{GetAttack_StatsGold} золотых. \n{ItemName}")
+                async with self.Channel.typing():
+                    Damage = ReplaceNumber(GetAttack_Stats.Damage)
+                    GetAttack_StatsGold = ReplaceNumber(GetAttack_Stats.Gold)
+                    try:
+                        ItemName = GetAttack_Stats.GetItem.Name
+                    except AttributeError: ItemName = ""
+                    await self.Channel.send(f"`{self.Player.Name}` нанёс последние {Damage} ед. урона, и убив Босса, получил с него : \n{GetAttack_StatsGold} золотых. \n{ItemName}")
         elif self.Commands[0].upper() == "2inv".upper():
-            for item in self.Player.GetInventored:
+            async with self.Channel.typing():
+                for item in self.Player.GetInventored:
+                    await self.Channel.send(f"Имя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}")
+        elif self.Commands[0].upper() == "2item".upper():
+            async with self.Channel.typing():
+                ID = int(self.Commands[1])
+                item = Item.Find(ID,self.Player)
+                await self.Channel.send(f"Имя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}")
+        elif self.Commands[0].upper() == "2u".upper():
+            async with self.Channel.typing():
+                ID = int(self.Commands[1])
+                Gold = int(self.Commands[2])
+                item = Item.Find(ID,self.Player)
+                item.Upgrade(Gold)
                 await self.Channel.send(f"Имя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}")
         elif self.Commands[0].upper() == "2G".upper():
-            try:
-                count = int(self.Commands[1])
-            except: count = random.randint(1,35)
-            Message = self.Gabriel.Message(count,self.Guild.name)
-            await self.Channel.send(Message)
+            async with self.Channel.typing():
+                try:
+                    count = int(self.Commands[1])
+                except: count = random.randint(1,35)
+                Message = self.Gabriel.Message(count,self.Guild.name)
+                await self.Channel.send(Message)
         else:
             self.Gabriel.SaveWords(self.Content,self.Guild.name)
     async def DownloadAvatar(self):
@@ -315,7 +340,7 @@ class MyClient(discord.Client):
     
                 if permissions.manage_channels == True:
                     _Permissions = dict()
-                    
+
                     for Permission in permissions:
                         _Permissions.update({Permission[0]:Permission[1]})
                     PermissionsAll.update({overwrite.id:_Permissions})
