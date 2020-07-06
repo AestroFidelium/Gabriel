@@ -168,19 +168,41 @@ class MyClient(discord.Client):
                 async with self.Channel.typing():
                     Damage = ReplaceNumber(GetAttack_Stats.Damage)
                     GetAttack_StatsGold = ReplaceNumber(GetAttack_Stats.Gold)
+                    Murder = GetAttack_Stats.Murder
                     try:
                         ItemName = GetAttack_Stats.GetItem.Name
                     except AttributeError: ItemName = ""
-                    await self.Channel.send(f"`{self.Player.Name}` нанёс последние {Damage} ед. урона, и убив Босса, получил с него : \n{GetAttack_StatsGold} золотых. \n{ItemName}")
+                    await self.Channel.send(f"`{Murder}` нанёс последние {Damage} ед. урона, и убив Босса, получил с него : \n{GetAttack_StatsGold} золотых. \n{ItemName}")
         elif self.Commands[0].upper() == "2inv".upper():
             async with self.Channel.typing():
+                SavedEmbeds = []
+                Embed = discord.Embed(title=f"⁯")
+                Embed.set_author(name=self.Player.Name,url=self.User.avatar_url,icon_url=self.User.avatar_url)
+                Embed.set_footer(text="Страница 1",icon_url=self.User.avatar_url)
+                Count = 0
+                CountPapper = 1
                 for item in self.Player.GetInventored:
-                    await self.Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}```")
+                    Count += 1
+                    AllGold = ReplaceNumber(item.AllGold)
+                    Embed.add_field(name=item.Name,value=f"Описание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}",inline=False)
+                    if Count == 25:
+                        CountPapper += 1
+                        Count = 0
+                        SavedEmbeds.append(Embed)
+                        Embed = discord.Embed(title=f"⁯")
+                        Embed.set_author(name=self.Player.Name,url=self.User.avatar_url,icon_url=self.User.avatar_url)
+                        Embed.set_footer(text=f"Страница {CountPapper}",icon_url=self.User.avatar_url)
+                if len(SavedEmbeds) > 0:
+                    for SavedEmbed in SavedEmbeds:
+                        await self.Channel.send(embed=SavedEmbed)
+                else:
+                    await self.Channel.send(embed=Embed)
         elif self.Commands[0].upper() == "2item".upper():
             async with self.Channel.typing():
                 ID = int(self.Commands[1])
                 item = Item.Find(ID,self.Player)
-                await self.Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}```")
+                AllGold = ReplaceNumber(item.AllGold)
+                await self.Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
         elif self.Commands[0].upper() == "2u".upper():
             async with self.Channel.typing():
                 ID = int(self.Commands[1])
@@ -188,7 +210,8 @@ class MyClient(discord.Client):
                 item = Item.Find(ID,self.Player)
                 try:
                     item.Upgrade(Gold)
-                    await self.Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}```")
+                    AllGold = ReplaceNumber(item.AllGold)
+                    await self.Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
                 except:
                     await self.Channel.send(f"Предмет не найден")
         elif self.Commands[0].upper() == "2G".upper():
@@ -198,10 +221,39 @@ class MyClient(discord.Client):
                 except: count = random.randint(1,35)
                 Message = self.Gabriel.Message(count,self.Guild.name)
                 await self.Channel.send(Message)
-        # elif self.Commands[0].upper() == "2Talants".upper():
-            # async with self.Channel.typing():
-                # for talant in self.Player.GetTalanted:
-                    # await self.Channel.send(f"```{talant.Name}\n{talant.}\n{}\n{}\n{}\n{}\n{}")
+        elif self.Commands[0].upper() == "2Talants".upper():
+            async with self.Channel.typing():
+                Embed = discord.Embed(title=f"Статистика : {self.Player.Name}")
+                for talant in self.Player.GetTalanted:
+                    Embed.add_field(name=talant.Name,value=f"{talant.Description}\nКаждый уровень : {talant.PerLevel}\nУровень : {talant.Level}/{talant.MaxLevel}\nОпыт : {talant.Exp}/{talant.NeedExp}\nДоступность : {talant.Lock}\n{talant.NeedAt}",inline=False)
+                Embed.set_author(name=self.Player.Name,url=self.User.avatar_url,icon_url=self.User.avatar_url)
+                Embed.set_footer(text=self.Player.Name,icon_url=self.User.avatar_url)
+                await self.Channel.send(embed=Embed)
+        elif self.Commands[0].upper() == "_Count".upper():
+            await self.Message.delete()
+            Number = ReplaceNumber(int(self.Commands[1]))
+            await self.Channel.send(Number)
+        elif self.Commands[0].upper() == "2Equip".upper():
+            async with self.Channel.typing():
+                self.Player.GetEquipment()
+                Headers = ["Head","Body","Legs","Boot","Left_hand","Right_hand","Ring_1"
+                ,"Ring_2","Ring_3","Ring_4","Ring_5"]
+                count = 0
+                Embed = discord.Embed(title=f"Статистика : {self.Player.Name}")
+                for Equip in self.Player.GetEquipmented:
+                    SpaceCenter = " " * 35
+                    SpaceLeftCenter = " " * 17
+                    Header = Headers[count]
+                    Gold = ReplaceNumber(Equip.Gold)
+                    MaxGold = ReplaceNumber(Equip.MaxGold)
+                    AllGold = ReplaceNumber(Equip.AllGold)
+                    Protect = ReplaceNumber(Equip.Protect)
+                    Armor = ReplaceNumber(Equip.Armor)
+                    Damage = ReplaceNumber(Equip.Damage)
+                    # Embed = discord.Embed(title=Header)
+                    Embed.add_field(name=Header,value=f"Название : {Equip.Name}\nОписание : {Equip.Description}\nID : {Equip.ID}\nУрон : {Damage} / Защита : {Protect}\nПрочность : {Armor}\nЗолото : {Gold}/{MaxGold} ({AllGold})\nМагические свойства : {Equip.Magic}",inline=False)
+                    count += 1
+                await self.Channel.send(embed=Embed)
         else:
             self.Gabriel.SaveWords(self.Content,self.Guild.name)
     async def DownloadAvatar(self):
@@ -237,8 +289,10 @@ class MyClient(discord.Client):
 
         try:
             self.Member = await self.Guild.fetch_member(self.Message.author.id)
+            self.User = await self.fetch_user(self.Message.author.id)
         except discord.errors.NotFound:
             self.Webhook = await self.fetch_webhook(self.Message.webhook_id)
+
 
         self.Commands = self.Content.split(" ")
         PlayerName = ""
@@ -270,7 +324,10 @@ class MyClient(discord.Client):
             self.Players.append(Player)
 
         await self.DownloadAvatar()
-        await self.Command()
+        try:
+            await self.Command()
+        except BaseException as Error:
+            await self.Channel.send(f"```{Error}```",delete_after=10)
     
 
 

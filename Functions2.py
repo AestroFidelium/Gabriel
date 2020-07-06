@@ -123,6 +123,10 @@ class C_Player():
             "Main" : {
                     "Health" : 35,
                     "MaxHealth" : 35,
+                    "Shield" : 0,
+                    "MaxShield" : 0,
+                    "Mana" : 1,
+                    "MaxMana" : 1,
                     "Exp" : 0,
                     "Level" : 1,
                     "Damage" : 5,
@@ -428,6 +432,11 @@ class C_Player():
         self.Plus = int(self.Stats_main["Plus"])
         self.Class = str(self.Stats_main["Class"])
 
+        self.Shield = int(self.Stats_main["Shield"])
+        self.MaxShield = int(self.Stats_main["MaxShield"])
+        self.Mana = int(self.Stats_main["Mana"])
+        self.MaxMana = int(self.Stats_main["MaxMana"])
+
         self.Inventor = self.Stats["Inventor"]
 
         self.Head = Item(self,self.Equipped["Head"])
@@ -443,6 +452,8 @@ class C_Player():
         self.Ring_3 = Item(self,self.Equipped["Ring_3"])
         self.Ring_4 = Item(self,self.Equipped["Ring_4"])
         self.Ring_5 = Item(self,self.Equipped["Ring_5"])
+
+        if int(self.Gold) < 0: self.Gold = 0
         
     def GetTalants(self):
         """Получить таланты. Использовать всего 1 раз"""
@@ -542,6 +553,7 @@ class C_Player():
                 else:
                     raise NotStandartEquip("Не указано куда нужно экипировать предмет")
         self._selfStats()
+
     def Edit(self,**fields):
         """ Редактировать статистику. Edit = "Main" , "Room" , "Everyday bonus" """
         
@@ -722,7 +734,9 @@ class C_Player():
         font = ImageFont.truetype("arial.ttf",35)
         Health = ReplaceNumber(self.Health)
         MaxHealth = ReplaceNumber(self.MaxHealth)
-        _writeInPicture((550,276),f"Здоровье : {Health} ед./ {MaxHealth}",font,draw,"black")
+        Protect = self.MaxProtect()
+        Protect = ReplaceNumber(Protect)
+        _writeInPicture((550,276),f"Здоровье : {Health} ед./ {MaxHealth} ({Protect})",font,draw,"black")
 
         font = ImageFont.truetype("arial.ttf",35)
         Damage = ReplaceNumber(self.Damage)
@@ -779,6 +793,12 @@ class C_Player():
         for item in self.Inventor:
             item = Item(self,item)
             self.GetInventored.append(item)
+    def GetEquipment(self):
+        self.GetEquipmented = list()
+        for item in self.Equipped:
+            ItemEquipped = self.Equipped[item]
+            item = Item(self,ItemEquipped)
+            self.GetEquipmented.append(item)
     def Attack(self,Target):
         """Атаковать указанную цель"""
         GetDamage = self.MaxDamage()
@@ -815,7 +835,12 @@ class C_Player():
         GetDamage *= self.Strength
 
         return GetDamage
-
+    def MaxProtect(self):
+        Protect = self.Head.Protect
+        Protect += self.Body.Protect
+        Protect += self.Legs.Protect
+        Protect += self.Boot.Protect
+        return Protect
 class Item():
     """
     Предмет
@@ -826,6 +851,7 @@ class Item():
         self.Damage = 0
         self.Protect = 0
         self.Armor = 0
+        
         try:
             _Name = self.Stats["Name"]
             self.Name = str(_Name["Name"])
@@ -849,6 +875,10 @@ class Item():
         try: self.MaxGold = int(self.Stats["MaxGold"])
         except: self.MaxGold = 1
 
+        
+        try: self.AllGold = int(self.Stats["AllGold"])
+        except: self.AllGold = 0
+
         try:
             self.Type = self.Stats["Type"]
 
@@ -866,6 +896,10 @@ class Item():
                     self.Protect = Stats["Protect"]
                     self.Armor = Stats["Armor"]
                     self.Magic = Stats["Magic"]
+                    self.Where = Stats["Where"]
+                elif key == "Ring":
+                    Stats = self.Type[key]
+                    self.Magic = Stats["Magic"]
         except TypeError:
             pass
     
@@ -875,6 +909,7 @@ class Item():
             self.Player.Gold == 0
         else:
             self.Gold += Gold
+            self.AllGold += Gold
             if self.Gold >= self.MaxGold:
                 self.Gold = 0
                 if self.Class == self.Classes.Первоначальный():
@@ -929,7 +964,8 @@ class Item():
                 Class = self.Class,
                 ID = self.ID,
                 Gold = self.Gold,
-                MaxGold = self.MaxGold
+                MaxGold = self.MaxGold,
+                AllGold = self.AllGold
                 )
             self.Player.CheckEquipItem("Left_hand")
             self.Player.CheckEquipItem("Right_hand")
@@ -960,7 +996,7 @@ class Item():
         @staticmethod
         def Equipment(Protect : int,Armor : int,Where : str,Magic):
             """Экипировка"""
-            return {"Equipment":{"Where":Where,"Protect":Damage,"Armor":Armor,"Magic":Magic}}
+            return {"Equipment":{"Where":Where,"Protect":Protect,"Armor":Armor,"Magic":Magic}}
 
         @staticmethod
         def Ingredient(): return "Ingredient"
@@ -1207,7 +1243,8 @@ class Boss():
                     "Armor" : 0,
                     "Time" : "1:00:00",
                     "Murder" : None,
-                    "Status" : "Life"
+                    "Status" : "Life",
+                    "LastGetDamage" : 0
                 }
                 file.write(str(self.Stats))
             elif Different == "Medium":
@@ -1221,7 +1258,8 @@ class Boss():
                     "Armor" : 0,
                     "Time" : "0:50:00",
                     "Murder" : None,
-                    "Status" : "Life"
+                    "Status" : "Life",
+                    "LastGetDamage" : 0
                 }
                 file.write(str(self.Stats))
             elif Different == "Hard":
@@ -1235,7 +1273,8 @@ class Boss():
                     "Armor" : random.randint(900000,2900000),
                     "Time" : "0:40:00",
                     "Murder" : None,
-                    "Status" : "Life"
+                    "Status" : "Life",
+                    "LastGetDamage" : 0
                 }
             elif Different == "Hard+":
                 MaxHealth = random.randint(9999999999,9999999999999)
@@ -1248,7 +1287,8 @@ class Boss():
                     "Armor" : random.randint(90000000,290000000),
                     "Time" : "0:30:00",
                     "Murder" : None,
-                    "Status" : "Life"
+                    "Status" : "Life",
+                    "LastGetDamage" : 0
                 }
             file.write(str(self.Stats))
     
@@ -1277,6 +1317,8 @@ class Boss():
         self.Time = str(self.Stats["Time"])
         self.Murder = self.Stats["Murder"]
         self.Status = self.Stats["Status"]
+
+        self.LastGetDamage = self.Stats["LastGetDamage"]
 
         Timer = self.Time.split(":")
 
@@ -1384,391 +1426,419 @@ class Boss():
         pass
     def GetAttack(self,Player : C_Player,Damage : int):
         """ Получить атаку от босса """
-
-        Damage -= self.Armor
-        self.Health -= Damage
-        if self.Health <= 0 and self.Status == "Life":
-            self.Status = "Dead"
-            self.Murder = Player.Name
-            Player.Gold += self.Gold
-            Player.Edit(
-                Edit = "Main",
-                Gold = Player.Gold
-            )
-            if self.Different == "Easy":
-                TypeItem = randomBool(0,1,1)
-                if TypeItem == True:
-                    Names = [
-                        Item.CreateName("Медное копье","Не крепкое, легко ломаемое копье, не наносит серьезного урона"),
-                        Item.CreateName("Медный лук","Мягкий лук, из за чего не может нанести существенных повреждений"),
-                        Item.CreateName("Медный кинжал","Слабое оружие, не наносит существенного повреждения"),
-                        Item.CreateName("Медный нож","Слабое оружие, не наносит существенного повреждения"),
-                        Item.CreateName("Медная рапира","Оружие средний дистанции, однако сделано из меди, и не наносит существенного повреждения"),
-                    ]
-                    GetItem = Player.AddInventor(
-                        Type = Item.Types.Weapon(random.randint(500,3000),random.randint(300,700),None),
-                        Name = Names[random.randint(0,len(Names) - 1)],
-                        Class = Item.Classes.Первоначальный(),
-                        ID=random.randint(1,9999999999),
-                        Gold=0,
-                        MaxGold = random.randint(1000,5000))
-                else:
-                    PossibleEquipment = ["Head","Body","Legs","Boot"]
-                    RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
-                    if RandomEquipment == "Head":
+        if self.Status == "Life":
+            Damage -= self.Armor
+            self.Health -= Damage
+            if self.Health <= 0:
+                self.Status = "Dead"
+                self.LastGetDamage = Damage
+                self.Murder = Player.Name
+                Player.Gold += self.Gold
+                Player.Edit(
+                    Edit = "Main",
+                    Gold = Player.Gold
+                )
+                if self.Different == "Easy":
+                    TypeItem = randomBool(0,1,1)
+                    if TypeItem == True:
                         Names = [
-                            Item.CreateName("Шляпа путешественика","Шляпа которая раньше пренадлежала путешественнику"),
-                            Item.CreateName("Кепка","Защищает голову от солнца"),
-                            Item.CreateName("Кожанный шлем","Защищает голову от незначительный повреждений"),
-                            Item.CreateName("Колпак","Обычный колпак"),
-                            Item.CreateName("Медный шлем","Легкий шлем, особо не защищает"),
+                            Item.CreateName("Медное копье","Не крепкое, легко ломаемое копье, не наносит серьезного урона"),
+                            Item.CreateName("Медный лук","Мягкий лук, из за чего не может нанести существенных повреждений"),
+                            Item.CreateName("Медный кинжал","Слабое оружие, не наносит существенного повреждения"),
+                            Item.CreateName("Медный нож","Слабое оружие, не наносит существенного повреждения"),
+                            Item.CreateName("Медная рапира","Оружие средний дистанции, однако сделано из меди, и не наносит существенного повреждения"),
                         ]
                         GetItem = Player.AddInventor(
-                            Type = Item.Types.Equipment(random.randint(100,350),random.randint(75,100),RandomEquipment,None),
+                            Type = Item.Types.Weapon(random.randint(500,3000),random.randint(300,700),None),
                             Name = Names[random.randint(0,len(Names) - 1)],
                             Class = Item.Classes.Первоначальный(),
                             ID=random.randint(1,9999999999),
                             Gold=0,
-                            MaxGold = random.randint(400,1000))
-                    elif RandomEquipment == "Body":
-                        Names = [
-                            Item.CreateName("Кожанная кираса","Кираса которая защищает тело от слабых повреждений"),
-                            Item.CreateName("Одежда путешественника","Одежда которая раньше пренадлежала путешественнику"),
-                            Item.CreateName("Гражданская кофта","Кофта которую носят гражданские"),
-                            Item.CreateName("Медная кираса","Легкая кираса, особо не защищает"),
-                            Item.CreateName("Майка охотника","Майка которую носят все охотники"),
-                        ]
-                        GetItem = Player.AddInventor(
-                            Type = Item.Types.Equipment(random.randint(800,1200),random.randint(300,350),RandomEquipment,None),
-                            Name = Names[random.randint(0,len(Names) - 1)],
-                            Class = Item.Classes.Первоначальный(),
-                            ID=random.randint(1,9999999999),
-                            Gold=0,
-                            MaxGold = random.randint(600,1200))
-                    elif RandomEquipment == "Legs":
-                        Names = [
-                            Item.CreateName("Кожанные поножи","Тёплые поножи, не замедляющие движение"),
-                            Item.CreateName("Брюки путешественника","Брюки которые пренадлежат путешественникам"),
-                            Item.CreateName("Гражданские брюки","Брюки которые носят все гражданские"),
-                            Item.CreateName("Медные поножи","Лёгкие поножи, не сковывающие движение"),
-                        ]
-                        GetItem = Player.AddInventor(
-                            Type = Item.Types.Equipment(random.randint(600,1000),random.randint(300,350),RandomEquipment,None),
-                            Name = Names[random.randint(0,len(Names) - 1)],
-                            Class = Item.Classes.Первоначальный(),
-                            ID=random.randint(1,9999999999),
-                            Gold=0,
-                            MaxGold = random.randint(550,1100))
-                    elif RandomEquipment == "Boot":
-                        Names = [
-                            Item.CreateName("Кожанные ботинки","Тёплые ботинки, не замедляющие движение"),
-                            Item.CreateName("Сабатоны путешественника","Сабатоны которые пренадлежат путешественникам"),
-                            Item.CreateName("Гражданские ботинки","Ботинки которые носят все гражданские"),
-                            Item.CreateName("Медные ботинки","Лёгкие ботинки, не сковывающие движение"),
-                        ]
-                        GetItem = Player.AddInventor(
-                            Type = Item.Types.Equipment(random.randint(300,500),random.randint(250,300),RandomEquipment,None),
-                            Name = Names[random.randint(0,len(Names) - 1)],
-                            Class = Item.Classes.Первоначальный(),
-                            ID=random.randint(1,9999999999),
-                            Gold=0,
-                            MaxGold = random.randint(200,350))
-            elif self.Different == "Medium":
-                TypeItem = randomBool(0,1,1)
-                if TypeItem == True:
-                    Names = [
-                        Item.CreateName("Железное копье","Крепкое железное копье, такое есть у каждого умелого бойца"),
-                        Item.CreateName("Лук","Ничем не примечательный лук"),
-                        Item.CreateName("Железный кинжал","Кинжал который крайне популярен среди охотников"),
-                        Item.CreateName("Железный меч","Среднестатистический клинок, не наносит колосального урона."),
-                        Item.CreateName("Железный топор","Обычный топор, который можно взять в руки как оружие")
-                    ]
-                    GetItem = Player.AddInventor(
-                        Type = Item.Types.Weapon(random.randint(5000,30000),random.randint(1000,3000),None),
-                        Name = Names[random.randint(0,len(Names) - 1)],
-                        Class = Item.Classes.Обычный(),
-                        ID=random.randint(1,9999999999),
-                        Gold=0,
-                        MaxGold = random.randint(5000,15000))
-                else:
-                    Ring_ = randomBool(0,5,1)
-                    if Ring == False:
+                            MaxGold = random.randint(1000,5000),
+                            AllGold = 0)
+                    else:
                         PossibleEquipment = ["Head","Body","Legs","Boot"]
                         RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
                         if RandomEquipment == "Head":
                             Names = [
-                                Item.CreateName("Железный шлем","Шлем который защищает голову"),
-                                Item.CreateName("Защитный шлем","Защищает голову от прямых ударов"),
-                                Item.CreateName("Шлем стражника","Шлем который носят стражники")
+                                Item.CreateName("Шляпа путешественика","Шляпа которая раньше пренадлежала путешественнику"),
+                                Item.CreateName("Кепка","Защищает голову от солнца"),
+                                Item.CreateName("Кожанный шлем","Защищает голову от незначительный повреждений"),
+                                Item.CreateName("Колпак","Обычный колпак"),
+                                Item.CreateName("Медный шлем","Легкий шлем, особо не защищает"),
                             ]
                             GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(1800,2200),random.randint(1000,2000),RandomEquipment,None),
+                                Type = Item.Types.Equipment(random.randint(100,350),random.randint(75,100),RandomEquipment,None),
                                 Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Обычный(),
+                                Class = Item.Classes.Первоначальный(),
                                 ID=random.randint(1,9999999999),
                                 Gold=0,
-                                MaxGold = random.randint(2000,3000))
+                                MaxGold = random.randint(400,1000),
+                                AllGold = 0)
                         elif RandomEquipment == "Body":
                             Names = [
-                                Item.CreateName("Железная кираса","Кираса которая защищает тело от повреждений"),
-                                Item.CreateName("Защитная кираса","Кираса защищает тело от прямых попаданий"),
-                                Item.CreateName("Кираса стражника","Кираса которую носят все стражники"),
-                                Item.CreateName("Кольчуга","Легкая кольчуга, защищает от повреждений"),
-                                Item.CreateName("Мантия","Мантия которую носили волшебники"),
+                                Item.CreateName("Кожанная кираса","Кираса которая защищает тело от слабых повреждений"),
+                                Item.CreateName("Одежда путешественника","Одежда которая раньше пренадлежала путешественнику"),
+                                Item.CreateName("Гражданская кофта","Кофта которую носят гражданские"),
+                                Item.CreateName("Медная кираса","Легкая кираса, особо не защищает"),
+                                Item.CreateName("Майка охотника","Майка которую носят все охотники"),
                             ]
                             GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(3000,4000),random.randint(2000,2500),RandomEquipment,None),
+                                Type = Item.Types.Equipment(random.randint(800,1200),random.randint(300,350),RandomEquipment,None),
                                 Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Обычный(),
+                                Class = Item.Classes.Первоначальный(),
                                 ID=random.randint(1,9999999999),
                                 Gold=0,
-                                MaxGold = random.randint(5000,8000))
+                                MaxGold = random.randint(600,1200),
+                                AllGold = 0)
                         elif RandomEquipment == "Legs":
                             Names = [
-                                Item.CreateName("Железные поножи","Железные поножи, которые защищают ноги"),
-                                Item.CreateName("Защитные поножи","Защитные поножи защищающие ноги от прямых попаданий"),
-                                Item.CreateName("Поножи стражника","Поножи которые носят все стражники"),
+                                Item.CreateName("Кожанные поножи","Тёплые поножи, не замедляющие движение"),
+                                Item.CreateName("Брюки путешественника","Брюки которые пренадлежат путешественникам"),
+                                Item.CreateName("Гражданские брюки","Брюки которые носят все гражданские"),
+                                Item.CreateName("Медные поножи","Лёгкие поножи, не сковывающие движение"),
                             ]
                             GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(1000,1800),random.randint(900,1500),RandomEquipment,None),
+                                Type = Item.Types.Equipment(random.randint(600,1000),random.randint(300,350),RandomEquipment,None),
                                 Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Обычный(),
+                                Class = Item.Classes.Первоначальный(),
                                 ID=random.randint(1,9999999999),
                                 Gold=0,
-                                MaxGold = random.randint(4500,6000))
+                                MaxGold = random.randint(550,1100),
+                                AllGold = 0)
                         elif RandomEquipment == "Boot":
                             Names = [
-                                Item.CreateName("Железные сабатоны","Незначительно защитные сабатоны"),
-                                Item.CreateName("Защитные сабатоны","Значительно защитные сабатоны"),
-                                Item.CreateName("Сабатоны стражника","Сабатоны которые носят все стражники"),
-                                Item.CreateName("Ботинки мага","Лёгкие ботинки, которые носили маги"),
+                                Item.CreateName("Кожанные ботинки","Тёплые ботинки, не замедляющие движение"),
+                                Item.CreateName("Сабатоны путешественника","Сабатоны которые пренадлежат путешественникам"),
+                                Item.CreateName("Гражданские ботинки","Ботинки которые носят все гражданские"),
+                                Item.CreateName("Медные ботинки","Лёгкие ботинки, не сковывающие движение"),
                             ]
                             GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(850,1000),random.randint(600,800),RandomEquipment,None),
+                                Type = Item.Types.Equipment(random.randint(300,500),random.randint(250,300),RandomEquipment,None),
                                 Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Обычный(),
+                                Class = Item.Classes.Первоначальный(),
                                 ID=random.randint(1,9999999999),
                                 Gold=0,
-                                MaxGold = random.randint(3500,5000))
-                    else:
-                        Magic = [
-                            {"Healing":{"Name":"Лечение","Description":"Каждая ваша атака исцеляет вас на 1% от максимального количества здоровья","PerLevel":"Лечение увеличивается на 1%","Level":random.randint(1,3)}},
-                            {"Damage":{"Name":"Усиленный урон","Description":"Ваши удары наносят усиленный урон на 10%","PerLevel":"Урон увеличивается на 10%","Level":random.randint(1,3)}},
-                            {"Shield":{"Name":"Поднять щиты","Description":"По вам приходит на 2% меньше урона","PerLevel":"Уменьшает получаемый урон на 2%","Level":random.randint(1,3)}},
-                            {"BloodDust":{"Name":"Зажда крови","Description":"После убийства босса вы наносите на 5% больше урона. (Максимальная сила = 500%)","PerLevel":"Увеличивает урон на 5%","Level":random.randint(1,3)}},
-                            {"Pacifist":{"Name":"Удар пацифиста","Description":"Каждые 10 минут урон увеличивается на 10%. Пропадает после атаки.","PerLevel":"Увеличивает прирост урона на 5%","Level":random.randint(1,3)}}
-                            ]
+                                MaxGold = random.randint(200,350),
+                                AllGold = 0)
+                elif self.Different == "Medium":
+                    TypeItem = randomBool(0,1,1)
+                    if TypeItem == True:
+                        Names = [
+                            Item.CreateName("Железное копье","Крепкое железное копье, такое есть у каждого умелого бойца"),
+                            Item.CreateName("Лук","Ничем не примечательный лук"),
+                            Item.CreateName("Железный кинжал","Кинжал который крайне популярен среди охотников"),
+                            Item.CreateName("Железный меч","Среднестатистический клинок, не наносит колосального урона."),
+                            Item.CreateName("Железный топор","Обычный топор, который можно взять в руки как оружие")
+                        ]
                         GetItem = Player.AddInventor(
-                            Type = Item.Types.Ring(Magic[random.randint(0,len(Magic) - 1)]),
-                            Name = Item.CreateName("Магическое кольцо","Если экипировать то дает магический эффект"),
+                            Type = Item.Types.Weapon(random.randint(5000,30000),random.randint(1000,3000),None),
+                            Name = Names[random.randint(0,len(Names) - 1)],
                             Class = Item.Classes.Обычный(),
                             ID=random.randint(1,9999999999),
                             Gold=0,
-                            MaxGold = random.randint(50000000,500000000))
-            elif self.Different == "Hard":
-                TypeItem = randomBool(0,1,1)
-                if TypeItem == True:
-                    Names = [
-                        Item.CreateName("Платиновое копье","Копье которое обычно носит королевская стража"),
-                        Item.CreateName("Эльфийский лук","Лук который был собран Эльфами"),
-                        Item.CreateName("Кинжал тени","Кинжал который выдают войнам тени, за их подвиги"),
-                        Item.CreateName("Секира","Оружие которое наносит ужасающий урон"),
-                        Item.CreateName("Сияющий меч","На столько хорошо выкован, что слепит своим сиянием"),
-                        Item.CreateName("Посох","Среднестатистический посох"),
-                        Item.CreateName("Платиновый меч","Меч которое обычно экипированы герои")
-                    ]
-                    GetItem = Player.AddInventor(
-                        Type = Item.Types.Weapon(random.randint(53000,80000),random.randint(7000,13000),None),
-                        Name = Names[random.randint(0,len(Names) - 1)],
-                        Class = Item.Classes.Редкий(),
-                        ID=random.randint(1,9999999999),
-                        Gold=0,
-                        MaxGold = random.randint(80000,150000))
-                else:
-                    Ring_ = randomBool(0,5,1)
-                    if Ring == False:
-                        PossibleEquipment = ["Head","Body","Legs","Boot"]
-                        RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
-                        if RandomEquipment == "Head":
-                            Names = [
-                                Item.CreateName("Платиновый шлем","Шлем сделаный из платины, отлично защищает голову"),
-                                Item.CreateName("Эльфийский шлем","Шлем выкованный Эльфами, отлично защищает голову"),
-                                Item.CreateName("Шлем тени","Шлем который выдают войнам тени, за их подвиги"),
-                                Item.CreateName("Шлем мага","Шлем который носят маги")
-                            ]
-                            GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(20000,30000),random.randint(10000,20000),RandomEquipment,None),
-                                Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Редкий(),
-                                ID=random.randint(1,9999999999),
-                                Gold=0,
-                                MaxGold = random.randint(10000,20000))
-                        elif RandomEquipment == "Body":
-                            Names = [
-                                Item.CreateName("Платиновая кираса","Кираса сделаная из платины, отлично защищает тело"),
-                                Item.CreateName("Эльфийская кираса","Кираса выкованная Эльфами, отлично защищает тело"),
-                                Item.CreateName("Кираса тени","Кираса которую выдают войнам тени, за их подвиги"),
-                                Item.CreateName("Мантия мага","Мантия которую носят маги")
-                            ]
-                            GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(50000,150000),random.randint(30000,50000),RandomEquipment,None),
-                                Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Редкий(),
-                                ID=random.randint(1,9999999999),
-                                Gold=0,
-                                MaxGold = random.randint(350000,500000))
-                        elif RandomEquipment == "Legs":
-                            Names = [
-                                Item.CreateName("Платиновые поножи","Поножи сделаные из платины, отлично защищают ноги"),
-                                Item.CreateName("Эльфийские поножи","Поножи выкованные Эльфами, отлично защищают ноги"),
-                                Item.CreateName("Поножи тени","Поножи которые выдают войнам тени, за их подвиги"),
-                            ]
-                            GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(35000,50000),random.randint(25000,30000),RandomEquipment,None),
-                                Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Редкий(),
-                                ID=random.randint(1,9999999999),
-                                Gold=0,
-                                MaxGold = random.randint(350000,400000))
-                        elif RandomEquipment == "Boot":
-                            Names = [
-                                Item.CreateName("Платиновые сабатоны","Сабатоны сделаные из платины, отлично защищают ноги"),
-                                Item.CreateName("Эльфийские сабатоны","Сабатоны выкованные Эльфами, отлично защищают ноги"),
-                                Item.CreateName("Сабатоны тени","Сабатоны которые выдают войнам тени, за их подвиги")
-                            ]
-                            GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(30000,40000),random.randint(20000,25000),RandomEquipment,None),
-                                Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Редкий(),
-                                ID=random.randint(1,9999999999),
-                                Gold=0,
-                                MaxGold = random.randint(300000,350000))
+                            MaxGold = random.randint(5000,15000),
+                            AllGold = 0)
                     else:
-                        Magic = [
-                            {"Healing":{"Name":"Лечение","Description":"Каждая ваша атака исцеляет вас на 1% от максимального количества здоровья","PerLevel":"Лечение увеличивается на 1%","Level":random.randint(4,9)}},
-                            {"Damage":{"Name":"Усиленный урон","Description":"Ваши удары наносят усиленный урон на 10%","PerLevel":"Урон увеличивается на 10%","Level":random.randint(4,9)}},
-                            {"Shield":{"Name":"Поднять щиты","Description":"По вам приходит на 2% меньше урона","PerLevel":"Уменьшает получаемый урон на 2%","Level":random.randint(4,9)}},
-                            {"BloodDust":{"Name":"Зажда крови","Description":"После убийства босса вы наносите на 5% больше урона. (Максимальная сила = 500%)","PerLevel":"Увеличивает урон на 5%","Level":random.randint(4,9)}},
-                            {"Pacifist":{"Name":"Удар пацифиста","Description":"Каждые 10 минут урон увеличивается на 10%. Пропадает после атаки.","PerLevel":"Увеличивает прирост урона на 5%","Level":random.randint(4,9)}}
-                            ]
+                        Ring_ = randomBool(0,5,1)
+                        if Ring == False:
+                            PossibleEquipment = ["Head","Body","Legs","Boot"]
+                            RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
+                            if RandomEquipment == "Head":
+                                Names = [
+                                    Item.CreateName("Железный шлем","Шлем который защищает голову"),
+                                    Item.CreateName("Защитный шлем","Защищает голову от прямых ударов"),
+                                    Item.CreateName("Шлем стражника","Шлем который носят стражники")
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(1800,2200),random.randint(1000,2000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Обычный(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(2000,3000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Body":
+                                Names = [
+                                    Item.CreateName("Железная кираса","Кираса которая защищает тело от повреждений"),
+                                    Item.CreateName("Защитная кираса","Кираса защищает тело от прямых попаданий"),
+                                    Item.CreateName("Кираса стражника","Кираса которую носят все стражники"),
+                                    Item.CreateName("Кольчуга","Легкая кольчуга, защищает от повреждений"),
+                                    Item.CreateName("Мантия","Мантия которую носили волшебники"),
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(3000,4000),random.randint(2000,2500),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Обычный(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(5000,8000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Legs":
+                                Names = [
+                                    Item.CreateName("Железные поножи","Железные поножи, которые защищают ноги"),
+                                    Item.CreateName("Защитные поножи","Защитные поножи защищающие ноги от прямых попаданий"),
+                                    Item.CreateName("Поножи стражника","Поножи которые носят все стражники"),
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(1000,1800),random.randint(900,1500),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Обычный(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(4500,6000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Boot":
+                                Names = [
+                                    Item.CreateName("Железные сабатоны","Незначительно защитные сабатоны"),
+                                    Item.CreateName("Защитные сабатоны","Значительно защитные сабатоны"),
+                                    Item.CreateName("Сабатоны стражника","Сабатоны которые носят все стражники"),
+                                    Item.CreateName("Ботинки мага","Лёгкие ботинки, которые носили маги"),
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(850,1000),random.randint(600,800),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Обычный(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(3500,5000),
+                                    AllGold = 0)
+                        else:
+                            Magic = [
+                                {"Healing":{"Name":"Лечение","Description":"Каждая ваша атака исцеляет вас на 1% от максимального количества здоровья","PerLevel":"Лечение увеличивается на 1%","Level":random.randint(1,3)}},
+                                {"Damage":{"Name":"Усиленный урон","Description":"Ваши удары наносят усиленный урон на 10%","PerLevel":"Урон увеличивается на 10%","Level":random.randint(1,3)}},
+                                {"Shield":{"Name":"Поднять щиты","Description":"По вам приходит на 2% меньше урона","PerLevel":"Уменьшает получаемый урон на 2%","Level":random.randint(1,3)}},
+                                {"BloodDust":{"Name":"Зажда крови","Description":"После убийства босса вы наносите на 5% больше урона. (Максимальная сила = 500%)","PerLevel":"Увеличивает урон на 5%","Level":random.randint(1,3)}},
+                                {"Pacifist":{"Name":"Удар пацифиста","Description":"Каждые 10 минут урон увеличивается на 10%. Пропадает после атаки.","PerLevel":"Увеличивает прирост урона на 5%","Level":random.randint(1,3)}}
+                                ]
+                            GetItem = Player.AddInventor(
+                                Type = Item.Types.Ring(Magic[random.randint(0,len(Magic) - 1)]),
+                                Name = Item.CreateName("Магическое кольцо","Если экипировать то дает магический эффект"),
+                                Class = Item.Classes.Обычный(),
+                                ID=random.randint(1,9999999999),
+                                Gold=0,
+                                MaxGold = random.randint(50000000,500000000),
+                                AllGold = 0)
+                elif self.Different == "Hard":
+                    TypeItem = randomBool(0,1,1)
+                    if TypeItem == True:
+                        Names = [
+                            Item.CreateName("Платиновое копье","Копье которое обычно носит королевская стража"),
+                            Item.CreateName("Эльфийский лук","Лук который был собран Эльфами"),
+                            Item.CreateName("Кинжал тени","Кинжал который выдают войнам тени, за их подвиги"),
+                            Item.CreateName("Секира","Оружие которое наносит ужасающий урон"),
+                            Item.CreateName("Сияющий меч","На столько хорошо выкован, что слепит своим сиянием"),
+                            Item.CreateName("Посох","Среднестатистический посох"),
+                            Item.CreateName("Платиновый меч","Меч которое обычно экипированы герои")
+                        ]
                         GetItem = Player.AddInventor(
-                            Type = Item.Types.Ring(Magic[random.randint(0,len(Magic) - 1)]),
-                            Name = Item.CreateName("Магическое кольцо","Если экипировать то дает магический эффект"),
+                            Type = Item.Types.Weapon(random.randint(53000,80000),random.randint(7000,13000),None),
+                            Name = Names[random.randint(0,len(Names) - 1)],
                             Class = Item.Classes.Редкий(),
                             ID=random.randint(1,9999999999),
                             Gold=0,
-                            MaxGold = random.randint(50000000,500000000))
-            elif self.Different == "Hard+":
-                TypeItem = randomBool(0,1,1)
-                if TypeItem == True:
-                    Names = [
-                        Item.CreateName("Героическое копье","Копье которым пользуются герои. Наносит колосальные повреждения"),
-                        Item.CreateName("Механический арбалет","Арболет который способен автоматически перезаряжаться."),
-                        Item.CreateName("Кровопийца","Клинок который одним касанием способен вызвать кровотичение у жертвы"),
-                        Item.CreateName("Гроза Драконов","Клинок который способен убить дракона"),
-                        Item.CreateName("Пылающий Феникс","Клинок который словно окутывает свои жертвы пламенем"),
-                        Item.CreateName("Жало","Клинок который светиться при орках"),
-                        Item.CreateName("Убийца Мурлоков","Клинок который заколенный в боях против мурлоков")
-                    ]
-                    GetItem = Player.AddInventor(
-                        Type = Item.Types.Weapon(random.randint(800000,9000000),random.randint(9000,33000),None),
-                        Name = Names[random.randint(0,len(Names) - 1)],
-                        Class = Item.Classes.Эпический(),
-                        ID=random.randint(1,9999999999),
-                        Gold=0,
-                        MaxGold = random.randint(900000,9900000))
-                else:
-                    Ring_ = randomBool(0,5,1)
-                    if Ring == False:
-                        PossibleEquipment = ["Head","Body","Legs","Boot"]
-                        RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
-                        if RandomEquipment == "Head":
-                            Names = [
-                                Item.CreateName("Героический шлем","Шлем которые носят все герои"),
-                                Item.CreateName("Магический шлем","Магический шлем, который неосязаем для своего владельца"),
-                                Item.CreateName("Шлем Хранителя","Шлем который носили прошлые Хранители"),
-                                Item.CreateName("Драконий Шлем","Шлем выкованный из Драконией чешуи")
-                            ]
-                            GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(1000000,2000000),random.randint(33000,50000),RandomEquipment,None),
-                                Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Эпический(),
-                                ID=random.randint(1,9999999999),
-                                Gold=0,
-                                MaxGold = random.randint(900000,9900000))
-                        elif RandomEquipment == "Body":
-                            Names = [
-                                Item.CreateName("Героическая кираса","Кираса которую носят все герои"),
-                                Item.CreateName("Магическая кираса","Магическая Кираса, которая неосязаема для своего владельца"),
-                                Item.CreateName("Кираса Хранителя","Кираса которую носили прошлые Хранители"),
-                                Item.CreateName("Драконья кираса","Кираса выкованная из Драконией чешуи")
-                            ]
-                            GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(5000000,55000000),random.randint(300000,500000),RandomEquipment,None),
-                                Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Эпический(),
-                                ID=random.randint(1,9999999999),
-                                Gold=0,
-                                MaxGold = random.randint(900000,9900000))
-                        elif RandomEquipment == "Legs":
-                            Names = [
-                                Item.CreateName("Героические поножи","Поножи которые носят все герои"),
-                                Item.CreateName("Магические поножи","Магические поножи, которые неосязаемы для своего владельца"),
-                                Item.CreateName("Поножи Хранителя","Поножи которые носили прошлые Хранители"),
-                                Item.CreateName("Драконье Поножи","Поножи выкованные из Драконией чешуи")
-                            ]
-                            GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(1000000,2000000),random.randint(33000,50000),RandomEquipment,None),
-                                Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Эпический(),
-                                ID=random.randint(1,9999999999),
-                                Gold=0,
-                                MaxGold = random.randint(900000,9900000))
-                        elif RandomEquipment == "Boot":
-                            Names = [
-                                Item.CreateName("Героические сабатоны","Сабатоны которые носят все герои"),
-                                Item.CreateName("Магические сабатоны","Магические сабатоны, которые неосязаемы для своего владельца"),
-                                Item.CreateName("Сабатоны Хранителя","Сабатоны которые носили прошлые Хранители"),
-                                Item.CreateName("Драконье сабатоны","Сабатоны выкованные из Драконией чешуи")
-                            ]
-                            GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(800000,1000000),random.randint(33000,50000),RandomEquipment,None),
-                                Name = Names[random.randint(0,len(Names) - 1)],
-                                Class = Item.Classes.Эпический(),
-                                ID=random.randint(1,9999999999),
-                                Gold=0,
-                                MaxGold = random.randint(900000,9900000))
+                            MaxGold = random.randint(80000,150000),
+                            AllGold = 0)
                     else:
-                        Magic = [
-                            {"Healing":{"Name":"Лечение","Description":"Каждая ваша атака исцеляет вас на 1% от максимального количества здоровья","PerLevel":"Лечение увеличивается на 1%","Level":random.randint(9,14)}},
-                            {"Damage":{"Name":"Усиленный урон","Description":"Ваши удары наносят усиленный урон на 10%","PerLevel":"Урон увеличивается на 10%","Level":random.randint(9,14)}},
-                            {"Shield":{"Name":"Поднять щиты","Description":"По вам приходит на 2% меньше урона","PerLevel":"Уменьшает получаемый урон на 2%","Level":random.randint(9,14)}},
-                            {"BloodDust":{"Name":"Зажда крови","Description":"После убийства босса вы наносите на 5% больше урона. (Максимальная сила = 500%)","PerLevel":"Увеличивает урон на 5%","Level":random.randint(9,14)}},
-                            {"Pacifist":{"Name":"Удар пацифиста","Description":"Каждые 10 минут урон увеличивается на 10%. Пропадает после атаки.","PerLevel":"Увеличивает прирост урона на 5%","Level":random.randint(9,14)}}
-                            ]
+                        Ring_ = randomBool(0,5,1)
+                        if Ring == False:
+                            PossibleEquipment = ["Head","Body","Legs","Boot"]
+                            RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
+                            if RandomEquipment == "Head":
+                                Names = [
+                                    Item.CreateName("Платиновый шлем","Шлем сделаный из платины, отлично защищает голову"),
+                                    Item.CreateName("Эльфийский шлем","Шлем выкованный Эльфами, отлично защищает голову"),
+                                    Item.CreateName("Шлем тени","Шлем который выдают войнам тени, за их подвиги"),
+                                    Item.CreateName("Шлем мага","Шлем который носят маги")
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(20000,30000),random.randint(10000,20000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Редкий(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(10000,20000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Body":
+                                Names = [
+                                    Item.CreateName("Платиновая кираса","Кираса сделаная из платины, отлично защищает тело"),
+                                    Item.CreateName("Эльфийская кираса","Кираса выкованная Эльфами, отлично защищает тело"),
+                                    Item.CreateName("Кираса тени","Кираса которую выдают войнам тени, за их подвиги"),
+                                    Item.CreateName("Мантия мага","Мантия которую носят маги")
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(50000,150000),random.randint(30000,50000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Редкий(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(350000,500000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Legs":
+                                Names = [
+                                    Item.CreateName("Платиновые поножи","Поножи сделаные из платины, отлично защищают ноги"),
+                                    Item.CreateName("Эльфийские поножи","Поножи выкованные Эльфами, отлично защищают ноги"),
+                                    Item.CreateName("Поножи тени","Поножи которые выдают войнам тени, за их подвиги"),
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(35000,50000),random.randint(25000,30000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Редкий(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(350000,400000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Boot":
+                                Names = [
+                                    Item.CreateName("Платиновые сабатоны","Сабатоны сделаные из платины, отлично защищают ноги"),
+                                    Item.CreateName("Эльфийские сабатоны","Сабатоны выкованные Эльфами, отлично защищают ноги"),
+                                    Item.CreateName("Сабатоны тени","Сабатоны которые выдают войнам тени, за их подвиги")
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(30000,40000),random.randint(20000,25000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Редкий(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(300000,350000),
+                                    AllGold = 0)
+                        else:
+                            Magic = [
+                                {"Healing":{"Name":"Лечение","Description":"Каждая ваша атака исцеляет вас на 1% от максимального количества здоровья","PerLevel":"Лечение увеличивается на 1%","Level":random.randint(4,9)}},
+                                {"Damage":{"Name":"Усиленный урон","Description":"Ваши удары наносят усиленный урон на 10%","PerLevel":"Урон увеличивается на 10%","Level":random.randint(4,9)}},
+                                {"Shield":{"Name":"Поднять щиты","Description":"По вам приходит на 2% меньше урона","PerLevel":"Уменьшает получаемый урон на 2%","Level":random.randint(4,9)}},
+                                {"BloodDust":{"Name":"Зажда крови","Description":"После убийства босса вы наносите на 5% больше урона. (Максимальная сила = 500%)","PerLevel":"Увеличивает урон на 5%","Level":random.randint(4,9)}},
+                                {"Pacifist":{"Name":"Удар пацифиста","Description":"Каждые 10 минут урон увеличивается на 10%. Пропадает после атаки.","PerLevel":"Увеличивает прирост урона на 5%","Level":random.randint(4,9)}}
+                                ]
+                            GetItem = Player.AddInventor(
+                                Type = Item.Types.Ring(Magic[random.randint(0,len(Magic) - 1)]),
+                                Name = Item.CreateName("Магическое кольцо","Если экипировать то дает магический эффект"),
+                                Class = Item.Classes.Редкий(),
+                                ID=random.randint(1,9999999999),
+                                Gold=0,
+                                MaxGold = random.randint(50000000,500000000),
+                                AllGold = 0)
+                elif self.Different == "Hard+":
+                    TypeItem = randomBool(0,1,1)
+                    if TypeItem == True:
+                        Names = [
+                            Item.CreateName("Героическое копье","Копье которым пользуются герои. Наносит колосальные повреждения"),
+                            Item.CreateName("Механический арбалет","Арболет который способен автоматически перезаряжаться."),
+                            Item.CreateName("Кровопийца","Клинок который одним касанием способен вызвать кровотичение у жертвы"),
+                            Item.CreateName("Гроза Драконов","Клинок который способен убить дракона"),
+                            Item.CreateName("Пылающий Феникс","Клинок который словно окутывает свои жертвы пламенем"),
+                            Item.CreateName("Жало","Клинок который светиться при орках"),
+                            Item.CreateName("Убийца Мурлоков","Клинок который заколенный в боях против мурлоков")
+                        ]
                         GetItem = Player.AddInventor(
-                            Type = Item.Types.Ring(Magic[random.randint(0,len(Magic) - 1)]),
-                            Name = Item.CreateName("Магическое кольцо","Если экипировать то дает магический эффект"),
+                            Type = Item.Types.Weapon(random.randint(800000,9000000),random.randint(9000,33000),None),
+                            Name = Names[random.randint(0,len(Names) - 1)],
                             Class = Item.Classes.Эпический(),
                             ID=random.randint(1,9999999999),
                             Gold=0,
-                            MaxGold = random.randint(50000000,500000000))
-        self.Edit(
-            Health = self.Health,
-            Status = self.Status,
-            Murder = self.Murder
-        )
-        class _Return_GetDamage():
-            def __init__(self,Health,Status,Damage,Gold,GetItem):
-                self.Health = Health
-                self.Status = Status
-                self.Damage = Damage
-                self.Gold = Gold
-                self.GetItem = GetItem
-        try:
-            GetItem = Item(Player,GetItem)
-        except: GetItem = None
-        return _Return_GetDamage(self.Health,self.Status,Damage,self.Gold,GetItem)
+                            MaxGold = random.randint(900000,9900000),
+                            AllGold = 0)
+                    else:
+                        Ring_ = randomBool(0,5,1)
+                        if Ring == False:
+                            PossibleEquipment = ["Head","Body","Legs","Boot"]
+                            RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
+                            if RandomEquipment == "Head":
+                                Names = [
+                                    Item.CreateName("Героический шлем","Шлем которые носят все герои"),
+                                    Item.CreateName("Магический шлем","Магический шлем, который неосязаем для своего владельца"),
+                                    Item.CreateName("Шлем Хранителя","Шлем который носили прошлые Хранители"),
+                                    Item.CreateName("Драконий Шлем","Шлем выкованный из Драконией чешуи")
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(1000000,2000000),random.randint(33000,50000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Эпический(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(900000,9900000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Body":
+                                Names = [
+                                    Item.CreateName("Героическая кираса","Кираса которую носят все герои"),
+                                    Item.CreateName("Магическая кираса","Магическая Кираса, которая неосязаема для своего владельца"),
+                                    Item.CreateName("Кираса Хранителя","Кираса которую носили прошлые Хранители"),
+                                    Item.CreateName("Драконья кираса","Кираса выкованная из Драконией чешуи")
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(5000000,55000000),random.randint(300000,500000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Эпический(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(900000,9900000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Legs":
+                                Names = [
+                                    Item.CreateName("Героические поножи","Поножи которые носят все герои"),
+                                    Item.CreateName("Магические поножи","Магические поножи, которые неосязаемы для своего владельца"),
+                                    Item.CreateName("Поножи Хранителя","Поножи которые носили прошлые Хранители"),
+                                    Item.CreateName("Драконье Поножи","Поножи выкованные из Драконией чешуи")
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(1000000,2000000),random.randint(33000,50000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Эпический(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(900000,9900000),
+                                    AllGold = 0)
+                            elif RandomEquipment == "Boot":
+                                Names = [
+                                    Item.CreateName("Героические сабатоны","Сабатоны которые носят все герои"),
+                                    Item.CreateName("Магические сабатоны","Магические сабатоны, которые неосязаемы для своего владельца"),
+                                    Item.CreateName("Сабатоны Хранителя","Сабатоны которые носили прошлые Хранители"),
+                                    Item.CreateName("Драконье сабатоны","Сабатоны выкованные из Драконией чешуи")
+                                ]
+                                GetItem = Player.AddInventor(
+                                    Type = Item.Types.Equipment(random.randint(800000,1000000),random.randint(33000,50000),RandomEquipment,None),
+                                    Name = Names[random.randint(0,len(Names) - 1)],
+                                    Class = Item.Classes.Эпический(),
+                                    ID=random.randint(1,9999999999),
+                                    Gold=0,
+                                    MaxGold = random.randint(900000,9900000),
+                                    AllGold = 0)
+                        else:
+                            Magic = [
+                                {"Healing":{"Name":"Лечение","Description":"Каждая ваша атака исцеляет вас на 1% от максимального количества здоровья","PerLevel":"Лечение увеличивается на 1%","Level":random.randint(9,14)}},
+                                {"Damage":{"Name":"Усиленный урон","Description":"Ваши удары наносят усиленный урон на 10%","PerLevel":"Урон увеличивается на 10%","Level":random.randint(9,14)}},
+                                {"Shield":{"Name":"Поднять щиты","Description":"По вам приходит на 2% меньше урона","PerLevel":"Уменьшает получаемый урон на 2%","Level":random.randint(9,14)}},
+                                {"BloodDust":{"Name":"Зажда крови","Description":"После убийства босса вы наносите на 5% больше урона. (Максимальная сила = 500%)","PerLevel":"Увеличивает урон на 5%","Level":random.randint(9,14)}},
+                                {"Pacifist":{"Name":"Удар пацифиста","Description":"Каждые 10 минут урон увеличивается на 10%. Пропадает после атаки.","PerLevel":"Увеличивает прирост урона на 5%","Level":random.randint(9,14)}}
+                                ]
+                            GetItem = Player.AddInventor(
+                                Type = Item.Types.Ring(Magic[random.randint(0,len(Magic) - 1)]),
+                                Name = Item.CreateName("Магическое кольцо","Если экипировать то дает магический эффект"),
+                                Class = Item.Classes.Эпический(),
+                                ID=random.randint(1,9999999999),
+                                Gold=0,
+                                MaxGold = random.randint(50000000,500000000),
+                                AllGold = 0)
+            self.Edit(
+                Health = self.Health,
+                Status = self.Status,
+                Murder = self.Murder,
+                LastGetDamage = self.LastGetDamage
+            )
+            class _Return_GetDamage():
+                def __init__(self,Health,Status,Damage,Gold,Murder,GetItem):
+                    self.Murder = Murder
+                    self.Health = Health
+                    self.Status = Status
+                    self.Damage = Damage
+                    self.Gold = Gold
+                    self.GetItem = GetItem
+            try:
+                GetItem = Item(Player,GetItem)
+            except: GetItem = None
+            return _Return_GetDamage(self.Health,self.Status,self.LastGetDamage,self.Gold,self.Murder,GetItem)
+        else:
+            return _Return_GetDamage(self.Health,self.Status,self.LastGetDamage,self.Gold,self.Murder,None)
     async def Respawn(self):
         """ Респавнить босса """
         while True:
@@ -1876,11 +1946,26 @@ class Talant():
 
 if __name__ == "__main__":
     Iam = C_Player("KOT32500")
-    
-    Iam.GetTalants()
-    Regeneration = Iam.GetTalant("Regeneration")
-    Iam.Edit(TalantPicked="Determination")
-    print(Regeneration.Name)
+
+    Iam.GetInventor()
+    for RangeItem in range(100):
+        Names = [
+            Item.CreateName("Героическое копье","Копье которым пользуются герои. Наносит колосальные повреждения"),
+            Item.CreateName("Механический арбалет","Арболет который способен автоматически перезаряжаться."),
+            Item.CreateName("Кровопийца","Клинок который одним касанием способен вызвать кровотичение у жертвы"),
+            Item.CreateName("Гроза Драконов","Клинок который способен убить дракона"),
+            Item.CreateName("Пылающий Феникс","Клинок который словно окутывает свои жертвы пламенем"),
+            Item.CreateName("Жало","Клинок который светиться при орках"),
+            Item.CreateName("Убийца Мурлоков","Клинок который заколенный в боях против мурлоков")
+        ]
+        Iam.AddInventor(
+            Type = Item.Types.Weapon(random.randint(800000,9000000),random.randint(9000,33000),None),
+            Name = Names[random.randint(0,len(Names) - 1)],
+            Class = Item.Classes.Эпический(),
+            ID=random.randint(1,9999999999),
+            Gold=0,
+            MaxGold = random.randint(900000,9900000),
+            AllGold = 0)
 
 
 
