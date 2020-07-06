@@ -29,6 +29,7 @@ def InternetActive():
 
 class MyClient(discord.Client):
     async def on_ready(self):
+        
         self.PATH_VERSION = "./Version 6"
         print(f"Logged on as , {self.user} MODULE : bot2.py")
         randomStatus = random.randint(0,7)
@@ -90,8 +91,8 @@ class MyClient(discord.Client):
             Player = C_Player(Player)
             try:
                 _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
+                Tasks.append(asyncio.create_task(_Talant.Update()))
             except KeyError: pass
-            Tasks.append(asyncio.create_task(_Talant.Update()))
         asyncio.gather(*Tasks)
         print("работает все да")
    
@@ -174,19 +175,22 @@ class MyClient(discord.Client):
         elif self.Commands[0].upper() == "2inv".upper():
             async with self.Channel.typing():
                 for item in self.Player.GetInventored:
-                    await self.Channel.send(f"Имя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}")
+                    await self.Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}```")
         elif self.Commands[0].upper() == "2item".upper():
             async with self.Channel.typing():
                 ID = int(self.Commands[1])
                 item = Item.Find(ID,self.Player)
-                await self.Channel.send(f"Имя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}")
+                await self.Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}```")
         elif self.Commands[0].upper() == "2u".upper():
             async with self.Channel.typing():
                 ID = int(self.Commands[1])
                 Gold = int(self.Commands[2])
                 item = Item.Find(ID,self.Player)
-                item.Upgrade(Gold)
-                await self.Channel.send(f"Имя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}")
+                try:
+                    item.Upgrade(Gold)
+                    await self.Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}\nКласс : {item.Class} \nID : {item.ID}```")
+                except:
+                    await self.Channel.send(f"Предмет не найден")
         elif self.Commands[0].upper() == "2G".upper():
             async with self.Channel.typing():
                 try:
@@ -194,6 +198,10 @@ class MyClient(discord.Client):
                 except: count = random.randint(1,35)
                 Message = self.Gabriel.Message(count,self.Guild.name)
                 await self.Channel.send(Message)
+        # elif self.Commands[0].upper() == "2Talants".upper():
+            # async with self.Channel.typing():
+                # for talant in self.Player.GetTalanted:
+                    # await self.Channel.send(f"```{talant.Name}\n{talant.}\n{}\n{}\n{}\n{}\n{}")
         else:
             self.Gabriel.SaveWords(self.Content,self.Guild.name)
     async def DownloadAvatar(self):

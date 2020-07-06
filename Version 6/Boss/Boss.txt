@@ -1,1 +1,1 @@
-{'Different': 'Easy', 'Image': 'Boss9.png', 'Health': 203393, 'MaxHealth': 203393, 'Damage': 0, 'Armor': 0, 'Time': '1:00:00', 'Murder': None, 'Status': 'Life'}{'Different': 'Easy', 'Image': 'Boss9.png', 'Health': 203393, 'MaxHealth': 203393, 'Damage': 0, 'Armor': 0, 'Time': '1:00:00', 'Murder': None, 'Status': 'Life'}
+{'Different': 'Hard', 'Image': 'Boss27.png', 'Health': 929091017, 'MaxHealth': 929091017, 'Damage': 16468443, 'Armor': 2445630, 'Time': '0:40:00', 'Murder': None, 'Status': 'Life'}
