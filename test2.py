@@ -1,14 +1,15 @@
-maxHealth = 1000
-Health = 100
+class Error(BaseException): pass
 
-Procent = (Health * 100) / maxHealth
-WithOutProcent = 100 - Procent
 
-Red = 2.55
-Green = 200
-Blue = 0
+class MyError(Error): 
+    def __init__(self,Message,Command):
+        self.Command = Command
 
-Red *= WithOutProcent
-Green -= Red
 
-print(f"\nХП : {Procent}%\n\nR:{Red}\nG:{Green}\nB:{Blue}")
+def main():
+    raise MyError("Ошибка в команде",'this')
+
+try:
+    main()
+except BaseException as Error:
+    print(Error.Command)

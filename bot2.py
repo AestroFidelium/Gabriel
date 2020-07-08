@@ -99,6 +99,7 @@ class MyClient(discord.Client):
     async def Command(self):
         self.Player.GetInventor()
         self.Player.GetTalants()
+        self.Day = datetime.datetime.now().day
         if self.Commands[0].upper() == "2Profile".upper():
             await self.Message.delete()
             async with self.Channel.typing():
@@ -163,16 +164,12 @@ class MyClient(discord.Client):
             async with self.Channel.typing():
                 await self.Channel.send(" ",file=self.Boss.Profile())
         elif self.Commands[0].upper() == "2Ba".upper():
-            GetAttack_Stats = self.Boss.GetAttack(self.Player,self.Player.MaxDamage())
-            if GetAttack_Stats.Status == "Dead":
+            GetStats = self.Boss.GetAttack(self.Player,self.Player.MaxDamage())
+            Status = GetStats[0]
+            Embed = GetStats[1]
+            if Status == "Dead":
                 async with self.Channel.typing():
-                    Damage = ReplaceNumber(GetAttack_Stats.Damage)
-                    GetAttack_StatsGold = ReplaceNumber(GetAttack_Stats.Gold)
-                    Murder = GetAttack_Stats.Murder
-                    try:
-                        ItemName = GetAttack_Stats.GetItem.Name
-                    except AttributeError: ItemName = ""
-                    await self.Channel.send(f"`{Murder}` нанёс последние {Damage} ед. урона, и убив Босса, получил с него : \n{GetAttack_StatsGold} золотых. \n{ItemName}")
+                    await self.Channel.send(embed=Embed)
         elif self.Commands[0].upper() == "2inv".upper():
             async with self.Channel.typing():
                 SavedEmbeds = []
@@ -184,7 +181,11 @@ class MyClient(discord.Client):
                 for item in self.Player.GetInventored:
                     Count += 1
                     AllGold = ReplaceNumber(item.AllGold)
-                    Embed.add_field(name=item.Name,value=f"Описание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}",inline=False)
+                    Damage = ReplaceNumber(item.Damage)
+                    Protect = ReplaceNumber(item.Protect)
+                    Armor = ReplaceNumber(item.Armor)
+                    AllGold = ReplaceNumber(item.AllGold)
+                    Embed.add_field(name=item.Name,value=f"Описание : `{item.Description}`\nУрон : {Damage} / Защита : {Protect}\nПрочность : {Armor}\nЭкипируется : {item.Where}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nМагические свойства : {item.Magic}\nID : {item.ID}",inline=False)
                     if Count == 25:
                         CountPapper += 1
                         Count = 0
@@ -253,6 +254,70 @@ class MyClient(discord.Client):
                     # Embed = discord.Embed(title=Header)
                     Embed.add_field(name=Header,value=f"Название : {Equip.Name}\nОписание : {Equip.Description}\nID : {Equip.ID}\nУрон : {Damage} / Защита : {Protect}\nПрочность : {Armor}\nЗолото : {Gold}/{MaxGold} ({AllGold})\nМагические свойства : {Equip.Magic}",inline=False)
                     count += 1
+                await self.Channel.send(embed=Embed)
+        elif self.Commands[0].upper() == "2Bonus".upper():
+            async with self.Channel.typing():
+                if self.Player.BonusDay != self.Day:
+                    GetGold = random.randint(300,1000)
+                    self.Player.Edit(
+                        Edit="Everyday bonus",
+                        Day = self.Day,
+                        Gold = GetGold)
+                    self.Player.Gold += GetGold
+                    self.Player.Edit(
+                        Edit = "Main",
+                        Gold = self.Player.Gold
+                    )
+                    await self.Channel.send(f"`{self.Player.Name}` взял(а) ежедневный бонус в размере {GetGold} золотых")
+                else:
+                    await self.Channel.send(f"`{self.Player.Name}`, Вы уже брали ежедневный бонус в размере {self.Player.BonusGold} золотых")
+        elif self.Commands[0].upper() == "2gs".upper():
+            _ChannelVoice_ = await self.fetch_channel(self.Message.author.voice.channel.id)
+            try:
+                if self.VoiceClient.is_connected == False:
+                    self.Sounds = os.listdir(f"./Resurses/JoinVoice/")
+                    self.VoiceClient = await _ChannelVoice_.connect()
+            except:
+                self.Sounds = os.listdir(f"./Resurses/JoinVoice/")
+                self.VoiceClient = await _ChannelVoice_.connect()
+            try:
+                RandomInt = random.randint(0,len(self.Sounds) - 1)
+            except: 
+                self.Sounds = os.listdir(f"./Resurses/JoinVoice/")
+                RandomInt = random.randint(0,len(self.Sounds) - 1)
+            RandomSound = self.Sounds[RandomInt]
+            self.Sounds.remove(RandomSound)
+            self.VoiceClient.play(discord.FFmpegPCMAudio(
+                executable="C:/ffmpeg/bin/ffmpeg.exe", 
+                source=f"./Resurses/JoinVoice/{RandomSound}"))
+        elif self.Commands[0].upper() == "2Nev_Avatar".upper():
+            async with self.Channel.typing():
+                try:
+                    url = self.Commands[1]
+                    DownloadFile = requests.get(url, stream=True)
+                    with open(f"./Resurses/{self.Player.Name}.png","bw") as file:
+                        for chunk in DownloadFile.iter_content(12288):
+                            file.write(chunk)
+                    await self.Channel.send("Новый аватар поставлен",delete_after=30)
+                except:
+                    await self.Channel.send("Поставить новый аватар не удалось",delete_after=30)
+        elif self.Commands[0].upper() == "2New_Background".upper():
+            async with self.Channel.typing():
+                try:
+                    url = self.Commands[1]
+                    DownloadFile = requests.get(url, stream=True)
+                    with open(f"./Resurses/BackGround_{self.Player.Name}.png","bw") as file:
+                        for chunk in DownloadFile.iter_content(12288):
+                            file.write(chunk)
+                    await self.Channel.send("Новый фон поставлен",delete_after=30)
+                except:
+                    await self.Channel.send("Поставить новый фон не удалось",delete_after=30)
+        elif self.Commands[0].upper() == "2Shop".upper():
+            async with self.Channel.typing():
+                Product = self.Commands[1]
+                Count = int(self.Commands[2])
+                Embed = Shop().Buy(self.Player,Product,Count)
+                Embed.set_author(name=self.Player.Name,url=self.User.avatar_url,icon_url=self.User.avatar_url)
                 await self.Channel.send(embed=Embed)
         else:
             self.Gabriel.SaveWords(self.Content,self.Guild.name)
@@ -327,7 +392,9 @@ class MyClient(discord.Client):
         try:
             await self.Command()
         except BaseException as Error:
-            await self.Channel.send(f"```{Error}```",delete_after=10)
+            Embed = discord.Embed(title="Ошибка",description=str(Error),colour=discord.Colour.red())
+            # await self.Channel.send(f"```{Error}```",delete_after=10)
+            await self.Channel.send(embed=Embed,delete_after=60)
     
 
 
