@@ -319,6 +319,12 @@ class MyClient(discord.Client):
                 Embed = Shop().Buy(self.Player,Product,Count)
                 Embed.set_author(name=self.Player.Name,url=self.User.avatar_url,icon_url=self.User.avatar_url)
                 await self.Channel.send(embed=Embed)
+        elif self.Commands[0].upper() == "wiki".upper():
+            async with self.Channel.typing():
+                NeedFind = self.Commands[1]
+                Embed = self.Gabriel.SearchInfo(NeedFind)
+                Embed.set_author(name=self.Player.Name,url=self.User.avatar_url,icon_url=self.User.avatar_url)
+                await self.Channel.send(embed=Embed)
         else:
             self.Gabriel.SaveWords(self.Content,self.Guild.name)
     async def DownloadAvatar(self):

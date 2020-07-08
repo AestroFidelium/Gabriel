@@ -15,7 +15,16 @@ import datetime
 import asyncio
 import requests
 import json
+import time
 
+def SplitURL(URL):
+    with requests.Session() as Session:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.191'
+        }
+        GetURL = Session.get(f'https://clck.ru/--?json=true&url={URL}',headers=headers)
+        Json = GetURL.json()
+        return Json[0]
 class Error(BaseException):
     pass
 class CommandError(Error):
@@ -1170,11 +1179,68 @@ class Gabriel():
             for line in msgSplitLines:
                 file.writelines(f"\n{line}")
 
-    def Google(self,GetRequest : str):
-        Request = "https://yandex.kz/search/?text="
+    def SearchInfo(self,GetRequest : str):
+        Request = "https://ru.wikipedia.org/wiki/"
+        Search = "https://ru.wikipedia.org/w/index.php?search="
+        
         for Message in GetRequest.split(" "):
-            Request += f"{Message}%20"
+            Request += f"{Message}_"
+            Search += f"{Message}+"
+        Request = Request[:-1]
+        Search = Search[:-1]
+        with requests.Session() as Session:
+            headers = {
+                'user-agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.191'
+            }
+            MainCity = Session.get(Request,headers=headers)
 
+            soup = BeautifulSoup(MainCity.content,'lxml')
+            
+            try:
+                main = soup.find('div',{"class":"mw-parser-output"})
+                
+                RussianLanguage = [
+                    "й","ц","у","к","е","н","г","ш","щ","з","х","ъ","ф","ы","в","а","п","р","о","л",
+                    "д","ж","э","я","ч","с","м","и","т","ь","б","ю",".",",","ё","?","!",'-'," "
+                ]
+                Pages = 6
+                description = ""
+                
+                for P in main.find_all("p"):
+                    Message = ""
+                    Count = 200
+                    Be = False
+                    for latter in str(P.text):
+                        if latter.lower() in RussianLanguage:
+                            if Count > 0:
+                                description += latter
+                            elif Count <= 0: Be = True
+                            Count -= 1
+                    if Be == True: 
+                        description += "..."
+                        Pages -= 1
+                    if Pages < 0: break
+
+                
+                return discord.Embed(title=GetRequest,url=Request,description=f"Согласно википедии\n{description}")
+                
+            
+            except BaseException as Error:
+                if str(Error) == "'NoneType' object has no attribute 'find_all'":
+                    #Этой статьи нет
+                    Embed = discord.Embed(title=GetRequest,description="Этой статьи нет, возможно вы имели что то другое?")
+                    MainCity = Session.get(Search,headers=headers)
+
+                    soup = BeautifulSoup(MainCity.content,'lxml')
+                    main = soup.find("ul",{"class":"mw-search-results"})
+
+                    for li in main.find_all('li',{"class":"mw-search-result"}):
+                        a = li.find('a')
+                        Link = f"https://ru.wikipedia.org{str(a.get('href'))}"
+                        Link = SplitURL(Link)
+                        Title = str(a.text)
+                        Embed.add_field(name=Title,value=Link)
+                    return Embed
         
 
 def _writeInPicture(area,content,font,draw,color):
@@ -2079,8 +2145,9 @@ class Shop():
 if __name__ == "__main__":
     Iam = C_Player("KOT32500")
 
-    Iam.GetInventor()
-    _Auction = Auction()
+    # Iam.GetInventor()
+    Gabriel_ = Gabriel()
+    # Gabriel_.SearchInfo('убить')
     # for Items in range(15):
     #     Names = [
     #         Item.CreateName("Героическое копье","Копье которым пользуются герои. Наносит колосальные повреждения"),
