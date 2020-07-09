@@ -9,13 +9,19 @@ from PIL import Image, ImageDraw , ImageFont
 import os
 import codecs
 import random
-from myConfg import * 
 import discord
 import datetime
 import asyncio
 import requests
 import json
 import time
+
+def StrToDict(_str):
+    """
+    `str` : текст который нужно будет конвентировать в Dict
+    """
+    NwDict = ast.literal_eval(f'{_str}') ; NwDict = dict(NwDict)
+    return NwDict
 
 def SplitURL(URL):
     """ Сократить URL """
