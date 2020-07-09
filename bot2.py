@@ -114,7 +114,7 @@ class MyClient(discord.Client):
                             Be = True
                             await self.Channel.send(" ", file = Player.Profile())
                     if Be == False:
-                        await self.Channel.send("Такого пользователя не существует")
+                        raise Error("Такого пользователя не существует")
                 else:
                     await self.Channel.send(" ", file = self.Player.Profile())
         elif self.Commands[0].upper() == "LevelUpMe".upper():
@@ -124,7 +124,7 @@ class MyClient(discord.Client):
             try:
                 Player2 = self.Commands[1]
             except: 
-                await self.Channel.send("Нужно указать имя игрока")
+                raise Error("Нужно указать имя игрока")
                 return
             Be = False
             for Player in self.Players:
@@ -157,7 +157,7 @@ class MyClient(discord.Client):
 
                     await self.Channel.send(f"`{self.PlayerName}` вы убили `{Target.Name}`, нанеся {GetDamage}\nСтатистика `{Target.Name}` упала на : \nУровень : {LostLevel}\nЗдоровье : {LostHealth}\nУрон : {LostDamage}\nЛовкость : {LostAgility}\nИнтеллект : {LostIntelligence}\nСила : {LostStrength}")
             else:
-                await self.Channel.send("Выбранного игрока не существует")
+                raise Error("Выбранного игрока не существует")
         elif self.Commands[0].upper() == "Event".upper():
             if self.Commands[1].upper() == "Profile".upper():
                 async with self.Channel.typing():
@@ -299,7 +299,7 @@ class MyClient(discord.Client):
                             file.write(chunk)
                     await self.Channel.send("Новый аватар поставлен",delete_after=30)
                 except:
-                    await self.Channel.send("Поставить новый аватар не удалось",delete_after=30)
+                    raise Error("Поставить новый аватар не удалось")
         elif self.Commands[0].upper() == "New_Background".upper():
             async with self.Channel.typing():
                 try:
@@ -310,7 +310,7 @@ class MyClient(discord.Client):
                             file.write(chunk)
                     await self.Channel.send("Новый фон поставлен",delete_after=30)
                 except:
-                    await self.Channel.send("Поставить новый фон не удалось",delete_after=30)
+                    raise Error("Поставить новый фон не удалось")
         elif self.Commands[0].upper() == "Shop".upper():
             async with self.Channel.typing():
                 Product = self.Commands[1]
@@ -412,9 +412,11 @@ class MyClient(discord.Client):
         await self.DownloadAvatar()
         try:
             await self.Command()
+        except CommandError as Error:
+            Embed = discord.Embed(title="Ошибка",description=f"{Error.Message} \nКоманда : {Error.Command} \nПравильное написание команды : {Error.Correct}",colour=discord.Colour.red())
+            await self.Channel.send(embed=Embed,delete_after=60)
         except BaseException as Error:
             Embed = discord.Embed(title="Ошибка",description=str(Error),colour=discord.Colour.red())
-            # await self.Channel.send(f"```{Error}```",delete_after=10)
             await self.Channel.send(embed=Embed,delete_after=60)
     
 

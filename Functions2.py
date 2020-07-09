@@ -26,11 +26,18 @@ def SplitURL(URL):
         Json = GetURL.json()
         return Json[0]
 class Error(BaseException):
+    """ Ошибка """
     pass
 class CommandError(Error):
-    def __init__(self,Message,Command):
+    """ Ошибка в команде 
+    Принимает в себя Сообщение, об ошибке, название команды, и правильное написание команды
+    
+    """
+
+    def __init__(self,Message : str,Command : str,Correct : str):
         self.Message = Message
         self.Command = Command
+        self.Correct = Correct
 
 def randomBool(_min : int,_max : int,_need : int):
     """
@@ -592,7 +599,11 @@ class C_Player():
                 elif Where == "Ring_4":self.Edit(Edit = "Equipped",Ring_4 = item)
                 elif Where == "Ring_5":self.Edit(Edit = "Equipped",Ring_5 = item)
                 else:
-                    raise Error("Не правильно указано куда именно следовало экипировать предмет")
+                    raise CommandError(
+                                Message="Не правильно указано куда именно следовало экипировать предмет",
+                                Command = "Wear",
+                                Correct = "Wear ID Where"
+                                )
         self._selfStats()
 
     def Edit(self,**fields):
