@@ -1344,7 +1344,7 @@ class Boss():
             """
             pass
     def __init__(self):
-        self.PATH_VERSION = "."
+        self.PATH_VERSION = "./Stats"
         self.Read()
         self._selfStats()
     
