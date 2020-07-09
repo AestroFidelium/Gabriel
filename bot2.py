@@ -30,10 +30,10 @@ def InternetActive():
 class MyClient(discord.Client):
     async def on_ready(self):
         
-        self.PATH_VERSION = "./Version 6"
+        self.PATH_VERSION = "."
         print(f"Logged on as , {self.user} MODULE : bot2.py")
         randomStatus = random.randint(0,7)
-        with open(f"Ready.txt","r") as file:
+        with codecs.open(f"Ready.txt","r",encoding='utf-8') as file:
             Working = str(file.readline())
         if Working == "-":
             if randomStatus == 0:

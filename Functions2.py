@@ -18,6 +18,7 @@ import json
 import time
 
 def SplitURL(URL):
+    """ Сократить URL """
     with requests.Session() as Session:
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.191'
@@ -138,7 +139,7 @@ class C_Player():
     """ Игрок """
 
     def __init__(self,Name):
-        self.PATH_VERSION = "./Version 6"
+        self.PATH_VERSION = "."
         self.Name = Name
         
         self.StartStats = {
@@ -1343,7 +1344,7 @@ class Boss():
             """
             pass
     def __init__(self):
-        self.PATH_VERSION = "./Version 6"
+        self.PATH_VERSION = "."
         self.Read()
         self._selfStats()
     
@@ -1352,7 +1353,7 @@ class Boss():
 
         Different = ["Easy","Medium","Hard","Hard+"]
         Different = Different[random.randint(0,len(Different) - 1)]
-        with open(f"{self.PATH_VERSION}/Boss/Boss.txt","w") as file:
+        with codecs.open(f"{self.PATH_VERSION}/Boss/Boss.txt","w",encoding="utf-8") as file:
             BossImage = os.listdir(f"./Resurses/Bosses/{Different}/")
             BossImage = BossImage[random.randint(0,len(BossImage) - 1)]
             if Different == "Easy":
@@ -1423,7 +1424,7 @@ class Boss():
         """ Прочитать сохраненную информацию о боссе """
 
         try:
-            with open(f"{self.PATH_VERSION}/Boss/Boss.txt","r") as file:
+            with codecs.open(f"{self.PATH_VERSION}/Boss/Boss.txt","r",encoding='utf-8') as file:
                 self.Stats = StrToDict(str(file.readline()))
         except: self.Create()
         self._selfStats()
@@ -1431,7 +1432,7 @@ class Boss():
     def Edit(self,**fields):
         """ Редактировать информацию о боссе """
         self.Stats.update(fields)
-        with open(f"{self.PATH_VERSION}/Boss/Boss.txt","w") as file:
+        with codecs.open(f"{self.PATH_VERSION}/Boss/Boss.txt","w",encoding="utf-8") as file:
             file.write(str(self.Stats))
     
     def _selfStats(self):
