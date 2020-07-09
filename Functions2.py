@@ -15,6 +15,41 @@ import asyncio
 import requests
 import json
 import time
+import ast
+
+class CheckMessage():
+    """
+    Проверяет сообщение на указанные слова
+    """
+    Find = False
+    def __init__(self,message : str,target : list):
+        self.message = message
+        self.target = target
+    
+    def Start(self):
+        """
+        Начать проверку. Выводит : `True` or `None`
+        """
+        EveryoneWord = list()
+        EveryoneWord.extend(self.message)
+        TargetEveryone = list(); TargetEveryone.extend(self.target) 
+        self.everyoneWord = EveryoneWord
+        self.targetEveryone = TargetEveryone
+        count = 0
+        for word in self.everyoneWord:
+            if word == " ":
+                count = 0
+            else:
+                try:
+                    if word == TargetEveryone[count]:
+                        count += 1
+                        if count == len(self.target):
+                            Find = True
+                            return Find
+                    elif word != TargetEveryone[count]:
+                        count = 0
+                except IndexError:
+                    pass
 
 def StrToDict(_str):
     """
