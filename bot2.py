@@ -159,7 +159,9 @@ class MyClient(discord.Client):
             else:
                 await self.Channel.send("Выбранного игрока не существует")
         elif self.Commands[0].upper() == "2B".upper():
-            self.Boss.Create()
+            async with self.Channel.typing():
+                self.Boss.Create()
+                await self.Channel.send('Босс успешно создан')
         elif self.Commands[0].upper() == "2Bp".upper():
             async with self.Channel.typing():
                 await self.Channel.send(" ",file=self.Boss.Profile())
@@ -186,7 +188,7 @@ class MyClient(discord.Client):
                     Armor = ReplaceNumber(item.Armor)
                     AllGold = ReplaceNumber(item.AllGold)
                     Embed.add_field(name=item.Name,value=f"Описание : `{item.Description}`\nУрон : {Damage} / Защита : {Protect}\nПрочность : {Armor}\nЭкипируется : {item.Where}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nМагические свойства : {item.Magic}\nID : {item.ID}",inline=False)
-                    if Count == 25:
+                    if Count == 15:
                         CountPapper += 1
                         Count = 0
                         SavedEmbeds.append(Embed)
@@ -325,6 +327,22 @@ class MyClient(discord.Client):
                 Embed = self.Gabriel.SearchInfo(NeedFind)
                 Embed.set_author(name=self.Player.Name,url=self.User.avatar_url,icon_url=self.User.avatar_url)
                 await self.Channel.send(embed=Embed)
+        elif self.Commands[0].upper() == "2wear".upper():
+            async with self.Channel.typing():
+                try: ID = int(self.Commands[1])
+                except: raise Error("Не указан ID предмета")
+                Item_ = Item.Find(ID,self.Player)
+                if Item_.TypeKey.upper() == "Equipment".upper():
+                    self.Player.EquipmentItem(ID,Item_.Where)
+                else:
+                    try: Where = self.Commands[2]
+                    except: raise Error("Не указано куда следует экипировать предмет")
+                    
+                    self.Player.EquipmentItem(ID,Where)
+                await self.Channel.send("Вы успешно экипировали предмет")
+        elif self.Commands[0].upper() == ")".upper():
+            async with self.Channel.typing():
+                await self.Channel.send(")")
         else:
             self.Gabriel.SaveWords(self.Content,self.Guild.name)
     async def DownloadAvatar(self):
@@ -464,7 +482,13 @@ class MyClient(discord.Client):
             if len(Members) == 0 and str(CurGroup.name) not in NotDeleteChannels:
                 await CurGroup.delete(reason="В комнате никого нет")
         except Exception: pass
-
+    
+    async def on_member_join(self,Member : discord.member.Member):
+        try:
+            OurServer = await self.fetch_guild(419879599363850251)
+            StartRole = OurServer.get_role(691735620346970123)
+            await Member.add_roles(StartRole,reason="Впервые зашел на сервер")
+        except: pass
 
     async def on_guild_channel_update(self,before,after):
         overwrites = before.overwrites

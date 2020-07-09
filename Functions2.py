@@ -420,7 +420,19 @@ class C_Player():
                         },
                 },
             "TalantPicked": "Талант не выбран",
-            "Effects" : {}
+            "Effects" : {},
+            "FunStats" : {
+                "Viewing Loli" : 0,
+                "Likes of Loli" : 0,
+                "Dislikes of Loli" : 0,
+                "Total messages" : 0
+            },
+            "Profile": {
+                "Age" : None,
+                "Gender" : None,
+                "Activity" : None,
+                "About me" : None
+            }
         }
         try:
             with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","r",encoding="utf-8") as file:
@@ -580,7 +592,7 @@ class C_Player():
                 elif Where == "Ring_4":self.Edit(Edit = "Equipped",Ring_4 = item)
                 elif Where == "Ring_5":self.Edit(Edit = "Equipped",Ring_5 = item)
                 else:
-                    raise NotStandartEquip("Не указано куда нужно экипировать предмет")
+                    raise Error("Не правильно указано куда именно следовало экипировать предмет")
         self._selfStats()
 
     def Edit(self,**fields):

@@ -127,11 +127,11 @@ class MyClient(discord.Client):
             "https://vk.com/loliland"
             ]
         Tasks = list()
+        self.LoliChannel = await self.fetch_channel(578611164016017408)
+        for Webhook in await self.LoliChannel.webhooks():
+            if Webhook.name == "Лоля":
+                self.LoliWebhook = Webhook
         while True:
-            self.LoliChannel = await self.fetch_channel(578611164016017408)
-            for Webhook in await self.LoliChannel.webhooks():
-                if Webhook.name == "Лоля":
-                    self.LoliWebhook = Webhook
             for image in os.listdir(f"./Resurses/loli/"):
                 if image != "OldLolies":
                     self.WaitSending = True
