@@ -118,7 +118,6 @@ class MyClient(discord.Client):
                 else:
                     await self.Channel.send(" ", file = self.Player.Profile())
         elif self.Commands[0].upper() == "LevelUpMe".upper():
-            # self.Player.LevelUp(C_Player.mode.multiply,count=999999999999)
             await self.Channel.send("Хитро, однако это больше не работает")
         elif self.Commands[0].upper() == "Attack".upper():
             try:
@@ -337,10 +336,14 @@ class MyClient(discord.Client):
                     
                     self.Player.EquipmentItem(ID,Where)
                 await self.Channel.send("Вы успешно экипировали предмет")
-        elif self.Commands[0] == ")":
-            async with self.Channel.typing():
-                await self.Channel.send(")")
+        elif self.Content.count(")") > 0:
+            if self.Message.author != self.user:
+                async with self.Channel.typing():
+                    Count = self.Content.count(")")
+                    if Count < 100:
+                        await self.Channel.send(")" * Count)
         else:
+            await self.Guild_Function.CheckMessage()
             self.Gabriel.SaveWords(self.Content,self.Guild.name)
     async def DownloadAvatar(self):
         try:
@@ -372,6 +375,8 @@ class MyClient(discord.Client):
                 GameChannel = await self.fetch_channel(629267102070472714)
                 await message.channel.send(f"Добрый день, извините, но я не работаю в личных сообщениях. Если вам нужна помощь то пожалуйста обратитесь за помощью к Гильдии **Боги и Кот**. \n{Reference.mention} : Канал где можно прочитать основную информацию об Гильдии\n{GeneralChannel.mention} : Канал где можно спросить что либо у участников. \n{GameChannel.mention} : Канал где нужно вводить все игровые команды\nУдачного вам дня.")
             return
+
+        self.Guild_Function = Guild(self,self.Guild.name)
 
         try:
             self.Member = await self.Guild.fetch_member(self.Message.author.id)
@@ -414,6 +419,9 @@ class MyClient(discord.Client):
             await self.Command()
         except CommandError as Error:
             Embed = discord.Embed(title="Ошибка",description=f"{Error.Message} \nКоманда : {Error.Command} \nПравильное написание команды : {Error.Correct}",colour=discord.Colour.red())
+            await self.Channel.send(embed=Embed,delete_after=60)
+        except Warn as Error:
+            Embed = discord.Embed(title="Предупреждение",description=f"{Error.Message} \nСлово : {Error.Word} \nКоличество предупреждений {Error.Warns}/{Error.MaxWarns}",colour=discord.Colour.gold())
             await self.Channel.send(embed=Embed,delete_after=60)
         except BaseException as Error:
             Embed = discord.Embed(title="Ошибка",description=str(Error),colour=discord.Colour.red())
@@ -493,18 +501,20 @@ class MyClient(discord.Client):
         overwrites = before.overwrites
         PermissionsAll = dict()
         Maines = list()
+        
         for overwrite in overwrites:
             try:
                 permissions = overwrite.permissions
             except AttributeError:
                 permissions = overwrite.permissions_in(before)
+                
+                _Permissions = dict()
+                for Permission in permissions:
+                    _Permissions.update({Permission[0]:Permission[1]})
+                PermissionsAll.update({overwrite.id:_Permissions})
     
                 if permissions.manage_channels == True:
-                    _Permissions = dict()
-
-                    for Permission in permissions:
-                        _Permissions.update({Permission[0]:Permission[1]})
-                    PermissionsAll.update({overwrite.id:_Permissions})
+                    
 
                     PlayerName = ""
                     for part in str(overwrite.name).split(" "):
@@ -512,7 +522,6 @@ class MyClient(discord.Client):
                     Maines.append(PlayerName)
         for _PlayerName in Maines:
             Player = C_Player(_PlayerName)
-            print(after.guild.id)
             Player.SaveRoom(after.guild.id,after.name,PermissionsAll)
     
     async def on_raw_reaction_add(self,payload):   
@@ -527,7 +536,6 @@ class MyClient(discord.Client):
         DevelopGabriel = await self.fetch_guild(716945063351156736)
         EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
         Emoji = payload.emoji
-        print(Emoji)
         if Message.id == 713880721709727754:
             if Player == self.user:
                 return

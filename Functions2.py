@@ -81,6 +81,14 @@ class CommandError(Error):
         self.Command = Command
         self.Correct = Correct
 
+class Warn(Error):
+    """ Предупреждение """
+    def __init__(self,Message : str,Word : str,Warns : int,MaxWarns : int):
+        self.Message = Message
+        self.Word = Word
+        self.Warns = Warns
+        self.MaxWarns = MaxWarns
+
 def randomBool(_min : int,_max : int,_need : int):
     """
     Случайное число , в Bool
@@ -1306,7 +1314,73 @@ class Gabriel():
                         Title = str(a.text)
                         Embed.add_field(name=Title,value=Link)
                     return Embed
-        
+
+
+class Guild():
+    def __init__(self,Client,GuildName):
+        self.PATH = f"./Servers/{GuildName}"
+        self.Client = Client
+        self.StandartStats = {
+            "Moderators" : {
+                "Bad Words" : ["gachi"],
+                "Players with Warns" : {},
+                "Max Warns" : 3,
+                "Do" : "Mute Channel"
+            },
+            "Rooms" : {
+                "Save" : [],
+                "General" : []
+            }
+        }
+        self.Main()
+    
+    async def CheckMessage(self):
+        try: 
+            _Warn = int(self.Players[self.Client.Player.Name])
+            _Warn -= 1
+        except: _Warn = self.MaxWarns
+        for Word in self.BadWords:
+            if self.Client.Content.find(Word) >= 0:
+                await self.Client.Message.delete()
+                self.Players.update({self.Client.Player.Name:_Warn})
+                if self.Do == "Mute Channel" and _Warn <= 0:
+                    overwrite = discord.PermissionOverwrite()
+                    overwrite.send_messages = False
+                    await self.Client.Channel.set_permissions(self.Client.Member,overwrite=overwrite)
+                    await self.Client.Channel.send(f"{self.Client.Member.mention}, вы временно не можете отправлять сообщение в этом канале")
+                    _Warn = 1
+                else:
+                    self.SaveStats()
+                    raise Warn(f"{self.Client.Message.author.mention}, не используйте слова, которые запрещенны на сервере",f"~~{Word}~~",_Warn,self.MaxWarns)
+                # self.Client.Membe
+    def SaveStats(self):
+        with codecs.open(f"{self.PATH}/Main.txt","w",encoding="utf-8") as file:
+            file.write(str(self.Stats))
+        self._selfStats()
+
+    def _selfStats(self):
+        self.Moderators = self.Stats['Moderators']
+        self.Rooms = self.Stats['Rooms']
+
+        self.BadWords = self.Moderators['Bad Words']
+        self.Players = self.Moderators['Players with Warns']
+        self.MaxWarns = self.Moderators['Max Warns']
+        self.Do = self.Moderators['Do']
+
+        self.Save = self.Rooms['Save']
+        self.General = self.Rooms['General']
+
+    def Main(self):
+        try: os.makedirs(self.PATH)
+        except: pass
+        try:
+            with codecs.open(f"{self.PATH}/Main.txt","r",encoding="utf-8") as file:
+                self.Stats = StrToDict(str(file.readline()))
+        except:
+            with codecs.open(f"{self.PATH}/Main.txt","w",encoding="utf-8") as file:
+                self.Stats = self.StandartStats
+                file.write(str(self.Stats))
+        self._selfStats()
 
 def _writeInPicture(area,content,font,draw,color):
     """ Рисовать что либо на холсте """
