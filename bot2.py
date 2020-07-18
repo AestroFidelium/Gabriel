@@ -99,15 +99,57 @@ class MyClient(discord.Client):
         self.Gabriel = Gabriel()
         print("работает все да")
    
-    async def Command(self,Player : C_Player,Message : discord.Message,Channel,Guild : discord.Guild,Guild_Function):
+    async def Command(self,message):
         """ Команды """
+
+        Channel = await self.fetch_channel(message.channel.id)
+        Message = await Channel.fetch_message(message.id)
+        
+        try:
+            Guild = await self.fetch_guild(message.channel.guild.id)
+            Guild_Function = C_Guild(self,Guild.name)
+        except:
+            if message.author != self.user:
+                Reference = await self.fetch_channel(623070280973156353)
+                GeneralChannel = await self.fetch_channel(419879599363850253)
+                GameChannel = await self.fetch_channel(629267102070472714)
+                await message.channel.send(f"Добрый день, извините, но я не работаю в личных сообщениях. Если вам нужна помощь то пожалуйста обратитесь за помощью к Гильдии **Боги и Кот**. \n{Reference.mention} : Канал где можно прочитать основную информацию об Гильдии\n{GeneralChannel.mention} : Канал где можно спросить что либо у участников. \n{GameChannel.mention} : Канал где нужно вводить все игровые команды\nУдачного вам дня.")
+            return
+
+        IamMember = await Guild.fetch_member(414150542017953793)
+        IamUser = await self.fetch_user(414150542017953793)
 
         Content = str(Message.content)
 
         Commands = Content.split(" ")
 
-        IamMember = await Guild.fetch_member(414150542017953793)
-        IamUser = await self.fetch_user(414150542017953793)
+        PlayerName = ""
+        for part in str(Message.author.name).split(" "):
+            PlayerName += part
+        
+        PlayerName = PlayerName
+        Player = C_Player(PlayerName)
+
+        if Player.Exp >= Player.Level * 500:
+            Player.LevelUp(C_Player.mode.one)
+
+        Player.Exp += 1
+        Player.Messages += 1
+        if Player.Messages >= 5:
+            Player.Messages = 0
+            Player.Gold += 1
+        Player.Edit(
+            Edit="Main",
+            Exp = Player.Exp,
+            Messages = Player.Messages,
+            Gold = Player.Gold
+            )
+
+        Players = list()
+        Players.clear()
+        for Player in os.listdir(f"{self.PATH_VERSION}/Stats/Main/"):
+            Player = Player.split(".txt")[0]
+            Players.append(Player)
 
         try:
             Member = await Guild.fetch_member(Message.author.id)
@@ -424,61 +466,21 @@ class MyClient(discord.Client):
     
     
     async def on_message(self,message):
-        
-        Channel = await self.fetch_channel(message.channel.id)
-        Message = await Channel.fetch_message(message.id)
-        
-        try:
-            Guild = await self.fetch_guild(message.channel.guild.id)
-            Guild_Function = C_Guild(self,Guild.name)
-        except:
-            if message.author != self.user:
-                Reference = await self.fetch_channel(623070280973156353)
-                GeneralChannel = await self.fetch_channel(419879599363850253)
-                GameChannel = await self.fetch_channel(629267102070472714)
-                await message.channel.send(f"Добрый день, извините, но я не работаю в личных сообщениях. Если вам нужна помощь то пожалуйста обратитесь за помощью к Гильдии **Боги и Кот**. \n{Reference.mention} : Канал где можно прочитать основную информацию об Гильдии\n{GeneralChannel.mention} : Канал где можно спросить что либо у участников. \n{GameChannel.mention} : Канал где нужно вводить все игровые команды\nУдачного вам дня.")
-            return
-        
-        PlayerName = ""
-        for part in str(message.author.name).split(" "):
-            PlayerName += part
-        
-        PlayerName = PlayerName
-        Player = C_Player(PlayerName)
-
-        if Player.Exp >= Player.Level * 500:
-            Player.LevelUp(C_Player.mode.one)
-
-        Player.Exp += 1
-        Player.Messages += 1
-        if Player.Messages >= 5:
-            Player.Messages = 0
-            Player.Gold += 1
-        Player.Edit(
-            Edit="Main",
-            Exp = Player.Exp,
-            Messages = Player.Messages,
-            Gold = Player.Gold
-            )
-
-        Players = list()
-        Players.clear()
-        for Player in os.listdir(f"{self.PATH_VERSION}/Stats/Main/"):
-            Player = Player.split(".txt")[0]
-            Players.append(Player)
-
         try:
             if message.author != self.user:
-                await self.Command(Player,Message,Channel,Guild,Guild_Function)
+                await self.Command(message)
+        except OSError:
+            Embed = discord.Embed(title="Ошибка",description=f"{message.author.mention} , не могу создать аккаунт под ваше имя",colour=discord.Colour.red())
+            await message.Channel.send(embed=Embed,delete_after=60)
         except CommandError as Error:
             Embed = discord.Embed(title="Ошибка",description=f"{Error.Message} \nКоманда : {Error.Command} \nПравильное написание команды : {Error.Correct}",colour=discord.Colour.red())
-            await Channel.send(embed=Embed,delete_after=60)
+            await message.Channel.send(embed=Embed,delete_after=60)
         except Warn as Error:
             Embed = discord.Embed(title="Предупреждение",description=f"{Error.Message} \nСлово : {Error.Word} \nКоличество предупреждений {Error.Warns}/{Error.MaxWarns}",colour=discord.Colour.gold())
-            await Channel.send(embed=Embed,delete_after=60)
+            await message.Channel.send(embed=Embed,delete_after=60)
         except BaseException as Error:
             Embed = discord.Embed(title="Ошибка",description=str(Error),colour=discord.Colour.red())
-            await Channel.send(embed=Embed,delete_after=60)
+            await message.Channel.send(embed=Embed,delete_after=60)
     
 
 
