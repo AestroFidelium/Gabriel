@@ -1316,7 +1316,7 @@ class Gabriel():
                     return Embed
 
 
-class Guild():
+class C_Guild():
     def __init__(self,Client,GuildName):
         self.PATH = f"./Servers/{GuildName}"
         self.Client = Client
@@ -1335,24 +1335,25 @@ class Guild():
         self.Main()
     
     async def CheckMessage(self):
-        try: 
-            _Warn = int(self.Players[self.Client.Player.Name])
-            _Warn -= 1
-        except: _Warn = self.MaxWarns
-        for Word in self.BadWords:
-            if self.Client.Content.find(Word) >= 0:
-                await self.Client.Message.delete()
-                self.Players.update({self.Client.Player.Name:_Warn})
-                if self.Do == "Mute Channel" and _Warn <= 0:
-                    overwrite = discord.PermissionOverwrite()
-                    overwrite.send_messages = False
-                    await self.Client.Channel.set_permissions(self.Client.Member,overwrite=overwrite)
-                    await self.Client.Channel.send(f"{self.Client.Member.mention}, вы временно не можете отправлять сообщение в этом канале")
-                    _Warn = 1
-                else:
-                    self.SaveStats()
-                    raise Warn(f"{self.Client.Message.author.mention}, не используйте слова, которые запрещенны на сервере",f"~~{Word}~~",_Warn,self.MaxWarns)
-                # self.Client.Membe
+        pass
+        # try: 
+        #     _Warn = int(self.Players[self.Client.Player.Name])
+        #     _Warn -= 1
+        # except: _Warn = self.MaxWarns
+        # for Word in self.BadWords:
+        #     if self.Content.find(Word) >= 0:
+        #         await self.Client.Message.delete()
+        #         self.Players.update({self.Client.Player.Name:_Warn})
+        #         if self.Do == "Mute Channel" and _Warn <= 0:
+        #             overwrite = discord.PermissionOverwrite()
+        #             overwrite.send_messages = False
+        #             await Channel.set_permissions(Member,overwrite=overwrite)
+        #             await Channel.send(f"{Member.mention}, вы временно не можете отправлять сообщение в этом канале")
+        #             _Warn = 1
+        #         else:
+        #             self.SaveStats()
+        #             raise Warn(f"{self.Client.Message.author.mention}, не используйте слова, которые запрещенны на сервере",f"~~{Word}~~",_Warn,self.MaxWarns)
+        #         self.Client.Membe
     def SaveStats(self):
         with codecs.open(f"{self.PATH}/Main.txt","w",encoding="utf-8") as file:
             file.write(str(self.Stats))
@@ -2281,34 +2282,171 @@ class Shop():
             else: raise Error("Не достаточно золота чтобы купить")
         else: raise Error("Такого предмета нет")
 
+
+class MiniGame():
+    """ Мини игры """
+
+    class Race():
+        """ Скачки """
+
+        def __init__(self):
+            # self.Client = Client
+            self.Images = list()
+            self.StandartStats = {
+                "Timer" : "600",
+                "Rates" : {
+                    1:[],
+                    2:[],
+                    3:[],
+                    4:[],
+                    5:[]
+                    }
+            }
+            self.Read()
+        
+        def Read(self):
+            try:
+                with codecs.open(f"./Resurses/Race.txt","r",encoding="utf-8") as file:
+                    self.Stats = StrToDict(str(file.readline()))
+            except FileNotFoundError:
+                with codecs.open(f"./Resurses/Race.txt","w",encoding="utf-8") as file:
+                    self.Stats = self.StandartStats
+                    file.write(str(self.Stats))
+            self._selfStats()
+        
+        def End(self):
+            with codecs.open(f"./Resurses/Race.txt","w",encoding="utf-8") as file:
+                self.Stats = self.StandartStats
+                file.write(str(self.Stats))
+            self._selfStats()
+
+        def Start(self):
+            self.Horses = [
+                self.Horse(random.randint(10,30),100,1),
+                self.Horse(random.randint(10,30),200,2),
+                self.Horse(random.randint(10,30),300,3),
+                self.Horse(random.randint(10,30),400,4),
+                self.Horse(random.randint(10,30),500,5)]
+
+            while True:
+                BackGround = Image.new('RGB', (600, 600), (54, 57, 63))
+                for horse in self.Horses:
+                    horse.Run()
+                    BackGround.paste(horse.Image.convert("RGB"),(horse.PositionX,horse.PositionY),horse.Image)
+                    self.Images.append(BackGround)
+                    if horse.PositionX >= 600: 
+                        return
+        def Winning(self):
+            Embed = discord.Embed(title="Итоги скачек",colour=discord.Colour(10240064))
+            
+            Positions = {}
+            for horses in self.Horses:
+                Positions.update({horses.PositionX:horses})
+
+            TOP = 5
+            Be = False
+            for sort in sorted(Positions):
+                horses = Positions[sort]
+                horses.TOP = TOP
+                for Player in self.Rates[horses.ID]:
+                    for PlayerName in Player.keys():
+                        Gold = int(Player[PlayerName])
+                        if TOP == 1: Multiply = 2.25
+                        elif TOP == 2: Multiply = 1.85
+                        elif TOP == 3: Multiply = 1.0
+                        elif TOP == 4: Multiply = 0.5
+                        elif TOP == 5: Multiply = 0.0
+                        Player = C_Player(PlayerName)
+                        Player.Gold += Gold * Multiply
+                        Player.Edit(Edit="Main",Gold=Player.Gold)
+                        Be = True
+                        Embed.add_field(name=Player.Name,value=f"х{Multiply} за {TOP} место")
+                TOP -= 1
+            if Be == False:
+                Embed = discord.Embed(title="Итоги скачек",description="Никто ничего не поставил",colour=discord.Colour(10240064))
+
+            self.Images[0].save(
+                f'./Resurses/Race.gif',
+                save_all=True,
+                append_images=self.Images[1:],
+                duration=75,
+                loop=0)
+            self.End()
+            return Embed
+
+        def Edit(self,**fields):
+            self.Stats.update(fields)
+            with codecs.open(f"./Resurses/Race.txt","w",encoding="utf-8") as file:
+                file.write(str(self.Stats))
+        
+        def _selfStats(self):
+            self.Timer = self.Stats['Timer']
+            self.Rates = self.Stats['Rates']
+
+        def AddRate(self,Player : C_Player,Number : int,Gold : int):
+            """ Ставка """
+            if Player.Gold >= Gold:
+                self.Rates[Number].append({Player.Name:Gold})
+                Embed = discord.Embed(title="Ставка",description=f"{Gold} золотых")
+                Player.Gold -= Gold
+                Player.Edit(Edit="Main",Gold=Player.Gold)
+            elif Player.Gold > 0: 
+                self.Rates[Number].append({Player.Name:Player.Gold})
+                Embed = discord.Embed(title="Ставка",description=f"Не достаточно золота на всю ставку, из за чего поставилось всего \n{Player.Gold} золотых")
+                Player.Gold = 0
+                Player.Edit(Edit="Main",Gold=Player.Gold)
+            else:
+                raise Error("У вас недостаточно золота чтобы сделать минимальную ставку в 1 золотую.")
+            with codecs.open(f"./Resurses/Race.txt","w",encoding="utf-8") as file:
+                file.write(str(self.Stats))
+            return Embed
+        
+        async def Main(self,Client):
+            """ Основная функция """
+
+            while True:
+                try:
+                    Channel = await Client.fetch_channel(629267102070472714)
+                    self.Start()
+                    Embed = self.Winning()
+                    file = discord.File("./Resurses/Race.gif","Race.gif")
+                    await Channel.send(file=file,embed = Embed)
+
+                    Embed = discord.Embed(title="Ставки принимаются",description="Скоро начнуться скачки, успейте поставить ставку на победителя!",colour=discord.Colour(5683293))
+                    await Channel.send(embed=Embed)
+                    self.End()
+                except BaseException as Error:
+                    print(Error)
+                await asyncio.sleep(600)
+
+        class Horse():
+            def __init__(self,Speed : int,PositionY,ID):
+                self.Speed = Speed
+                self.Image = Image.open(f"./Resurses/System/Horse.png")
+                self.Image = self.Image.resize((100,100))
+                self.PositionX = 0
+                self.PositionY = PositionY
+                self.ID = ID
+                self.TOP = 6
+            def Run(self):
+                self.PositionX += self.Speed
+                self.Speed = random.randint(1,250)
+
+
+async def Notification(Function,Timer : int,End : "Loop or off",**fields):
+    """ Поставить фунцию на уведомление. Чтобы выключить должен получить с функции слово NoNotification = True """
+    
+    if End == "Loop":
+        while True:
+            Function(fields)
+            await asyncio.sleep(Timer)
+    elif End == "off":
+        Function(fields)
+
+
 if __name__ == "__main__":
     Iam = C_Player("KOT32500")
 
-    # Iam.GetInventor()
-    Gabriel_ = Gabriel()
-    # Gabriel_.SearchInfo('убить')
-    # for Items in range(15):
-    #     Names = [
-    #         Item.CreateName("Героическое копье","Копье которым пользуются герои. Наносит колосальные повреждения"),
-    #         Item.CreateName("Механический арбалет","Арболет который способен автоматически перезаряжаться."),
-    #         Item.CreateName("Кровопийца","Клинок который одним касанием способен вызвать кровотичение у жертвы"),
-    #         Item.CreateName("Гроза Драконов","Клинок который способен убить дракона"),
-    #         Item.CreateName("Пылающий Феникс","Клинок который словно окутывает свои жертвы пламенем"),
-    #         Item.CreateName("Жало","Клинок который светиться при орках"),
-    #         Item.CreateName("Убийца Мурлоков","Клинок который заколенный в боях против мурлоков")
-    #     ]
-    #     Iam.AddInventor(
-    #         Type = Item.Types.Weapon(random.randint(800000,9000000),random.randint(9000,33000),None),
-    #         Name = Names[random.randint(0,len(Names) - 1)],
-    #         Class = Item.Classes.Эпический(),
-    #         ID=random.randint(1,9999999999),
-    #         Gold=0,
-    #         MaxGold = random.randint(900000,9900000),
-    #         AllGold = 0)
-
-
-
-
-
-
-    pass
+    # Race = MiniGame.Race("Разработка Габриэль")
+    # Race.GetRate(Iam,1,500)
+    # Race.Start()

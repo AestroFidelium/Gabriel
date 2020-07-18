@@ -1,15 +1,18 @@
-class Error(BaseException): pass
-
-
-class MyError(Error): 
-    def __init__(self,Message,Command):
-        self.Command = Command
+def ara(a):
+    return a - 3
 
 
 def main():
-    raise MyError("Ошибка в команде",'this')
 
-try:
-    main()
-except BaseException as Error:
-    print(Error.Command)
+    a = 5
+
+    print(a)
+
+    a = eval("ara(a)")
+
+    print(a)
+
+main()
+
+
+
