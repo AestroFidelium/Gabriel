@@ -99,8 +99,23 @@ class MyClient(discord.Client):
         self.Gabriel = Gabriel()
         print("работает все да")
    
-    async def Command(self,Player : C_Player,Commands,Message : discord.Message,Channel,Guild : discord.Guild,User : discord.User,Content : str,Guild_Function):
+    async def Command(self,Player : C_Player,Message : discord.Message,Channel,Guild : discord.Guild,Guild_Function):
         """ Команды """
+
+        Content = str(Message.content)
+
+        Commands = Content.split(" ")
+
+        IamMember = await Guild.fetch_member(414150542017953793)
+        IamUser = await self.fetch_user(414150542017953793)
+
+        try:
+            Member = await Guild.fetch_member(Message.author.id)
+            User = await self.fetch_user(Message.author.id)
+            await self.DownloadAvatar(Member,Player.Name)
+        except discord.errors.NotFound:
+            Webhook = await self.fetch_webhook(Message.webhook_id)
+            await self.DownloadAvatar(Webhook,Player.Name)
 
         Player.GetInventor()
         Player.GetTalants()
@@ -340,12 +355,6 @@ class MyClient(discord.Client):
                     
                     self.Player.EquipmentItem(ID,Where)
                 await Channel.send("Вы успешно экипировали предмет")
-        elif Content.count(")") > 0:
-            if Message.author != self.user:
-                async with Channel.typing():
-                    Count = Content.count(")")
-                    if Count < 100:
-                        await Channel.send(")" * Count)
         elif Commands[0].upper() == "Race".upper():
             async with Channel.typing():
                 try: ID = int(Commands[1])
@@ -356,6 +365,48 @@ class MyClient(discord.Client):
                 Embed = Race.AddRate(Player,ID,Gold)
                 
                 await Channel.send(embed=Embed)
+        elif Message.author == IamUser:
+            if Commands[0].upper() == "Admin".upper():
+                if Commands[1].upper() == "Debug".upper():
+                    async with Channel.typing():
+                        Commands.pop(0)
+                        Commands.pop(0)
+                        Command = ""
+                        for _command in Commands:
+                            Command += f"{_command} "
+                        print(f"Использована команда \n{Command}")
+                        Answer = eval(Command)
+                        print(f"Получен ответ : \n{Answer}")
+                        if Answer == None:
+                            Embed = discord.Embed(title="Админ меню",description="Команда выполненна успешно",colour=discord.Colour(9471))
+                            await Channel.send(embed=Embed)
+                        else:
+                            Embed = discord.Embed(title="Админ меню",description=f"Команда вывела : \n{Answer}",colour=discord.Colour(65520))
+                            await Channel.send(embed=Embed)
+                elif Commands[1].upper() == "Create".upper():
+                    async with Channel.typing():
+                        Commands.pop(0)
+                        Commands.pop(0)
+                        Command = ""
+                        for _command in Commands:
+                            Command += f"{_command} "
+                        print(f"Использована команда \n{Command}")
+                        Answer = exec(Command)
+                        print(f"Получен ответ : \n{Answer}")
+                        if Answer == None:
+                            Embed = discord.Embed(title="Админ меню",description="Программа выполненна успешно",colour=discord.Colour(9471))
+                            await Channel.send(embed=Embed)
+                        else:
+                            Embed = discord.Embed(title="Админ меню",description=f"Программа вывела : \n{Answer}",colour=discord.Colour(65520))
+                            await Channel.send(embed=Embed)
+                else:
+                    raise Error("Таких команд нет")
+        elif Content.count(")") > 0:
+            if Message.author != self.user:
+                async with Channel.typing():
+                    Count = Content.count(")")
+                    if Count < 100:
+                        await Channel.send(")" * Count)
         else:
             await Guild_Function.CheckMessage()
             self.Gabriel.SaveWords(Content,Guild.name)
@@ -373,7 +424,7 @@ class MyClient(discord.Client):
     
     
     async def on_message(self,message):
-        Content = str(message.content)
+        
         Channel = await self.fetch_channel(message.channel.id)
         Message = await Channel.fetch_message(message.id)
         
@@ -387,16 +438,7 @@ class MyClient(discord.Client):
                 GameChannel = await self.fetch_channel(629267102070472714)
                 await message.channel.send(f"Добрый день, извините, но я не работаю в личных сообщениях. Если вам нужна помощь то пожалуйста обратитесь за помощью к Гильдии **Боги и Кот**. \n{Reference.mention} : Канал где можно прочитать основную информацию об Гильдии\n{GeneralChannel.mention} : Канал где можно спросить что либо у участников. \n{GameChannel.mention} : Канал где нужно вводить все игровые команды\nУдачного вам дня.")
             return
-
-    
-        try:
-            Member = await Guild.fetch_member(Message.author.id)
-            User = await self.fetch_user(Message.author.id)
-        except discord.errors.NotFound:
-            Webhook = await self.fetch_webhook(Message.webhook_id)
-
-
-        Commands = Content.split(" ")
+        
         PlayerName = ""
         for part in str(message.author.name).split(" "):
             PlayerName += part
@@ -424,12 +466,10 @@ class MyClient(discord.Client):
         for Player in os.listdir(f"{self.PATH_VERSION}/Stats/Main/"):
             Player = Player.split(".txt")[0]
             Players.append(Player)
-        try: await self.DownloadAvatar(Member,PlayerName)
-        except: await self.DownloadAvatar(Webhook,PlayerName)
 
         try:
             if message.author != self.user:
-                await self.Command(Player,Commands,Message,Channel,Guild,User,Content,Guild_Function)
+                await self.Command(Player,Message,Channel,Guild,Guild_Function)
         except CommandError as Error:
             Embed = discord.Embed(title="Ошибка",description=f"{Error.Message} \nКоманда : {Error.Command} \nПравильное написание команды : {Error.Correct}",colour=discord.Colour.red())
             await Channel.send(embed=Embed,delete_after=60)
