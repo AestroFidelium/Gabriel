@@ -16,7 +16,7 @@ import requests
 import json
 import time
 import ast
-
+from bs4 import BeautifulSoup
 class CheckMessage():
     """
     Проверяет сообщение на указанные слова
@@ -50,6 +50,18 @@ class CheckMessage():
                         count = 0
                 except IndexError:
                     pass
+
+def GetFromMessage(message : str,Znak : str):
+    """ Получить выбранный объект в знаках 
+        `Пример сообщения` : `Talant "Max Bonus"`
+        
+        `Команда` : `GetFromMessage('Talant "Max Bonus"','"')`
+        `Возврат` : `Max Bonus` : `str`
+    """
+
+    message = message[message.find(Znak) + 1::]
+    message = message[:message.find(Znak):]
+    return message
 
 def StrToDict(_str):
     """
@@ -112,21 +124,21 @@ def ReplaceNumber(Number : int):
         1 000 000 000 000 000 000 = 1E
         1 000 000 000 000 000 000 000 = 1Z
         1 000 000 000 000 000 000 000 000 = 1Y
-        ----------------------
-        -100 000 = -100К
-        -1 000 000 = -1М
-        -1 000 000 000 = -1B
-        -1 000 000 000 000 = -1T
-        -1 000 000 000 000 000 = -1P
-        -1 000 000 000 000 000 000 = -1E
-        -1 000 000 000 000 000 000 000 = -1Z
-        -1 000 000 000 000 000 000 000 000 = -1Y
+        1 000 000 000 000 000 000 000 000 000 = 1Y2
     """
     Minus = False
     if Number < 0:
         Minus = True
         Number *= -1
-    if Number >= 1000000000000000000000000:
+    if Number >= 1000000000000000000000000000:
+        Count = str(Number)[26::].count("0")
+        Count = round(Count / 3)
+        Count += 1
+        Number = f"{str(Number)[:1:]}YY"
+        Number = f"{Number}{Count}"
+        if Minus == True:
+            Number = f"-{Number}"
+    elif Number >= 1000000000000000000000000:
         NumberSplit = Number / 1000000000000000000000000
         Number = int(NumberSplit)
         if Minus == True:
@@ -491,6 +503,7 @@ class C_Player():
                 "About me" : None
             }
         }
+        self.NewAccount = False
         try:
             with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","r",encoding="utf-8") as file:
                 self.Stats = StrToDict(file.readline())
@@ -498,12 +511,17 @@ class C_Player():
             with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","w",encoding="utf-8") as file:
                 file.write(str(self.StartStats))
                 self.Stats = self.StartStats
+                self.NewAccount = True
+
         self._selfStats()
+        if self.NewAccount == True: self.NewAcc()
+    
     def Read(self):
         """ Прочитать информацию снова """
         with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","r",encoding="utf-8") as file:
             self.Stats = StrToDict(file.readline())
         self._selfStats()
+    
     def _selfStats(self):
         self.Stats_main = self.Stats["Main"]
         self.Stats_Room = self.Stats["Room"]
@@ -552,6 +570,62 @@ class C_Player():
         self.BonusDay = self.Stats_Everydaybonus["Day"]
 
         if int(self.Gold) < 0: self.Gold = 0
+    
+    def NewAcc(self):
+        self.AddInventor(
+            Type=Item.Types.Weapon(random.randint(100,3000),random.randint(500,700),Magic=None),
+            Name = Item.CreateName(f"Персональный клинок ({self.Name})",f"Клинок который был создан специально для {self.Name}"),
+            Class = Item.Classes.Первоначальный(),
+            ID = random.randint(1,999999999),
+            Gold = 0,
+            MaxGold = random.randint(300,400),
+            AllGold = 0
+            )
+        self.AddInventor(
+            Type=Item.Types.Weapon(random.randint(100,3000),random.randint(500,700),Magic=None),
+            Name = Item.CreateName(f"Персональный клинок ({self.Name})",f"Клинок который был создан специально для {self.Name}"),
+            Class = Item.Classes.Первоначальный(),
+            ID = random.randint(1,999999999),
+            Gold = 0,
+            MaxGold = random.randint(300,400),
+            AllGold = 0
+            )
+        self.AddInventor(
+            Type=Item.Types.Equipment(random.randint(35,250),random.randint(500,700),Where="Head",Magic=None),
+            Name = Item.CreateName(f"Персональный шлем ({self.Name})",f"Шлем который был создан специально для {self.Name}"),
+            Class = Item.Classes.Первоначальный(),
+            ID = random.randint(1,999999999),
+            Gold = 0,
+            MaxGold = random.randint(300,400),
+            AllGold = 0
+            )
+        self.AddInventor(
+            Type=Item.Types.Equipment(random.randint(35,300),random.randint(500,700),Where="Body",Magic=None),
+            Name = Item.CreateName(f"Персональная кираса ({self.Name})",f"Кираса которая была создана специально для {self.Name}"),
+            Class = Item.Classes.Первоначальный(),
+            ID = random.randint(1,999999999),
+            Gold = 0,
+            MaxGold = random.randint(300,400),
+            AllGold = 0
+            )
+        self.AddInventor(
+            Type=Item.Types.Equipment(random.randint(35,300),random.randint(500,700),Where="Legs",Magic=None),
+            Name = Item.CreateName(f"Персональные поножи ({self.Name})",f"Поножи которые были созданы специально для {self.Name}"),
+            Class = Item.Classes.Первоначальный(),
+            ID = random.randint(1,999999999),
+            Gold = 0,
+            MaxGold = random.randint(300,400),
+            AllGold = 0
+            )
+        self.AddInventor(
+            Type=Item.Types.Equipment(random.randint(35,200),random.randint(500,700),Where="Boot",Magic=None),
+            Name = Item.CreateName(f"Персональные ботинки ({self.Name})",f"Ботинки которые были созданы специально для {self.Name}"),
+            Class = Item.Classes.Первоначальный(),
+            ID = random.randint(1,999999999),
+            Gold = 0,
+            MaxGold = random.randint(300,400),
+            AllGold = 0
+            )
         
     def GetTalants(self):
         """Получить таланты. Использовать всего 1 раз"""
@@ -715,7 +789,12 @@ class C_Player():
         """ Получить статистику о таланте. """
 
         return Talant(self,self.Talants[TalantName],TalantName)
-    
+    def PickTalant(self,TalantName):
+        try:
+            self.Talants[TalantName]
+            self.Edit(TalantPicked=TalantName)
+        except:
+            raise Error("Такого таланта не существует")
     def LevelUp(self,mode,**fields):
         """ Получить уровень. 
         Моды : (mode)
@@ -841,7 +920,7 @@ class C_Player():
         _writeInPicture((550,276),f"Здоровье : {Health} ед./ {MaxHealth} ({Protect})",font,draw,"black")
 
         font = ImageFont.truetype("arial.ttf",35)
-        Damage = ReplaceNumber(self.Damage)
+        Damage = ReplaceNumber(self.MaxDamage())
         _writeInPicture((550,328),f"Урон : {Damage}",font,draw,"black")
 
         font = ImageFont.truetype("arial.ttf",35)
@@ -903,7 +982,7 @@ class C_Player():
             self.GetEquipmented.append(item)
     def Attack(self,Target):
         """Атаковать указанную цель"""
-        GetDamage = self.MaxDamage()
+        GetDamage = random.randint(1,self.MaxDamage())
         Target.Health -= GetDamage
         if Target.Health <= 0:
             Count = int(Target.Level / 5)
@@ -929,12 +1008,14 @@ class C_Player():
     def MaxDamage(self):
         """ Урон который наносит герой. """
 
-        GetDamage = random.randint(1,self.Damage + self.Left_hand.Damage + self.Right_hand.Damage)
-
+        GetDamage = 1 + self.Damage + self.Left_hand.Damage + self.Right_hand.Damage
+        
         MoreDamage = self.GetTalant("More Damage")
         GetDamage += (5 * MoreDamage.Level) / 100
 
         GetDamage *= self.Strength
+
+        GetDamage = round(GetDamage)
 
         return GetDamage
     def MaxProtect(self):
@@ -1159,99 +1240,124 @@ class Gabriel():
     """ Габриэль """
 
     def __init__(self):
-        pass
-    class TooManyWords(Error): pass
-    def Message(self,CountMessages : int,ServerName : str):
+        self.Standart = {
+            "Words" : []
+        }
+
+    class _Message():
+        def __init__(self,Content : dict):
+            self.Main = Content
+            for key in Content.keys():
+                self.Author = str(key)
+            self.Content = str(Content[self.Author])
+            
+
+    def Message(self,CountMessages : int,ServerName : str,Mode : "Usual or D / B"):
         """ Сообщение """
-
-        Lines = []
-        with codecs.open(f"./Servers/{ServerName}/Words.txt","r",encoding='utf-8', errors='ignore') as file:
-            for line in file.readlines():
-                Cannot = [' ','','\n']
-                if line not in Cannot:
-                    CheckMessage_ = CheckMessage(line,"https://")
-                    if CheckMessage_.Start() == None:
-                        Lines.append(str(line))
-        Message = ""
-        Count = 0
-        BadWords = [
-            '\n'
-        ]
-        BadSymvol = ["""""", "\n"]
-        while Count < CountMessages:
+        ReturnMessage = ""
+        self.GetMessages(ServerName)
+        if CountMessages == 0: CountMessages = 1
+        if Mode == "Usual":
+            while CountMessages > 0:
+                message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                for content in message.Content.split(" "):
+                    if CountMessages <= 0:
+                        return ReturnMessage
+                    if random.randint(0,1) == 1:
+                        ReturnMessage += f"{content} "
+                        CountMessages -= 1
+                    elif random.randint(0,1) == 1:
+                        message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                        for content in message.Content.split(" "):
+                            if CountMessages <= 0:
+                                return ReturnMessage
+                            if random.randint(0,1) == 1:
+                                ReturnMessage += f"{content} "
+                                CountMessages -= 1
+            return ReturnMessage
+        elif Mode == "D":
             try:
-                RandomLine = random.randint(1,len(Lines) - 2)
-                MainLine = list()
-                Words = Lines.pop(RandomLine)
-                MainLine.append(Words.split(" "))
-                for word in MainLine[0]:
-                    Write = randomBool(0,3,1)
-                    if Write == False:
-                        URL = CheckMessage(word,"https://")
-                        URL = URL.Start()
-                        if URL == None:
-                            if word not in BadWords:
-                                try:
-                                    word = word.split("\n")[0]
-                                except: pass
-                                WordSplit = list(); WordSplit.extend(word)
-                                for wordSplit in WordSplit: 
-                                    if wordSplit != ")":
-                                        if str(wordSplit) not in BadSymvol:
-                                            Message += wordSplit
-                                Message += f" "
+                Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                Count = 0
+                for content in Message.Content.split(" "):
+                    if random.randint(0,3) != 1 or Count == 0:
+                        ReturnMessage += f"{content} "
+                        Count += 1
+                    elif random.randint(0,3) != 1:
+                        Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                        for content in Message.Content.split(" "):
+                            if random.randint(0,2) != 1:
+                                ReturnMessage += f"{content} "
                                 Count += 1
-                                if Count >= CountMessages:
-                                    return Message
-                    WriteOtherLine = randomBool(0,2,1)
-                    if WriteOtherLine == True:
-                        RandomLine = random.randint(1,len(Lines) - 2)
-                        OtherLine = list()
-                        Words = Lines.pop(RandomLine)
-                        OtherLine.append(Words.split(" "))
-                        for word2 in OtherLine[0]:
-                            Write = randomBool(0,3,1)
-                            if Write == True:
-                                URL = CheckMessage(word,"https://")
-                                URL = URL.Start()
-                                if URL == None:
-                                    if word2 not in BadWords:
-                                        try:
-                                            word2 = word2.split("\n")[0]
-                                        except: pass
-                                        WordSplit = list(); WordSplit.extend(word2)
-                                        for wordSplit in WordSplit: 
-                                            if wordSplit != ")":
-                                                if str(wordSplit) not in BadSymvol:
-                                                    Message += wordSplit
-                                        Message += f" "
+                ReturnMessage = ReturnMessage[:random.randint(100,300):]
+                for replic in range(random.randint(3,7)):
+                    while Count >= 0:
+                        Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                        ReturnMessage += f"\n{Message.Author}: "
+                        Count = 0
+                        for content in Message.Content.split(" "):
+                            if random.randint(0,1) == 1 or Count == 0:
+                                ReturnMessage += f"{content} "
+                                Count += 1
+                            elif random.randint(0,1) == 1:
+                                Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                                for content in Message.Content.split(" "):
+                                    if random.randint(0,1) == 1:
+                                        ReturnMessage += f"{content} "
                                         Count += 1
-                                        if Count >= CountMessages:
-                                            return Message
-            except ValueError:
-                raise self.TooManyWords("Слишком мало слов я знаю")
-    def ReadWords(self,Server : str):
-        """ Прочитать все сохраненные слова """
-
-        AllWords = str()
-        with codecs.open(f"./Servers/{Server}/Words.txt","r"
-        ,encoding='utf-8', errors='ignore') as file:
+            except ValueError: return ReturnMessage
+            return ReturnMessage
+        elif Mode == "B":
             try:
-                for line in file.readlines():
-                    AllWords += line
-            except:
-                pass
-        return AllWords
-    def SaveWords(self,msg : str,Server : str):
-        """Сохранить слова"""
-        Oldmsg = self.ReadWords(Server)
-        with codecs.open(f"./Servers/{Server}/Words.txt","w"
-        ,encoding='utf-8', errors='ignore') as file:
-            msgSplitLines = msg.split("\n")
-            file.write(f"{Oldmsg}")
-            for line in msgSplitLines:
-                file.writelines(f"\n{line}")
+                for replic in range(CountMessages):
+                    Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                    Count = 0
+                    for content in Message.Content.split(" "):
+                        if random.randint(0,1) == 1 or Count == 0:
+                            ReturnMessage += f"{content} "
+                            Count += 1
+                        elif random.randint(0,3) != 1:
+                            Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                            PreCount = 0
+                            for content in Message.Content.split(" "):
+                                if random.randint(0,3) != 1 or PreCount == 0:
+                                    ReturnMessage += f"{content} "
+                                    Count += 1
+                                    PreCount += 1
+                    ReturnMessage += "\n@\n"
+            except ValueError: return ReturnMessage[:len(ReturnMessage) - 3:]
 
+            return ReturnMessage[:len(ReturnMessage) - 3:]
+    
+    
+    def Save(self,Content : str,Who : str,Server : str):
+        """ Сохранить слова """
+        self.Read(Server)
+        if Content.find("https://") == -1:
+            appen = {Who:Content}
+            if appen not in self.Words:
+                self.Words.append(appen)
+                self.Stats.update({"Words":self.Words})
+                with codecs.open(f"./Servers/{Server}/Words.txt","w",encoding='utf-8') as file:
+                    file.write(str(self.Stats))
+    
+    def Read(self,Server : str):
+        """ Прочитать слова """
+        
+        try:
+            with codecs.open(f"./Servers/{Server}/Words.txt","r",encoding='utf-8') as file:
+                self.Stats = StrToDict(str(file.readline()))
+                self.Words = self.Stats["Words"]
+        except:
+            with codecs.open(f"./Servers/{Server}/Words.txt","w",encoding='utf-8') as file:
+                self.Stats = self.Standart
+                self.Words = self.Stats["Words"]
+                file.write(str(self.Stats))
+    def GetMessages(self,Server : str):
+        self.Read(Server)
+        self.GotMessages = list()
+        for Word in self.Words:
+            self.GotMessages.append(self._Message(Word))
     def SearchInfo(self,GetRequest : str):
         Request = "https://ru.wikipedia.org/wiki/"
         Search = "https://ru.wikipedia.org/w/index.php?search="
@@ -1677,6 +1783,7 @@ class Boss():
         )
         if self.Status == "Life":
             Damage -= self.Armor
+            if Damage < 0: Damage = 1
             self.Health -= Damage
             if self.Health <= 0:
                 self.Status = "Dead"
@@ -2090,10 +2197,16 @@ class Boss():
             name="Получено золотых",
             value=Gold,
             inline=False)
-        Embed.add_field(
-            name="Предмет",
-            value=self.GetItem['Name']['Name'],
-            inline=False)
+        try:
+            Embed.add_field(
+                name="Предмет",
+                value=self.GetItem['Name']['Name'],
+                inline=False)
+        except:
+            Embed.add_field(
+                name="Предмет",
+                value="Босс не убит",
+                inline=False)
         return self.Status, Embed
     async def Respawn(self):
         """ Респавнить босса """
@@ -2273,6 +2386,9 @@ class Shop():
             Cost = 300 * Count
             if int(Player.Gold) >= int(Cost):
                 Player.Gold -= Cost
+                Player.Edit(
+                    Edit="Main",
+                    Gold=Player.Gold)
                 Player.LevelUp(Player.mode.multiply,count=Count)
                 Gold = ReplaceNumber(Player.Gold)
                 CostReplace = ReplaceNumber(Cost)
@@ -2362,8 +2478,6 @@ class MiniGame():
                         Be = True
                         Embed.add_field(name=Player.Name,value=f"х{Multiply} за {TOP} место")
                 TOP -= 1
-            if Be == False:
-                Embed = discord.Embed(title="Итоги скачек",description="Никто ничего не поставил",colour=discord.Colour(10240064))
 
             self.Images[0].save(
                 f'./Resurses/Race.gif',
@@ -2372,6 +2486,8 @@ class MiniGame():
                 duration=75,
                 loop=0)
             self.End()
+            if Be == False:
+                return "Nothing"
             return Embed
 
         def Edit(self,**fields):
@@ -2409,12 +2525,13 @@ class MiniGame():
                     Channel = await Client.fetch_channel(629267102070472714)
                     self.Start()
                     Embed = self.Winning()
-                    file = discord.File("./Resurses/Race.gif","Race.gif")
-                    await Channel.send(file=file,embed = Embed)
+                    if isinstance(Embed,str) == False:
+                        file = discord.File("./Resurses/Race.gif","Race.gif")
+                        await Channel.send(file=file,embed = Embed)
 
-                    Embed = discord.Embed(title="Ставки принимаются",description="Скоро начнуться скачки, успейте поставить ставку на победителя!",colour=discord.Colour(5683293))
-                    await Channel.send(embed=Embed)
-                    self.End()
+                        Embed = discord.Embed(title="Ставки принимаются",description="Скоро начнуться скачки, успейте поставить ставку на победителя!",colour=discord.Colour(5683293))
+                        await Channel.send(embed=Embed)
+                        self.End()
                 except BaseException as Error:
                     print(Error)
                 await asyncio.sleep(600)
@@ -2445,8 +2562,11 @@ async def Notification(Function,Timer : int,End : "Loop or off",**fields):
 
 
 if __name__ == "__main__":
+    Players = os.listdir("./Stats/")
+    for Player in Players:
+        if Player != "Main" and Player != "Boss":
+            Player = Player.split(".txt")[0]
+            Player = C_Player(Player)
+            Player.NewAcc()
     Iam = C_Player("KOT32500")
-
-    # Race = MiniGame.Race("Разработка Габриэль")
-    # Race.GetRate(Iam,1,500)
-    # Race.Start()
+    
