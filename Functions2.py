@@ -984,6 +984,37 @@ class C_Player():
         """Атаковать указанную цель"""
         GetDamage = random.randint(1,self.MaxDamage())
         Target.Health -= GetDamage
+        
+        try:
+            self.Left_hand.ArmorEdit(self.Left_hand.Armor - 1)
+            self.RewriteItem(self.Left_hand)
+            self.EquipmentItem(self.Left_hand.ID,"Left_hand")
+        except: pass
+        try:
+            self.Right_hand.ArmorEdit(self.Right_hand.Armor - 1)
+            self.RewriteItem(self.Right_hand)
+            self.EquipmentItem(self.Right_hand.ID,"Right_hand")
+        except: pass
+        try:
+            Target.Head.ArmorEdit(self.Head.Armor - 1)
+            Target.RewriteItem(self.Head)
+            Target.EquipmentItem(self.Head.ID,self.Head.Where)
+        except: pass
+        try:
+            Target.Body.ArmorEdit(self.Body.Armor - 1)
+            Target.RewriteItem(self.Body)
+            Target.EquipmentItem(self.Body.ID,self.Body.Where)
+        except: pass
+        try:
+            Target.Legs.ArmorEdit(self.Legs.Armor - 1)
+            Target.RewriteItem(self.Legs)
+            Target.EquipmentItem(self.Legs.ID,self.Legs.Where)
+        except: pass
+        try:
+            Target.Boot.ArmorEdit(self.Boot.Armor - 1)
+            Target.RewriteItem(self.Boot)
+            Target.EquipmentItem(self.Boot.ID,self.Boot.Where)
+        except: pass
         if Target.Health <= 0:
             Count = int(Target.Level / 5)
             LostStatus = Target.LostLevel(Count)
@@ -1005,6 +1036,20 @@ class C_Player():
         for item in self.GetInventored:
             if item.ID == self.Left_hand.ID:
                 self.EquipmentItem(self.Left_hand.ID,Where)
+    def RewriteItem(self,_Item):
+        try:
+            self.RemoveInventor(_Item.ID)
+            self.AddInventor(
+                Type=_Item.Type,
+                Name=Item.CreateName(_Item.Name,_Item.Description),
+                Class=_Item.Class,
+                ID=_Item.ID,
+                Gold=_Item.Gold,
+                MaxGold=_Item.MaxGold,
+                AllGold=_Item.AllGold,
+                Magic=_Item.Magic
+                )
+        except: raise Error("Нет предмета")
     def MaxDamage(self):
         """ Урон который наносит герой. """
 
@@ -1062,12 +1107,12 @@ class Item():
         
         try: self.AllGold = int(self.Stats["AllGold"])
         except: self.AllGold = 0
-
+        self.TypeKey = "None"
         try:
             self.Type = self.Stats["Type"]
 
             Keys = self.Type.keys()
-            self.TypeKey = "None"
+            
             for key in Keys:
                 self.TypeKey = key
                 if key == "Weapon":
@@ -1088,7 +1133,12 @@ class Item():
                     self.Where = "Ring_"
         except TypeError:
             pass
-    
+    def ArmorEdit(self,Armor : int):
+        if self.TypeKey == "Weapon":
+            self.Type = Item.Types.Weapon(self.Damage,Armor,self.Magic)
+        elif self.TypeKey == "Equipment":
+            self.Type = Item.Types.Equipment(self.Protect,Armor,self.Magic)
+        self.Armor = Armor
     def Upgrade(self,Gold):
         self.Player.Gold -= Gold
         if self.Player.Gold < 0: 
@@ -1249,8 +1299,7 @@ class Gabriel():
             self.Main = Content
             for key in Content.keys():
                 self.Author = str(key)
-            self.Content = str(Content[self.Author])
-            
+            self.Content = str(Content[self.Author]) 
 
     def Message(self,CountMessages : int,ServerName : str,Mode : "Usual or D / B"):
         """ Сообщение """
@@ -1277,34 +1326,76 @@ class Gabriel():
             return ReturnMessage
         elif Mode == "D":
             try:
-                Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
-                Count = 0
-                for content in Message.Content.split(" "):
-                    if random.randint(0,3) != 1 or Count == 0:
-                        ReturnMessage += f"{content} "
-                        Count += 1
-                    elif random.randint(0,3) != 1:
+                Title = ""
+                while len(Title) <= random.randint(10,30):
+                    Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                    _count = 0
+                    
+                    for content in Message.Content.split(" "):
+                        if random.randint(0,3) != 1 or _count < 3:
+                            if content != "" and content != " ":
+                                Title += f"{content} "
+                                _count += 1
+                                _preCount = 0
+                                if random.randint(0,3) != 1:
+                                    Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                                    for content in Message.Content.split(" "):
+                                        if random.randint(0,3) != 1 or _preCount < 3:
+                                            if content != "" and content != " ":
+                                                Title += f"{content} "
+                                                _preCount += 1
+                BadLetter = [")","$","%","^","&","*",";",'"',"'"]
+                for replace in BadLetter: Title = Title.replace(replace,"")
+                ReturnMessage += Title.capitalize()
+                
+                # Поиск участников диалога
+
+                Players = list()
+                _count = 100
+                while len(Players) < random.randint(2,5):
+                    Message = self.GotMessages[random.randint(0,len(self.GotMessages) - 1)]
+                    author = Message.Author
+                    if len(author) >= 10: 
+                        author = author[:10:]
+                        author += "…"
+                    if author not in Players:
+                        Players.append(author)
+                    _count -= 1
+                    if _count <= 0: break
+                OldSay = None
+                NowSay = None
+                for rng in range(CountMessages):
+                    while OldSay == NowSay:
+                        NowSay = Players[random.randint(0,len(Players) - 1)]
+                    ReturnMessage += f"\n• {NowSay}: "
+                    _count = 0
+                    Content = ""
+                    while len(Content) <= random.randint(10,30):
                         Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
                         for content in Message.Content.split(" "):
-                            if random.randint(0,2) != 1:
-                                ReturnMessage += f"{content} "
-                                Count += 1
-                ReturnMessage = ReturnMessage[:random.randint(100,300):]
-                for replic in range(random.randint(3,7)):
-                    while Count >= 0:
-                        Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
-                        ReturnMessage += f"\n{Message.Author}: "
-                        Count = 0
-                        for content in Message.Content.split(" "):
-                            if random.randint(0,1) == 1 or Count == 0:
-                                ReturnMessage += f"{content} "
-                                Count += 1
-                            elif random.randint(0,1) == 1:
-                                Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
-                                for content in Message.Content.split(" "):
-                                    if random.randint(0,1) == 1:
-                                        ReturnMessage += f"{content} "
-                                        Count += 1
+                            if random.randint(0,3) != 1 or _count < 3:
+                                if content != "" and content != " ":
+                                    Content += f"{content} "
+                                    _count += 1
+                                    _preCount = 0
+                                    if random.randint(0,3) != 1:
+                                        Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                                        for content in Message.Content.split(" "):
+                                            if random.randint(0,3) != 1 or _preCount < 3:
+                                                if content != "" and content != " ":
+                                                    Content += f"{content} "
+                                                    _preCount += 1
+                    for replace in BadLetter: Content = Content.replace(replace,"")
+                    ReturnMessage += Content.capitalize()
+                    OldSay = NowSay
+
+
+
+
+
+
+
+                
             except ValueError: return ReturnMessage
             return ReturnMessage
         elif Mode == "B":
@@ -1329,7 +1420,22 @@ class Gabriel():
 
             return ReturnMessage[:len(ReturnMessage) - 3:]
     
-    
+    def Delete(self,Count : int,Server : str):
+        self.Read(Server)
+        try:
+            for rng in range(Count):
+                self.Words.remove(self.Words[-1])
+            self.Stats.update({"Words":self.Words})
+            with codecs.open(f"./Servers/{Server}/Words.txt","w",encoding='utf-8') as file:
+                file.write(str(self.Stats))
+            return discord.Embed(title="Амнезия",description=f"Габриэль забыла последние ({Count}) строчки")
+        except:
+            self.Stats.update({"Words":self.Words})
+            with codecs.open(f"./Servers/{Server}/Words.txt","w",encoding='utf-8') as file:
+                file.write(str(self.Stats))
+            return discord.Embed(title="Амнезия",description=f"Габриэль забыла все сохраненные строчки в Гильдии: **{Server}**")
+
+
     def Save(self,Content : str,Who : str,Server : str):
         """ Сохранить слова """
         self.Read(Server)
@@ -1421,9 +1527,8 @@ class Gabriel():
                         Embed.add_field(name=Title,value=Link)
                     return Embed
 
-
 class C_Guild():
-    def __init__(self,Client,GuildName):
+    def __init__(self,Client,GuildName : str):
         self.PATH = f"./Servers/{GuildName}"
         self.Client = Client
         self.StandartStats = {
@@ -1431,7 +1536,7 @@ class C_Guild():
                 "Bad Words" : ["gachi"],
                 "Players with Warns" : {},
                 "Max Warns" : 3,
-                "Do" : "Mute Channel"
+                "Do" : "Say without the words"
             },
             "Rooms" : {
                 "Save" : [],
@@ -1440,26 +1545,35 @@ class C_Guild():
         }
         self.Main()
     
-    async def CheckMessage(self):
-        pass
-        # try: 
-        #     _Warn = int(self.Players[self.Client.Player.Name])
-        #     _Warn -= 1
-        # except: _Warn = self.MaxWarns
-        # for Word in self.BadWords:
-        #     if self.Content.find(Word) >= 0:
-        #         await self.Client.Message.delete()
-        #         self.Players.update({self.Client.Player.Name:_Warn})
-        #         if self.Do == "Mute Channel" and _Warn <= 0:
-        #             overwrite = discord.PermissionOverwrite()
-        #             overwrite.send_messages = False
-        #             await Channel.set_permissions(Member,overwrite=overwrite)
-        #             await Channel.send(f"{Member.mention}, вы временно не можете отправлять сообщение в этом канале")
-        #             _Warn = 1
-        #         else:
-        #             self.SaveStats()
-        #             raise Warn(f"{self.Client.Message.author.mention}, не используйте слова, которые запрещенны на сервере",f"~~{Word}~~",_Warn,self.MaxWarns)
-        #         self.Client.Membe
+    async def CheckMessage(self,Message : discord.Message,Content : str):
+        Be = False
+        for words in self.BadWords:
+            if Content.upper().find(words.upper()) >= 0:
+                Content = Content.replace(words,"░" * int(len(words) / 1.5))
+                Be = True
+        if Be == True:
+            WebhookThisChannel = await Message.channel.webhooks()
+            WebhookThisChannel = WebhookThisChannel[0]
+
+            await WebhookThisChannel.send(
+                content = Content,
+                username = Message.author.name,
+                avatar_url = Message.author.avatar_url)
+            await Message.delete()
+    def AddWord(self,Word):
+        self.BadWords.append(Word)
+        self.Moderators.update({"Bad Words":self.BadWords})
+        self.Stats.update({"Moderators":self.Moderators})
+        self.SaveStats()
+    def RemoveWord(self,Word):
+        try:
+            self.BadWords.remove(Word)
+            self.Moderators.update({"Bad Words":self.BadWords})
+            self.Stats.update({"Moderators":self.Moderators})
+            self.SaveStats()
+        except:
+            raise Error("Это слово и не шифровалось")
+
     def SaveStats(self):
         with codecs.open(f"{self.PATH}/Main.txt","w",encoding="utf-8") as file:
             file.write(str(self.Stats))
@@ -2265,53 +2379,58 @@ class Talant():
                 MaxHealth = self.Player.MaxHealth + 320,
                 Exp = self.Player.Exp + 100)
     
+    def Edit(self,Talant_):
+        self.MainName = Talant_.MainName
+        self.Name = Talant_.Name
+        self.Description = Talant_.Description
+        self.PerLevel = Talant_.PerLevel
+
+        self.Level = Talant_.Level
+        self.MaxLevel = Talant_. MaxLevel
+
+        self.Exp = Talant_.Exp
+        self.NeedExp = Talant_.NeedExp
+
+        if self.Level >= Talant_.MaxLevel:
+            self.Ready = True
+        else:
+            self.Ready = False
+
+
+        self.Lock = Talant_.Lock
+
+        self.NeedAt = Talant_.NeedAt
+    
     async def Update(self):
         while True:
-            self.Player.Read()
-            if self.Lock == 0:
-                self.Exp += 60 + round(self.Player.Intelligence)
-                if self.MainName != self.Player.TalantPicked: break
-                if self.Exp >= self.NeedExp:
-                    self.Exp -= self.NeedExp
+            try:
+                self.Player.Read()
+                self.Edit(self.Player.GetTalant(self.Player.TalantPicked))
+                if self.Lock == 0:
                     if self.Level < self.MaxLevel:
-                        self.Level += 1
-                        UpgradeTalant()
-                    else: break
-                self.Player.UpdateTalant(Exp=self.Exp,Level=self.Level)
-                await asyncio.sleep(0.1)
-            else:
-                Be = False
-                for NeedAt in self.NeedAt:
-                    for key in NeedAt.keys():
-                        Requester = NeedAt[key]
-                        NeedLevel = Requester["Level"]
-                        Talant_ = self.Player.GetTalant(key)
-                        if Talant_.Level < NeedLevel and Be == False:
-                            Be = True
+                        self.Exp += int(round(self.Player.Intelligence) * 60)
+                        if self.Exp >= self.NeedExp:
+                            self.Exp -= self.NeedExp
+                            self.Level += 1
+                            self.UpgradeTalant()
+                        self.Player.UpdateTalant(Exp=self.Exp,Level=self.Level)
+                        await asyncio.sleep(60)
+                    else:
+                        await asyncio.sleep(5)
+                else:
+                    Be = False
+                    for NeedAt in self.NeedAt:
+                        for key in NeedAt.keys():
+                            Requester = NeedAt[key]
+                            NeedLevel = Requester["Level"]
+                            Talant_ = self.Player.GetTalant(key)
+                            if Talant_.Level < NeedLevel and Be == False:
+                                Be = True
 
-                            self.MainName = Talant_.MainName
-                            self.Name = Talant_.Name
-                            self.Description = Talant_.Description
-                            self.PerLevel = Talant_.PerLevel
+                                self.Edit(Talant_)
 
-                            self.Level = Talant_.Level
-                            self.MaxLevel = Talant_. MaxLevel
-
-                            self.Exp = Talant_.Exp
-                            self.NeedExp = Talant_.NeedExp
-
-                            if self.Level >= Talant_.MaxLevel:
-                                self.Ready = True
-                            else:
-                                self.Ready = False
-
-
-                            self.Lock = Talant_.Lock
-
-                            self.NeedAt = Talant_.NeedAt
-                            print(f"{key} - не хватает уровня, берём этот талант")
-
-                            self.Player.Edit(TalantPicked=key)
+                                self.Player.Edit(TalantPicked=key)
+            except BaseException as Error: print(f"ERROR WITH TALANTS \n{Error}")
 
 class Shop():
     """ Магазин """
@@ -2562,11 +2681,13 @@ async def Notification(Function,Timer : int,End : "Loop or off",**fields):
 
 
 if __name__ == "__main__":
-    Players = os.listdir("./Stats/")
-    for Player in Players:
-        if Player != "Main" and Player != "Boss":
-            Player = Player.split(".txt")[0]
-            Player = C_Player(Player)
-            Player.NewAcc()
-    Iam = C_Player("KOT32500")
+    _Gabriel = Gabriel()
+    _Gabriel.Delete(50,"Боги и Кот")
+    # Players = os.listdir("./Stats/")
+    # for Player in Players:
+    #     if Player != "Main" and Player != "Boss":
+    #         Player = Player.split(".txt")[0]
+    #         Player = C_Player(Player)
+    #         Player.NewAcc()
+    # Iam = C_Player("KOT32500")
     

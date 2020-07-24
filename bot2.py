@@ -82,7 +82,7 @@ class MyClient(discord.Client):
         Tasks = list()
         Tasks.append(asyncio.create_task(self.Boss.Respawn()))
         Tasks.append(asyncio.create_task(self.Race.Main(self)))
-        for Player in os.listdir(f"{self.PATH_VERSION}/Stats/"):
+        for Player in os.listdir(f"./Stats/"):
             Player = Player.split(".txt")[0]
             Player = C_Player(Player)
             try:
@@ -141,15 +141,17 @@ class MyClient(discord.Client):
             )
 
         Players = list()
-        Players.clear()
-        for _Player in os.listdir(f"{self.PATH_VERSION}/Stats/Main/"):
+        for _Player in os.listdir(f"./Stats/"):
             _Player = _Player.split(".txt")[0]
             Players.append(_Player)
-
+        Admin = False
         try:
             Member = await Guild.fetch_member(Message.author.id)
             User = await self.fetch_user(Message.author.id)
             await self.DownloadAvatar(Member,Player.Name)
+            for role in Member.roles:
+                if role.permissions.administrator == True:
+                    Admin = True
         except discord.errors.NotFound:
             Webhook = await self.fetch_webhook(Message.webhook_id)
             await self.DownloadAvatar(Webhook,Player.Name)
@@ -182,10 +184,10 @@ class MyClient(discord.Client):
                 raise Error("Нужно указать имя игрока")
                 return
             Be = False
-            for Player in Players:
-                if Player.upper() == Player2.upper():
+            for _Player in Players:
+                if _Player.upper() == Player2.upper():
                     Be = True
-                    Target = C_Player(Player)
+                    Target = C_Player(_Player)
                     AttackStatus = Player.Attack(Target)
             if Be == True:
                 if AttackStatus["Status"] == "Dead":
@@ -212,7 +214,7 @@ class MyClient(discord.Client):
 
                     await Channel.send(f"`{Player.Name}` вы убили `{Target.Name}`, нанеся {GetDamage}\nСтатистика `{Target.Name}` упала на : \nУровень : {LostLevel}\nЗдоровье : {LostHealth}\nУрон : {LostDamage}\nЛовкость : {LostAgility}\nИнтеллект : {LostIntelligence}\nСила : {LostStrength}")
             else:
-                raise Error("Выбранного игрока не существует")
+                raise Error(f"{Player2} не существует")
         elif Commands[0].upper() == "Event".upper():
             await Message.delete()
             if Commands[1].upper() == "Profile".upper():
@@ -228,7 +230,8 @@ class MyClient(discord.Client):
             elif Commands[1].upper() == "Bonus".upper():
                 async with Channel.typing():
                     if Player.BonusDay != Day:
-                        GetGold = random.randint(300,1000)
+                        GetGold = random.randint(300,1000 + (1250 * Player.GetTalant("Max Bonus").Level))
+                        GetGold += 300 * Player.GetTalant("Bonus").Level
                         Player.Edit(
                             Edit="Everyday bonus",
                             Day = Day,
@@ -470,9 +473,35 @@ class MyClient(discord.Client):
                 
                 await Channel.send(embed=Embed)
         else:
-            # await Guild_Function.CheckMessage()
-            if Message.author != self.user:
-                self.Gabriel.Save(Content,Player.Name,Guild.name)
+            if Admin == True:
+                if Commands[0].upper() == "Delete".upper():
+                    await Message.delete()
+                    async with Channel.typing():
+                        Count = int(Commands[1])
+                        Embed = self.Gabriel.Delete(Count,Guild.name)
+                        await Channel.send(embed=Embed)
+                elif Commands[0].upper() == "BanWord".upper():
+                    await Message.delete()
+                    async with Channel.typing():
+                        Word = Commands[1]
+                        Guild_Function.AddWord(Word)
+                        Embed = discord.Embed(title=f"{Guild.name}",description=f"Отныне слово {Word} шифруется")
+                        await Channel.send(embed=Embed)
+                elif Commands[0].upper() == "UnBanWord".upper():
+                    await Message.delete()
+                    async with Channel.typing():
+                        Word = Commands[1]
+                        Guild_Function.RemoveWord(Word)
+                        Embed = discord.Embed(title=f"{Guild.name}",description=f"Отныне слово {Word} перестает шифроватся")
+                        await Channel.send(embed=Embed)
+                else:
+                    if Message.author != self.user:
+                        await Guild_Function.CheckMessage(Message,Content)
+                        self.Gabriel.Save(Content,Player.Name,Guild.name)
+            else:
+                if Message.author != self.user:
+                    await Guild_Function.CheckMessage(Message,Content)
+                    self.Gabriel.Save(Content,Player.Name,Guild.name)
         if Message.author == IamUser:
             if Commands[0].upper() == "Admin".upper():
                 if Commands[1].upper() == "Debug".upper():
