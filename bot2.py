@@ -93,17 +93,21 @@ class MyClient(discord.Client):
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
         self.Gabriel = Gabriel()
         print("работает все да")
+        
+
    
     async def Command(self,message):
         """ Команды """
 
         Channel = await self.fetch_channel(message.channel.id)
         Message = await Channel.fetch_message(message.id)
+
+        # print()
         
-        try:
+        if str(Channel.type) != "private":
             Guild = await self.fetch_guild(message.channel.guild.id)
             Guild_Function = C_Guild(self,Guild.name)
-        except:
+        else:
             if message.author != self.user:
                 Reference = await self.fetch_channel(623070280973156353)
                 GeneralChannel = await self.fetch_channel(419879599363850253)
@@ -387,7 +391,10 @@ class MyClient(discord.Client):
                 await Channel.send(embed=Embed)
         elif Commands[0].upper() == "Gs".upper():
             await Message.delete()
-            _ChannelVoice_ = await self.fetch_channel(Message.author.voice.channel.id)
+            try: 
+                _channel = int(Commands[1])
+                _ChannelVoice_ = await self.fetch_channel(_channel)
+            except: _ChannelVoice_ = await self.fetch_channel(Message.author.voice.channel.id)
             try:
                 if self.VoiceClient.is_connected == False:
                     self.Sounds = os.listdir(f"./Resurses/JoinVoice/")
@@ -402,6 +409,7 @@ class MyClient(discord.Client):
                 RandomInt = random.randint(0,len(self.Sounds) - 1)
             RandomSound = self.Sounds[RandomInt]
             self.Sounds.remove(RandomSound)
+            print(f"Сыграла {RandomSound} трек")
             self.VoiceClient.play(discord.FFmpegPCMAudio(
                 executable="C:/ffmpeg/bin/ffmpeg.exe", 
                 source=f"./Resurses/JoinVoice/{RandomSound}"))
@@ -473,35 +481,40 @@ class MyClient(discord.Client):
                 
                 await Channel.send(embed=Embed)
         else:
-            if Admin == True:
-                if Commands[0].upper() == "Delete".upper():
-                    await Message.delete()
-                    async with Channel.typing():
-                        Count = int(Commands[1])
-                        Embed = self.Gabriel.Delete(Count,Guild.name)
-                        await Channel.send(embed=Embed)
-                elif Commands[0].upper() == "BanWord".upper():
-                    await Message.delete()
-                    async with Channel.typing():
-                        Word = Commands[1]
-                        Guild_Function.AddWord(Word)
-                        Embed = discord.Embed(title=f"{Guild.name}",description=f"Отныне слово {Word} шифруется")
-                        await Channel.send(embed=Embed)
-                elif Commands[0].upper() == "UnBanWord".upper():
-                    await Message.delete()
-                    async with Channel.typing():
-                        Word = Commands[1]
-                        Guild_Function.RemoveWord(Word)
-                        Embed = discord.Embed(title=f"{Guild.name}",description=f"Отныне слово {Word} перестает шифроватся")
-                        await Channel.send(embed=Embed)
+            if Message.author.bot == False:
+                if Admin == True:
+                    if Commands[0].upper() == "Delete".upper():
+                        await Message.delete()
+                        async with Channel.typing():
+                            Count = int(Commands[1])
+                            Embed = self.Gabriel.Delete(Count,Guild.name)
+                            await Channel.send(embed=Embed,delete_after=1)
+                    elif Commands[0].upper() == "BanWord".upper():
+                        await Message.delete()
+                        async with Channel.typing():
+                            Word = Commands[1]
+                            Guild_Function.AddWord(Word)
+                            Embed = discord.Embed(title=f"{Guild.name}",description=f"Отныне слово {Word} шифруется")
+                            await Channel.send(embed=Embed)
+                    elif Commands[0].upper() == "UnBanWord".upper():
+                        await Message.delete()
+                        async with Channel.typing():
+                            Word = Commands[1]
+                            Guild_Function.RemoveWord(Word)
+                            Embed = discord.Embed(title=f"{Guild.name}",description=f"Отныне слово {Word} перестает шифроватся")
+                            await Channel.send(embed=Embed)
+                    elif Commands[0].upper() == "BannedWords".upper():
+                        await Message.delete()
+                        async with Channel.typing():
+                            await Channel.send(Guild_Function.BadWords)
+                    else:
+                        if Message.author != self.user:
+                            await Guild_Function.CheckMessage(Message,Content,Member)
+                            self.Gabriel.Save(Content,Player.Name,Guild.name)
                 else:
                     if Message.author != self.user:
-                        await Guild_Function.CheckMessage(Message,Content)
+                        await Guild_Function.CheckMessage(Message,Content,Member)
                         self.Gabriel.Save(Content,Player.Name,Guild.name)
-            else:
-                if Message.author != self.user:
-                    await Guild_Function.CheckMessage(Message,Content)
-                    self.Gabriel.Save(Content,Player.Name,Guild.name)
         if Message.author == IamUser:
             if Commands[0].upper() == "Admin".upper():
                 if Commands[1].upper() == "Debug".upper():
@@ -739,6 +752,74 @@ class MyClient(discord.Client):
                 Role = Guild.get_role(713477378214592603)
                 await Member.add_roles(Standart,Role,reason="Прошел регистацию")
                 await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Laim_circle": 
+                Role = Guild.get_role(716928278988062831)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Green_circle": 
+                Role = Guild.get_role(716928278988062831)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Grass_circle": 
+                Role = Guild.get_role(716928284453109772)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "DarkGreen_circle": 
+                Role = Guild.get_role(716928283123384382)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Untitled_circle": 
+                Role = Guild.get_role(716928281747914792)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "DarkBlue_circle": 
+                Role = Guild.get_role(716928284641853461)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "LightRed_circle": 
+                Role = Guild.get_role(716928286759845899)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "LightPink_circle": 
+                Role = Guild.get_role(716928283089829951)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "DarkRed_circle": 
+                Role = Guild.get_role(716928286776754178)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "LightBlue_circle": 
+                Role = Guild.get_role(716928278988062831)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Orange_circle": 
+                Role = Guild.get_role(716928283542945792)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Cyan_circle": 
+                Role = Guild.get_role(716928286097408040)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Untitled1_circle": 
+                Role = Guild.get_role(716928281966018631)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "LightPurpure_circle": 
+                Role = Guild.get_role(716928284830728262)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Untitled3_circle": 
+                Role = Guild.get_role(716391509502722060)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "DarkGreen2_circle": 
+                Role = Guild.get_role(716928278988062831)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
+            elif str(Emoji.name) == "Blue2_circle": 
+                Role = Guild.get_role(716928286965498007)
+                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
+                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
             Msg = f"""```fix\nПоздравляю.``````\nВы успешно присоединились на сервер!\nТеперь вам доступен ранее недоступный контент.\nСоветую пройти обучение, оно поможет ознакомиться с сервером, \nИ стать полноценным участником, покажет и поможет в начале.\nНо прежде чем ты пойдешь его проходить, спешу сообщить о том, что время\nНа выполнения обучения ограничено часом, этого вполне хватит чтобы прочитать\nА после это меню автоматически уберёться, и не будет мешать вам быть \nПолноценным участником сервера!```
                 """
             await Member.send(Msg)
@@ -757,7 +838,8 @@ class MyClient(discord.Client):
             asyncio.gather(*Tasks)
         # -----------
         #Роли
-        if Message.id == 714080637648240690:
+        MessageRoles = [714080637648240690,737503063409033247]
+        if Message.id in MessageRoles:
             if Player == self.user:
                 return
             await Message.remove_reaction(Emoji,Player)
@@ -768,7 +850,14 @@ class MyClient(discord.Client):
                 713477377644167288, 713477378214592603, 713681425056006154,
                 716391511708794951, 716390741475196969, 716391516137848863,
                 716391507980189726, 716391501772488748, 716391505425858641,
-                716390742012199024, 716391505073274920
+                716390742012199024, 716391505073274920,
+
+                716928278988062831, 716928279751295076, 716928280153817178,
+                716928281630474261, 716928281747914792, 716928281798246470,
+                716928281966018631, 716928283089829951, 716928283123384382,
+                716928283542945792, 716928284453109772, 716928284641853461,
+                716928284830728262, 716928286097408040, 716928286759845899,
+                716928286776754178, 716928286965498007
 
                     ]
             RoleList = list()
@@ -791,6 +880,25 @@ class MyClient(discord.Client):
             elif str(Emoji.name) == "Pink_circle": await self.AddOneRole(716390742012199024,Member,Guild,RolesID)
             elif str(Emoji.name) == "Scarlet_circle": await self.AddOneRole(716391505425858641,Member,Guild,RolesID)
             elif str(Emoji.name) == "Golden_circle": await self.AddOneRole(716391505073274920,Member,Guild,RolesID)
+
+            elif str(Emoji.name) == "Green_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)                              
+            elif str(Emoji.name) == "Laim_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Grass_circle": await self.AddOneRole(716928284453109772,Member,Guild,RolesID)
+            elif str(Emoji.name) == "DarkGreen_circle": await self.AddOneRole(716928283123384382,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Untitled_circle": await self.AddOneRole(716928281747914792,Member,Guild,RolesID)
+            elif str(Emoji.name) == "DarkBlue_circle": await self.AddOneRole(716928284641853461,Member,Guild,RolesID)
+            elif str(Emoji.name) == "LightRed_circle": await self.AddOneRole(716928286759845899,Member,Guild,RolesID)
+            elif str(Emoji.name) == "LightPink_circle": await self.AddOneRole(716928283089829951,Member,Guild,RolesID)
+            elif str(Emoji.name) == "DarkRed_circle": await self.AddOneRole(716928286776754178,Member,Guild,RolesID)
+            elif str(Emoji.name) == "LightBlue_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Orange_circle": await self.AddOneRole(716928283542945792,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Cyan_circle": await self.AddOneRole(716928286097408040,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Untitled1_circle": await self.AddOneRole(716928281966018631,Member,Guild,RolesID)
+            elif str(Emoji.name) == "LightPurpure_circle": await self.AddOneRole(716928284830728262,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Untitled3_circle": await self.AddOneRole(716391509502722060,Member,Guild,RolesID)
+            elif str(Emoji.name) == "DarkGreen2_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)
+            elif str(Emoji.name) == "Blue2_circle": await self.AddOneRole(716928286965498007,Member,Guild,RolesID)
+
         #----
     async def AddOneRole(self,ID,Member,Guild,RolesID):
         Role = Guild.get_role(ID)

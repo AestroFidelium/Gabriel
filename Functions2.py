@@ -17,39 +17,6 @@ import json
 import time
 import ast
 from bs4 import BeautifulSoup
-class CheckMessage():
-    """
-    Проверяет сообщение на указанные слова
-    """
-    Find = False
-    def __init__(self,message : str,target : list):
-        self.message = message
-        self.target = target
-    
-    def Start(self):
-        """
-        Начать проверку. Выводит : `True` or `None`
-        """
-        EveryoneWord = list()
-        EveryoneWord.extend(self.message)
-        TargetEveryone = list(); TargetEveryone.extend(self.target) 
-        self.everyoneWord = EveryoneWord
-        self.targetEveryone = TargetEveryone
-        count = 0
-        for word in self.everyoneWord:
-            if word == " ":
-                count = 0
-            else:
-                try:
-                    if word == TargetEveryone[count]:
-                        count += 1
-                        if count == len(self.target):
-                            Find = True
-                            return Find
-                    elif word != TargetEveryone[count]:
-                        count = 0
-                except IndexError:
-                    pass
 
 def GetFromMessage(message : str,Znak : str):
     """ Получить выбранный объект в знаках 
@@ -823,9 +790,9 @@ class C_Player():
         if self.Level > self.MaxLevel:
             self.Plus += self.Level - self.MaxLevel
             self.MaxLevel = self.Level
-        self.Strength += (random.random() / 10) * count
-        self.Agility += (random.random() / 9) * count
-        self.Intelligence += (random.random() / 6) * count
+        self.Strength += 0.001 * count
+        self.Agility += 0.002 * count
+        self.Intelligence += 0.005 * count
         self.Edit(
             Edit="Main",
             Health = self.Health,
@@ -1173,9 +1140,9 @@ class Item():
                     self.MaxGold += random.randint(15000,35000)
                     self.Class = self.Classes.Мифический()
                 elif self.Class == self.Classes.Мифический():
-                    self.Damage = random.randint(10,13180000)
-                    self.Protect = random.randint(10,131800000)
-                    self.Armor = random.randint(10,900000)
+                    self.Damage += random.randint(10,13180000)
+                    self.Protect += random.randint(10,131800000)
+                    self.Armor += random.randint(10,900000)
                     self.MaxGold += random.randint(990000,2990000)
                 elif self.Class == self.Classes.Демонический():
                     self.Damage += random.randint(5000000,9000000)
@@ -1545,20 +1512,39 @@ class C_Guild():
         }
         self.Main()
     
-    async def CheckMessage(self,Message : discord.Message,Content : str):
+    async def CheckMessage(self,Message : discord.Message,Content : str,Member : discord.Member):
+        """ Проверяет сообщения """
+
         Be = False
         for words in self.BadWords:
             if Content.upper().find(words.upper()) >= 0:
-                Content = Content.replace(words,"░" * int(len(words) / 1.5))
+                Content = Content.upper().replace(words.upper(),"░" * int(len(words)))
                 Be = True
         if Be == True:
-            WebhookThisChannel = await Message.channel.webhooks()
-            WebhookThisChannel = WebhookThisChannel[0]
+            Content = Content.capitalize()
+            try:
+                WebhookThisChannel = await Message.channel.webhooks()
+                WebhookThisChannel = WebhookThisChannel[0]
 
-            await WebhookThisChannel.send(
-                content = Content,
-                username = Message.author.name,
-                avatar_url = Message.author.avatar_url)
+                await WebhookThisChannel.send(
+                    content = Content,
+                    username = Member.display_name,
+                    avatar_url = Message.author.avatar_url)
+            except:
+                Channel = await self.Client.fetch_channel(Message.channel.id)
+                avatar = "https://sun9-70.userapi.com/c851528/v851528376/11cba6/qenzOyjqwrU.jpg"
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.197'
+                    }
+                Response = requests.get(avatar,headers=headers)
+                WebhookThisChannel = await Channel.create_webhook(
+                    name="Габриэль",
+                    avatar=Response.content,
+                    reason="Для работы с сообщениями, Габриэль нужен вебхук")
+                await WebhookThisChannel.send(
+                    content = Content,
+                    username = Member.display_name,
+                    avatar_url = Message.author.avatar_url)
             await Message.delete()
     def AddWord(self,Word):
         self.BadWords.append(Word)
@@ -1693,7 +1679,7 @@ class Boss():
             BossImage = os.listdir(f"./Resurses/Bosses/{Different}/")
             BossImage = BossImage[random.randint(0,len(BossImage) - 1)]
             if Different == "Easy":
-                MaxHealth = random.randint(80000,500000)
+                MaxHealth = random.randint(8000000,500000000)
                 self.Stats = {
                     "Different" : "Easy",
                     "Image" : BossImage,
@@ -1709,7 +1695,7 @@ class Boss():
                 }
                 file.write(str(self.Stats))
             elif Different == "Medium":
-                MaxHealth = random.randint(5000000,8000000)
+                MaxHealth = random.randint(500000000000,500000000000000)
                 self.Stats = {
                     "Different" : "Medium",
                     "Image" : BossImage,
@@ -1725,7 +1711,7 @@ class Boss():
                 }
                 file.write(str(self.Stats))
             elif Different == "Hard":
-                MaxHealth = random.randint(80000000,999999999)
+                MaxHealth = random.randint(500000000000000000,500000000000000000000)
                 self.Stats = {
                     "Different" : "Hard",
                     "Image" : BossImage,
@@ -1740,7 +1726,7 @@ class Boss():
                     "GetItem" : None
                 }
             elif Different == "Hard+":
-                MaxHealth = random.randint(9999999999,9999999999999)
+                MaxHealth = random.randint(500000000000000000000000000,500000000000000000000000000000000)
                 self.Stats = {
                     "Different" : "Hard+",
                     "Image" : BossImage,
@@ -1791,31 +1777,18 @@ class Boss():
         self.TimeMinute = int(Timer[1])
         self.TimeSecond = int(Timer[2])
         self.Gold = 500
-        if self.MaxHealth >= 1000000000000:
-            for a in range(int(self.MaxHealth / 100000000000)):
-                try:
-                    self.Gold += random.randint(66666666, 999999999 * a)
-                except: pass
-        elif self.MaxHealth >= 1000000000:
-            for a in range(int(self.MaxHealth / 100000000)):
-                try:
-                    self.Gold += random.randint(666666, 9999999 * a)
-                except: pass
-        elif self.MaxHealth >= 1000000:
-            for a in range(int(self.MaxHealth / 100000)):
-                try:
-                    self.Gold += random.randint(6666, 99999 * a)
-                except: pass
-        elif self.MaxHealth >= 100000:
-            for a in range(int(self.MaxHealth / 10000)):
-                try:
-                    self.Gold += random.randint(666, 9999 * a)
-                except: pass
-        elif self.MaxHealth >= 1000:
-            for a in range(int(self.MaxHealth / 100)):
-                try:
-                    self.Gold += random.randint(6, 99 * a)
-                except: pass
+        if self.MaxHealth >= 500000000000000000000000000:
+            count = int(self.MaxHealth / 10000000000000000000000000)
+            self.Gold += 50000000 * count
+        elif self.MaxHealth >= 500000000000000000:
+            count = int(self.MaxHealth / 10000000000000000)
+            self.Gold += 1000000 * count
+        elif self.MaxHealth >= 500000000000:
+            count = int(self.MaxHealth / 10000000000)
+            self.Gold += 100000 * count
+        elif self.MaxHealth >= 8000000:
+            count = int(self.MaxHealth / 100000)
+            self.Gold += 1000 * count
 
     def Profile(self):
         """ Показать профиль босса """
@@ -2430,6 +2403,7 @@ class Talant():
                                 self.Edit(Talant_)
 
                                 self.Player.Edit(TalantPicked=key)
+                    await asyncio.sleep(1)
             except BaseException as Error: print(f"ERROR WITH TALANTS \n{Error}")
 
 class Shop():
