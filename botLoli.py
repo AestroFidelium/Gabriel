@@ -124,7 +124,12 @@ class MyClient(discord.Client):
             "https://vk.com/lolis_shelters",
             "https://vk.com/lolihouse16",
             "https://vk.com/loli_lovely",
-            "https://vk.com/loliland"
+            "https://vk.com/loliland",
+            "https://vk.com/lolianimeloli",
+            "https://vk.com/tutloli",
+            "https://vk.com/smsloli",
+            "https://vk.com/kkaammiissaammaa",
+            "https://vk.com/sleepsempai"
             ]
         Tasks = list()
         self.LoliChannel = await self.fetch_channel(578611164016017408)

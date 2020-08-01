@@ -93,9 +93,7 @@ class MyClient(discord.Client):
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
         self.Gabriel = Gabriel()
         print("работает все да")
-        
 
-   
     async def Command(self,message):
         """ Команды """
 
@@ -149,6 +147,7 @@ class MyClient(discord.Client):
             _Player = _Player.split(".txt")[0]
             Players.append(_Player)
         Admin = False
+        MUTE = False
         try:
             Member = await Guild.fetch_member(Message.author.id)
             User = await self.fetch_user(Message.author.id)
@@ -156,6 +155,8 @@ class MyClient(discord.Client):
             for role in Member.roles:
                 if role.permissions.administrator == True:
                     Admin = True
+                if str(role) == "Мут на команды для Габриэль":
+                    MUTE = True
         except discord.errors.NotFound:
             Webhook = await self.fetch_webhook(Message.webhook_id)
             await self.DownloadAvatar(Webhook,Player.Name)
@@ -303,6 +304,7 @@ class MyClient(discord.Client):
                     await Channel.send(f"Предмет не найден")
         elif Commands[0].upper() == "G".upper():
             await Message.delete()
+            if MUTE == True: return
             async with Channel.typing():
                 try:
                     if Commands[1].upper() == "S".upper():

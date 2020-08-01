@@ -2654,6 +2654,36 @@ async def Notification(Function,Timer : int,End : "Loop or off",**fields):
         Function(fields)
 
 
+async def MemberMuted(Message : discord.Message,Content : str,Member : discord.Member,Client):
+    Be = False
+    for words in Content:
+        Content = Content.replace(words,"░" * int(len(words)))
+    Content = Content.capitalize()
+    try:
+        WebhookThisChannel = await Message.channel.webhooks()
+        WebhookThisChannel = WebhookThisChannel[0]
+
+        await WebhookThisChannel.send(
+            content = Content,
+            username = Member.display_name,
+            avatar_url = Message.author.avatar_url)
+    except:
+        Channel = await Client.fetch_channel(Message.channel.id)
+        avatar = "https://sun9-70.userapi.com/c851528/v851528376/11cba6/qenzOyjqwrU.jpg"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36 OPR/68.0.3618.197'
+            }
+        Response = requests.get(avatar,headers=headers)
+        WebhookThisChannel = await Channel.create_webhook(
+            name="Габриэль",
+            avatar=Response.content,
+            reason="Для работы с сообщениями, Габриэль нужен вебхук")
+        await WebhookThisChannel.send(
+            content = Content,
+            username = Member.display_name,
+            avatar_url = Message.author.avatar_url)
+        await Message.delete()
+
 if __name__ == "__main__":
     _Gabriel = Gabriel()
     _Gabriel.Delete(50,"Боги и Кот")
