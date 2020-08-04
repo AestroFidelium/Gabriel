@@ -79,6 +79,9 @@ class MyClient(discord.Client):
         self.MiniGame = MiniGame()
         self.Race = self.MiniGame.Race()
         self.Boss = Boss()
+        self.Messages = list()
+        self.BanList = list()
+        self.AgainTheMessage = dict()
         Tasks = list()
         Tasks.append(asyncio.create_task(self.Boss.Respawn()))
         Tasks.append(asyncio.create_task(self.Race.Main(self)))
@@ -89,10 +92,40 @@ class MyClient(discord.Client):
                 _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
                 Tasks.append(asyncio.create_task(_Talant.Update()))
             except KeyError: pass
+        Tasks.append(asyncio.create_task(self.MembersBanned()))
         asyncio.gather(*Tasks)
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
         self.Gabriel = Gabriel()
         print("работает все да")
+    
+    async def MembersBanned(self):
+        Count = 1
+        while True:
+            for _Member in self.BanList:
+                MemberID = _Member["Member"]
+                Time = _Member["Time"]
+                Time -= Count
+                NewMember = {"Member":MemberID,"Time":Time}
+                self.BanList.remove(_Member)
+                if Time > 0:
+                    self.BanList.append(NewMember)
+                print(NewMember)
+            await asyncio.sleep(Count)
+    
+    def isBanned(self,MemberID):
+        class Return():
+            def __init__(self,Ban : bool):
+                self.Ban = Ban
+            def __bool__(self):
+                return self.Ban
+        try:
+            for _Member in self.BanList:
+                _MemberID = _Member["Member"]
+                if MemberID == _MemberID:
+                    return Return(True)
+        except:
+            return Return(False)
+        
 
     async def Command(self,message):
         """ Команды """
@@ -564,6 +597,7 @@ class MyClient(discord.Client):
                     Count = Content.count(")")
                     if Count < 100:
                         await Channel.send(")" * Count)
+    
     async def DownloadAvatar(self,Downloader,PlayerName):
         try:
             with codecs.open(f"./Resurses/{PlayerName}.png","r"
@@ -578,6 +612,20 @@ class MyClient(discord.Client):
     
     
     async def on_message(self,message):
+        print(bool(self.isBanned(message.author.id)))
+        Saved = {"Member":message.author.id,"Message":message.content}
+        if Saved not in self.Messages:
+            self.Messages.append(Saved)
+            self.AgainTheMessage.update({message.author.id:{"Member":message.author.id,"Count":3}})
+        else:
+            Old = self.AgainTheMessage[message.author.id]
+            Count = Old["Count"]
+            Count -= 1
+            self.AgainTheMessage.update({message.author.id:{"Member":message.author.id,"Count":Count}})
+            if Count <= 0:
+                NewBan = {"Member":message.author.id,"Time":300}
+                if NewBan not in self.BanList:
+                    self.BanList.append(NewBan)
         # if message.author != self.user:
         #     await self.Command(message)
         try:

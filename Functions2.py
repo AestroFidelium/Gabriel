@@ -2684,7 +2684,12 @@ async def MemberMuted(Message : discord.Message,Content : str,Member : discord.M
             avatar_url = Message.author.avatar_url)
         await Message.delete()
 
+def NowTime():
+    Time = int(time.strftime("%H%M%S"))
+    return Time
+
 if __name__ == "__main__":
+    print(NowTime())
     _Gabriel = Gabriel()
     _Gabriel.Delete(50,"Боги и Кот")
     # Players = os.listdir("./Stats/")
