@@ -612,20 +612,23 @@ class MyClient(discord.Client):
     
     
     async def on_message(self,message):
-        print(bool(self.isBanned(message.author.id)))
+        # print(bool(self.isBanned(message.author.id)))
         Saved = {"Member":message.author.id,"Message":message.content}
         if Saved not in self.Messages:
             self.Messages.append(Saved)
-            self.AgainTheMessage.update({message.author.id:{"Member":message.author.id,"Count":3}})
+            self.AgainTheMessage.update({message.author.id:{"Member":message.author.id,"Count":3,"Time":NowTime()}})
         else:
             Old = self.AgainTheMessage[message.author.id]
-            Count = Old["Count"]
-            Count -= 1
-            self.AgainTheMessage.update({message.author.id:{"Member":message.author.id,"Count":Count}})
-            if Count <= 0:
-                NewBan = {"Member":message.author.id,"Time":300}
-                if NewBan not in self.BanList:
-                    self.BanList.append(NewBan)
+            Time = int(Old["Time"])
+            if Time >= NowTime() - 15:
+                print("СЛИШКОМ БЫСТРААА")
+                Count = Old["Count"]
+                Count -= 1
+                self.AgainTheMessage.update({message.author.id:{"Member":message.author.id,"Count":Count,"Time":NowTime()}})
+                if Count <= 0:
+                    NewBan = {"Member":message.author.id,"Time":300}
+                    if NewBan not in self.BanList:
+                        self.BanList.append(NewBan)
         # if message.author != self.user:
         #     await self.Command(message)
         try:
