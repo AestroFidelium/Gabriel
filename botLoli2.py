@@ -99,6 +99,11 @@ class fetch_group(Thread):
                             # pylint: disable=anomalous-backslash-in-string
                             image = image.replace('\/',"/")
                             imagesList.append(image)
+                            Name = image.split('/')[-1]
+                            DownloadFile = requests.get(image, stream=True)
+                            with open(f"./Resurses/loli/{Name}","bw") as file:
+                                for chunk in DownloadFile.iter_content(12288):
+                                    file.write(chunk)
                     _Post = Post(content,imagesList,Tags)
                     if str(_Post) not in self.OldLolies:
                         self.Posts.append(_Post)
@@ -213,6 +218,8 @@ class MyClient(discord.Client):
                             embed = discord.Embed(title="⁪",colour=discord.Colour(RandomColor))
                             embed.set_image(url=image)
                             embed.set_footer(text=TagsStr)
+                            Name = image.split("/")[-1]
+                            os.remove(f"./Resurses/loli/{Name}")
                             Embeds.append(embed)
                         if len(Embeds) > 0:
                             await webhook.send(
@@ -221,8 +228,31 @@ class MyClient(discord.Client):
                                 avatar_url = group.Group.Avatar,
                                 username = group.Group.Name
                             )
-                # except AttributeError: 
                 except: pass
+            LostLoli = os.listdir(f"./Resurses/loli/")
+            Files = list()
+            for Lost in LostLoli:
+                if Lost != "OldLoli":
+                    try:
+                        File = discord.File(f"./Resurses/loli/{Lost}",Lost)
+                        Files.append(File)
+                        print(f"{Lost} Потерянная лоля")
+                        os.remove(f"./Resurses/loli/{Lost}")
+                    except: pass
+            lenLostLolies = 0
+            SendLostLolies = list()
+            for LostLolya in Files:
+                lenLostLolies += 1
+                SendLostLolies.append(LostLolya)
+                if lenLostLolies >= 10:
+                    lenLostLolies = 0
+                    try:
+                        await webhook.send(
+                            content = " ",
+                            files = SendLostLolies)
+                        SendLostLolies.clear()
+                    except ValueError: pass
+
         
         async def on_message(self,message):
             if message.content == "EOQWIEOUWOJfasjfksafjaskljKLEJKLWEJQ":
