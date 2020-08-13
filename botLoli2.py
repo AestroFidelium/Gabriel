@@ -142,7 +142,9 @@ def InternetActive():
     client.run(BazaDate.token)
 class MyClient(discord.Client):
     async def on_ready(self):
-        print(f"Logged on as , {self.user} MODULE : botLoli.py")
+        print(f"Logged on as , {self.user} MODULE : botLoli2.py")
+        await self._Start()
+    async def _Start(self):
         LoliCitys = [
             "https://vk.com/animelolki",
             "https://vk.com/your.meow",
@@ -199,11 +201,14 @@ class MyClient(discord.Client):
         while True:
             Groups = list()
             for url in LoliCitys:
-                _Group = fetch_group(url,webhook)
-                print(f"{_Group.MainName} все хорошо")
-                Groups.append(_Group)
+                try:
+                    _Group = fetch_group(url,webhook)
+                    print(f"{_Group.MainName} все хорошо")
+                    Groups.append(_Group)
+                except:
+                    print(f"{url} плохо")
             
-            time.sleep(30)
+            await asyncio.sleep(30)
             for group in Groups:
                 try:
                     print(group.Group.Name)
@@ -229,42 +234,49 @@ class MyClient(discord.Client):
                                 username = group.Group.Name
                             )
                 except: pass
-            LostLoli = os.listdir(f"./Resurses/loli/")
-            Files = list()
-            for Lost in LostLoli:
-                if Lost != "OldLoli":
-                    try:
-                        File = discord.File(f"./Resurses/loli/{Lost}",Lost)
-                        Files.append(File)
-                        print(f"{Lost} Потерянная лоля")
-                        os.remove(f"./Resurses/loli/{Lost}")
-                    except: pass
-            lenLostLolies = 0
-            SendLostLolies = list()
-            for LostLolya in Files:
-                lenLostLolies += 1
-                SendLostLolies.append(LostLolya)
-                if lenLostLolies >= 10:
-                    lenLostLolies = 0
-                    try:
-                        await webhook.send(
-                            content = " ",
-                            files = SendLostLolies)
+            try:
+                LostLoli = os.listdir(f"./Resurses/loli/")
+                Files = list()
+                for Lost in LostLoli:
+                    if Lost != "OldLoli":
+                        try:
+                            File = discord.File(f"./Resurses/loli/{Lost}",Lost)
+                            Files.append(File)
+                        except: pass
+                lenLostLolies = 0
+                SendLostLolies = list()
+                for LostLolya in Files:
+                    lenLostLolies += 1
+                    SendLostLolies.append(LostLolya)
+                    if lenLostLolies >= 10:
+                        lenLostLolies = 0
+                        try:
+                            await webhook.send(
+                                content = " ",
+                                files = SendLostLolies)
+                        except: pass
+                        for DeleteLoli in SendLostLolies:
+                            os.remove(f"./Resurses/loli/{DeleteLoli}")
                         SendLostLolies.clear()
-                    except ValueError: pass
+            except: 
+                print("ERROR WITH LOSTED LOLI")
 
         
         async def on_message(self,message):
             if message.content == "EOQWIEOUWOJfasjfksafjaskljKLEJKLWEJQ":
                 print("da")
 
+def main():
+    internetWasOff = True
+    while True:
+        if is_internet():
+            if(internetWasOff == True):
+                print("Internet is active")
+                InternetActive()
+                internetWasOff = False
+        else:
+            internetWasOff = True
+        time.sleep(1)
 
-while True:
-    if is_internet():
-        if(internetWasOff == True):
-            print("Internet is active")
-            InternetActive()
-            internetWasOff = False
-    else:
-        internetWasOff = True
-    time.sleep(1)
+if __name__ == "__main__":
+    main()
