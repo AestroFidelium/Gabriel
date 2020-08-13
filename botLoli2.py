@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-import lxml
 import time
 import random
 import asyncio
@@ -10,7 +9,6 @@ import discord
 import BazaDate
 import urllib
 from urllib.request import urlopen
-import wget
 from threading import Thread
 import codecs
 
@@ -98,16 +96,19 @@ class fetch_group(Thread):
                             image = image.split('"')[0]
                             # pylint: disable=anomalous-backslash-in-string
                             image = image.replace('\/',"/")
-                            imagesList.append(image)
-                            Name = image.split('/')[-1]
-                            DownloadFile = requests.get(image, stream=True)
-                            with open(f"./Resurses/loli/{Name}","bw") as file:
-                                for chunk in DownloadFile.iter_content(12288):
-                                    file.write(chunk)
+                            if str(image).find("https://") >= 0:
+                                imagesList.append(image)
                     _Post = Post(content,imagesList,Tags)
                     if str(_Post) not in self.OldLolies:
                         self.Posts.append(_Post)
                         self.OldLolies.append(str(_Post))
+                        for image in _Post.Images:
+                            if str(image).find("https://") >= 0:
+                                Name = image.split('/')[-1]
+                                DownloadFile = requests.get(image, stream=True)
+                                with open(f"./Resurses/loli/{Name}","bw") as file:
+                                    for chunk in DownloadFile.iter_content(12288):
+                                        file.write(chunk)
                         print(f"{self.Group.Name} новый пост")
                 except: pass
             with codecs.open(f"./Resurses/loli/OldLolies/{self.MainName}.txt","w",encoding='utf-8') as file:
@@ -199,6 +200,37 @@ class MyClient(discord.Client):
         webhooks = await self.LoliChannel.webhooks()
         webhook = webhooks[0]
         while True:
+            LostedLolies = list()
+            LostLoli = os.listdir(f"./Resurses/loli/")
+            for Lost in LostLoli:
+                if str(Lost) != "OldLolies":
+                    LostedLolies.append(f"./Resurses/loli/{str(Lost)}")
+            lenLostLolies = 0
+            SendLostLolies = list()
+            for loli in LostedLolies:
+                lenLostLolies += 1
+                name = str(loli).split("/")[-1]
+                SendLostLolies.append(discord.File(loli,name))
+                if lenLostLolies >= 10 and len(LostedLolies) >= 10:
+                    lenLostLolies = 0
+                    await webhook.send(
+                        content = " ",
+                        files = SendLostLolies)
+                    
+                    SendLostLolies.clear()
+                elif len(LostedLolies) < 10:
+                    try:
+                        await webhook.send(
+                            content = " ",
+                            files = SendLostLolies)
+                    except: pass
+            for loli in LostedLolies:
+                try:
+                    os.remove(loli)
+                except:
+                    print("Лоля занята другим процессом, удаление невозможно")
+
+
             Groups = list()
             for url in LoliCitys:
                 try:
@@ -234,32 +266,6 @@ class MyClient(discord.Client):
                                 username = group.Group.Name
                             )
                 except: pass
-            try:
-                LostLoli = os.listdir(f"./Resurses/loli/")
-                Files = list()
-                for Lost in LostLoli:
-                    if Lost != "OldLoli":
-                        try:
-                            File = discord.File(f"./Resurses/loli/{Lost}",Lost)
-                            Files.append(File)
-                        except: pass
-                lenLostLolies = 0
-                SendLostLolies = list()
-                for LostLolya in Files:
-                    lenLostLolies += 1
-                    SendLostLolies.append(LostLolya)
-                    if lenLostLolies >= 10:
-                        lenLostLolies = 0
-                        try:
-                            await webhook.send(
-                                content = " ",
-                                files = SendLostLolies)
-                        except: pass
-                        for DeleteLoli in SendLostLolies:
-                            os.remove(f"./Resurses/loli/{DeleteLoli}")
-                        SendLostLolies.clear()
-            except: 
-                print("ERROR WITH LOSTED LOLI")
 
         
         async def on_message(self,message):
