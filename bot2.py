@@ -652,7 +652,23 @@ class MyClient(discord.Client):
             Embed = discord.Embed(title="Ошибка",description=str(Error),colour=discord.Colour.red())
             await message.channel.send(embed=Embed,delete_after=60)
     
-
+    async def on_message_edit(self,before,after):
+        content = before.content
+        author = before.author.name
+        server = before.channel.guild.name
+        Delete = {author:content}
+        self.Gabriel.DeleteCur(Delete,server)
+        content = after.content
+        author = after.author.name
+        server = after.channel.guild.name
+        self.Gabriel.Save(content,author,server)
+    async def on_message_delete(self,message):
+        content = message.content
+        author = message.author.name
+        server = message.channel.guild.name
+        Delete = {author:content}
+        self.Gabriel.DeleteCur(Delete,server)
+        # self.Gabriel.
 
     async def on_voice_state_update(self,_Player_ : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
         OurServer = await self.fetch_guild(_Player_.guild.id)

@@ -1402,6 +1402,13 @@ class Gabriel():
                 file.write(str(self.Stats))
             return discord.Embed(title="Амнезия",description=f"Габриэль забыла все сохраненные строчки в Гильдии: **{Server}**")
 
+    def DeleteCur(self,Content,Server : str):
+        self.Read(Server)
+        self.Words.remove(Content)
+        self.Stats.update({"Words":self.Words})
+        with codecs.open(f"./Servers/{Server}/Words.txt","w",encoding='utf-8') as file:
+                file.write(str(self.Stats))
+
 
     def Save(self,Content : str,Who : str,Server : str):
         """ Сохранить слова """
