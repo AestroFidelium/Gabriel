@@ -76,6 +76,11 @@ class MyClient(discord.Client):
                 activity=discord.Activity(
                     type=discord.ActivityType.playing, 
                     name="технические работы"))
+        for emodji in self.emojis:
+            if emodji.id == 745998760361852999:
+                self.VoteOkay = emodji
+            elif emodji.id == 745997811518275595:
+                self.VoteBad = emodji
         self.MiniGame = MiniGame()
         self.Race = self.MiniGame.Race()
         self.Boss = Boss()
@@ -146,7 +151,7 @@ class MyClient(discord.Client):
                 await message.channel.send(f"Добрый день, извините, но я не работаю в личных сообщениях. Если вам нужна помощь то пожалуйста обратитесь за помощью к Гильдии **Боги и Кот**. \n{Reference.mention} : Канал где можно прочитать основную информацию об Гильдии\n{GeneralChannel.mention} : Канал где можно спросить что либо у участников. \n{GameChannel.mention} : Канал где нужно вводить все игровые команды\nУдачного вам дня.")
             return
 
-        IamMember = await Guild.fetch_member(414150542017953793)
+        # IamMember = await Guild.fetch_member(414150542017953793)
         IamUser = await self.fetch_user(414150542017953793)
 
         Content = str(Message.content)
@@ -515,6 +520,32 @@ class MyClient(discord.Client):
                 Embed = self.Race.AddRate(Player,ID,Gold)
                 
                 await Channel.send(embed=Embed)
+        elif Commands[0].upper() == "Vote".upper():
+            replaces = list()
+            replaces.append(Commands[0])
+            Title = GetFromMessage(Content,'"')
+            replaces.append(f'"{Title}"')
+
+            _Content = MessageReplaces(Content,replaces)
+            try:
+                Description = GetFromMessage(_Content,'"')
+                replaces.append(f'"{Description}"')
+                Embed = discord.Embed(title=Title,description=Description)
+            except: Embed = discord.Embed(title=Title)
+
+            Embed.set_author(name=Member.name,icon_url=User.avatar_url)
+            Embed.set_footer(text="Для выбора ответа, нажмите на реакцию")
+            _Content = MessageReplaces(Content,replaces)
+            try:
+                Image = GetFromMessage(_Content,'"')
+                if Image.find("https://") == -1:
+                    raise Error("Ожидалась ссылка")
+                Embed.set_image(url=Image)
+            except: pass
+            await Message.delete()
+            _Message = await Channel.send(embed=Embed)
+            await _Message.add_reaction(self.VoteOkay)
+            await _Message.add_reaction(self.VoteBad)
         else:
             if Message.author.bot == False:
                 if Admin == True:
@@ -653,21 +684,25 @@ class MyClient(discord.Client):
             await message.channel.send(embed=Embed,delete_after=60)
     
     async def on_message_edit(self,before,after):
-        content = before.content
-        author = before.author.name
-        server = before.channel.guild.name
-        Delete = {author:content}
-        self.Gabriel.DeleteCur(Delete,server)
-        content = after.content
-        author = after.author.name
-        server = after.channel.guild.name
-        self.Gabriel.Save(content,author,server)
+        try:
+            content = before.content
+            author = before.author.name
+            server = before.channel.guild.name
+            Delete = {author:content}
+            self.Gabriel.DeleteCur(Delete,server)
+            content = after.content
+            author = after.author.name
+            server = after.channel.guild.name
+            self.Gabriel.Save(content,author,server)
+        except: pass
     async def on_message_delete(self,message):
-        content = message.content
-        author = message.author.name
-        server = message.channel.guild.name
-        Delete = {author:content}
-        self.Gabriel.DeleteCur(Delete,server)
+        try:
+            content = message.content
+            author = message.author.name
+            server = message.channel.guild.name
+            Delete = {author:content}
+            self.Gabriel.DeleteCur(Delete,server)
+        except: pass
         # self.Gabriel.
 
     async def on_voice_state_update(self,_Player_ : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
@@ -777,6 +812,7 @@ class MyClient(discord.Client):
         DevelopGabriel = await self.fetch_guild(716945063351156736)
         EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
         Emoji = payload.emoji
+        MessageRoles = [714080637648240690,737503063409033247]
         if Message.id == 713880721709727754:
             if Player == self.user:
                 return
@@ -905,10 +941,7 @@ class MyClient(discord.Client):
                 Tasks.append(Task)
                 Tasks.append(Task2)
             asyncio.gather(*Tasks)
-        # -----------
-        #Роли
-        MessageRoles = [714080637648240690,737503063409033247]
-        if Message.id in MessageRoles:
+        elif Message.id in MessageRoles:
             if Player == self.user:
                 return
             await Message.remove_reaction(Emoji,Player)
@@ -967,8 +1000,13 @@ class MyClient(discord.Client):
             elif str(Emoji.name) == "Untitled3_circle": await self.AddOneRole(716391509502722060,Member,Guild,RolesID)
             elif str(Emoji.name) == "DarkGreen2_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)
             elif str(Emoji.name) == "Blue2_circle": await self.AddOneRole(716928286965498007,Member,Guild,RolesID)
+        elif Emoji == self.VoteOkay:
+            if Player != self.user:
+                await Message.remove_reaction(self.VoteBad,Member)
+        elif Emoji == self.VoteBad:
+            if Player != self.user:
+                await Message.remove_reaction(self.VoteOkay,Member)
 
-        #----
     async def AddOneRole(self,ID,Member,Guild,RolesID):
         Role = Guild.get_role(ID)
         await Member.add_roles(Role,reason="Выбрал роль")

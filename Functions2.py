@@ -2695,6 +2695,13 @@ def NowTime():
     Time = int(time.strftime("%H%M%S"))
     return Time
 
+def MessageReplaces(Content : str,replaces : list):
+    """ Заменить """
+    _Content = Content
+    for repl in replaces:
+        _Content = _Content.replace(repl,"")
+    return _Content
+
 if __name__ == "__main__":
     print(NowTime())
     _Gabriel = Gabriel()
