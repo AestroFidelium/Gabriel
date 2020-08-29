@@ -353,7 +353,7 @@ class MyClient(discord.Client):
                     Gold = Commands[2]
                     item = Item.Find(int(ID),Player)
                     try:
-                        item.Upgrade(int(Gold))
+                        await item.Upgrade(int(Gold),self,self.GodsAndCat,Member.id)
                         AllGold = ReplaceNumber(item.AllGold)
                         await Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
                     except:
@@ -416,16 +416,27 @@ class MyClient(discord.Client):
                 for _Embed in Embeds:
                     await Channel.send(embed=_Embed)
         elif Commands[0].upper() == "Talant".upper():
-            await Message.delete()
-            async with Channel.typing():
-                if Content.find('"') == -1:
-                    TalantName = Commands[1]
-                    Player.PickTalant(TalantName)
-                    await Channel.send(f"{TalantName} талант успешно поставлен")
-                else:
-                    TalantName = GetFromMessage(Content,'"')
-                    Player.PickTalant(TalantName)
-                    await Channel.send(f"{TalantName} талант успешно поставлен")
+            if Commands[1].upper() == "Point".upper():
+                await Message.delete()
+                async with Channel.typing():
+                    Name = str(Commands[2]).capitalize()
+                    Count = int(Commands[3])
+                    if Count > Player.Plus:
+                        Count = Player.Plus
+                    Answer = Player.PlusUpgrade(Count,Name)
+                    await Channel.send(embed=Answer)
+            else:
+                await Message.delete()
+                async with Channel.typing():
+                    if Content.find('"') == -1:
+                        TalantName = Commands[1]
+                        Player.PickTalant(TalantName)
+                        await Channel.send(f"{TalantName} талант успешно поставлен")
+                    else:
+                        TalantName = GetFromMessage(Content,'"')
+                        Player.PickTalant(TalantName)
+                        await Channel.send(f"{TalantName} талант успешно поставлен")
+        
         elif Commands[0].upper() == "Number".upper():
             await Message.delete()
             try:

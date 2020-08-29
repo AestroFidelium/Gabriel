@@ -1095,6 +1095,38 @@ class C_Player():
             self.LevelUp(C_Player.mode.one)
         else:
             self.Edit(Edit="Main",Exp=self.Exp)
+    def PlusUpgrade(self,Count : int, Name : str):
+        if Name == "Сила":
+            Plus = 0.001 * Count
+            self.Strength += Plus
+            Answer = discord.Embed(
+                title="Поинты талантов",
+                description=f"Количество : {Count}\nУлучшается на : {Plus}\nТекущая Сила : {self.Strength}",
+                colour=discord.Colour(14378289))
+            self.Edit(
+                Edit="Main",
+                Strength=self.Strength)
+        elif Name == "Ловкость":
+            Plus = 0.002 * Count
+            self.Agility += Plus
+            Answer = discord.Embed(
+                title="Поинты талантов",
+                description=f"Количество : {Count}\nУлучшается на : {Plus}\nТекущая Ловкость : {self.Agility}",
+                colour=discord.Colour(8055946))
+            self.Edit(
+                Edit="Main",
+                Agility=self.Agility)
+        elif Name == "Интеллект":
+            Plus = 0.005 * Count
+            self.Intelligence += Plus
+            Answer = discord.Embed(
+                title="Поинты талантов",
+                description=f"Количество : {Count}\nУлучшается на : {Plus}\nТекущий Интеллект : {self.Intelligence}",
+                colour=discord.Colour(8052972))
+            self.Edit(
+                Edit="Main",
+                Intelligence=self.Intelligence)
+        return Answer
     async def Regeneration(self):
         while True:
             SpeedTalant = self.GetTalant('Regeneration Speed')
@@ -1220,7 +1252,9 @@ class Item():
         elif self.TypeKey == "Equipment":
             self.Type = Item.Types.Equipment(self.Protect,Armor,self.Magic)
         self.Armor = Armor
-    def Upgrade(self,Gold):
+    async def Upgrade(self,Gold,Client,GodsAndCat,MemberID : int):
+        Evil = [721144024676827167,721144836199284848,691209621968519188,721145114558332938]
+        Good = [721145686414065664,721145861341446285,721146089369108511,578514024782626837]
         self.Player.Gold -= Gold
         if self.Player.Gold < 0: 
             self.Player.Gold == 0
@@ -1258,16 +1292,24 @@ class Item():
                     self.Protect += random.randint(10,131800000)
                     self.Armor += random.randint(10,900000)
                     self.MaxGold += random.randint(990000,2990000)
+                    try:
+                        Member = await GodsAndCat.fetch_member(MemberID)
+                        for role in Member.roles:
+                            if int(role.id) in Evil:
+                                self.Class = self.Classes.Демонический()
+                            elif int(role.id) in Good:
+                                self.Class = self.Classes.Божественный()
+                    except: pass
                 elif self.Class == self.Classes.Демонический():
-                    self.Damage += random.randint(5000000,9000000)
-                    self.Protect += random.randint(1000000,4000000)
-                    self.Armor += random.randint(7000,9000)
-                    self.MaxGold += 10000000000000
+                    self.Damage += random.randint(500000000,900000000)
+                    self.Protect += random.randint(100000000,400000000)
+                    self.Armor += random.randint(700000,900000)
+                    self.MaxGold += 10000000
                 elif self.Class == self.Classes.Божественный():
-                    self.Damage += random.randint(7000000,8350000)
-                    self.Protect += random.randint(2000000,3350000)
-                    self.Armor += random.randint(8000,8500)
-                    self.MaxGold += 10000000000000
+                    self.Damage += random.randint(700000000,835000000)
+                    self.Protect += random.randint(200000000,335000000)
+                    self.Armor += random.randint(800000,850000)
+                    self.MaxGold += 10000000
                 else:
                     self.MaxGold = 10000000000000000
                 if self.TypeKey == "Weapon":
