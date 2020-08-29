@@ -2411,7 +2411,7 @@ class Talant():
 
                                 self.Player.Edit(TalantPicked=key)
                     await asyncio.sleep(1)
-            except BaseException as Error: print(f"ERROR WITH TALANTS \n{Error}")
+            except BaseException as Error: print(f"{self.Player.Name} ERROR WITH TALANTS \n{Error}")
 
 class Shop():
     """ Магазин """
@@ -2702,10 +2702,49 @@ def MessageReplaces(Content : str,replaces : list):
         _Content = _Content.replace(repl,"")
     return _Content
 
+
+def Debuger(arg,Correct : "Класс ожидаемого объекта"):
+    """ Более подробное описание возникновения ошибки и её дальнейшее исправление """
+    arg_type = str(type(arg))
+    arg_type = arg_type.split("<class")[-1]
+    arg_type = arg_type.split(">")[0]
+
+    Correct_type = str(Correct)
+    Correct_type = Correct_type.split("<class")[-1]
+    Correct_type = Correct_type.split(">")[0]
+
+    if isinstance(arg,Correct) == False:
+        return f"Получен неверный аргумент{arg_type}. Ожидался аргумент{Correct_type}"
+
+
 if __name__ == "__main__":
-    print(NowTime())
-    _Gabriel = Gabriel()
-    _Gabriel.Delete(50,"Боги и Кот")
+    # print(NowTime())
+
+    _Danya = C_Player("JesusPilatus")
+    _Danya.Edit(
+        Edit="Main",
+        Health=7901,
+        MaxHealth= 39837,
+        Exp= 123, 
+        Level =101, 
+        Damage= 2243,
+        Gold= 4744328,
+        Strength= 11.099999999999971, 
+        Agility= 1.002, 
+        Intelligence= 1.005,
+    )
+    _Danya.Edit(
+        Edit="Main",
+        Health=7901,
+        MaxHealth= 39837,
+        Exp= 123, 
+        Level =101, 
+        Damage= 2243,
+        Gold= 4744328,
+        Strength= 11.099999999999971, 
+        Agility= 1.002, 
+        Intelligence= 1.005,
+    )
     # Players = os.listdir("./Stats/")
     # for Player in Players:
     #     if Player != "Main" and Player != "Boss":

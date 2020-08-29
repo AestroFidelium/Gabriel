@@ -23,9 +23,11 @@ def InternetActive():
 
 
 class MyClient(discord.Client):
+
     async def on_ready(self):
         self.PATH_VERSION = "."
         print(f"Logged on as , {self.user} MODULE : bot2.py")
+        Tasks = list()
         randomStatus = random.randint(0,7)
         with codecs.open(f"Ready.txt","r",encoding='utf-8') as file:
             Working = str(file.readline())
@@ -87,7 +89,7 @@ class MyClient(discord.Client):
         self.Messages = list()
         self.BanList = list()
         self.AgainTheMessage = dict()
-        Tasks = list()
+        
         Tasks.append(asyncio.create_task(self.Boss.Respawn()))
         Tasks.append(asyncio.create_task(self.Race.Main(self)))
         for Player in os.listdir(f"./Stats/"):
@@ -287,11 +289,16 @@ class MyClient(discord.Client):
                         await Channel.send(f"`{Player.Name}` взял(а) ежедневный бонус в размере {GetGold} золотых")
                     else:
                         await Channel.send(f"`{Player.Name}`, Вы уже брали ежедневный бонус в размере {Player.BonusGold} золотых")
-            elif Message.author == IamUser:
-                if Commands[1].upper() == "Create".upper():
-                    async with Channel.typing():
-                        self.Boss.Create()
-                        await Channel.send(f"Создан новый босс")
+            else:
+                if Message.author == IamUser:
+                    if Commands[1].upper() == "Create".upper():
+                        async with Channel.typing():
+                            self.Boss.Create()
+                            await Channel.send(f"Создан новый босс")
+                    else:
+                        raise Error("Команды не существует")
+                else:
+                    raise Error("Команды не существует")
         elif Commands[0].upper() == "Inv".upper():
             await Message.delete()
             async with Channel.typing():
@@ -324,22 +331,34 @@ class MyClient(discord.Client):
         elif Commands[0].upper() == "Item".upper():
             await Message.delete()
             async with Channel.typing():
-                ID = int(Commands[1])
-                item = Item.Find(ID,Player)
-                AllGold = ReplaceNumber(item.AllGold)
-                await Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
+                try:
+                    ID = Commands[1]
+                    item = Item.Find(int(ID),Player)
+                    AllGold = ReplaceNumber(item.AllGold)
+                    await Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
+                except IndexError:
+                    raise CommandError("Нужно указать ID предмета","Item","Item ID")
+                except ValueError:
+                    raise CommandError(f"{Debuger(ID,int)}\nНужно передавать ID предмета","Item","Item ID")
+                except:
+                    raise Error("Этот предмет сломан, либо его не существует")
         elif Commands[0].upper() == "Upgrade_Item".upper():
             await Message.delete()
             async with Channel.typing():
-                ID = int(Commands[1])
-                Gold = int(Commands[2])
-                item = Item.Find(ID,Player)
                 try:
-                    item.Upgrade(Gold)
-                    AllGold = ReplaceNumber(item.AllGold)
-                    await Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
-                except:
-                    await Channel.send(f"Предмет не найден")
+                    ID = Commands[1]
+                    Gold = Commands[2]
+                    item = Item.Find(int(ID),Player)
+                    try:
+                        item.Upgrade(int(Gold))
+                        AllGold = ReplaceNumber(item.AllGold)
+                        await Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
+                    except:
+                        await Channel.send(f"Предмет не найден")
+                except IndexError:
+                    raise CommandError("Пропущен обязательный аргумент","Upgrade_Item","Upgrade_Item ID Монеты")
+                except ValueError:
+                    raise Error(f"Оба аргумента должны быть в 'int'")
         elif Commands[0].upper() == "G".upper():
             await Message.delete()
             if MUTE == True: return
@@ -406,8 +425,14 @@ class MyClient(discord.Client):
                     await Channel.send(f"{TalantName} талант успешно поставлен")
         elif Commands[0].upper() == "Number".upper():
             await Message.delete()
-            Number = ReplaceNumber(int(Commands[1]))
-            await Channel.send(Number)
+            try:
+                Count = Commands[1]
+                Number = ReplaceNumber(int(Count))
+                await Channel.send(Number)
+            except IndexError:
+                raise CommandError("2 обязательный аргумент является целое число","Number","Number число")
+            except ValueError:
+                raise Error(Debuger(Count,int))
         elif Commands[0].upper() == "Equip".upper():
             await Message.delete()
             async with Channel.typing():
@@ -480,11 +505,16 @@ class MyClient(discord.Client):
         elif Commands[0].upper() == "Shop".upper():
             await Message.delete()
             async with Channel.typing():
-                Product = Commands[1]
-                Count = int(Commands[2])
-                Embed = Shop().Buy(Player,Product,Count)
-                Embed.set_author(name=Player.Name,url=User.avatar_url,icon_url=User.avatar_url)
-                await Channel.send(embed=Embed)
+                try:
+                    Product = Commands[1]
+                    Count = Commands[2]
+                    Embed = Shop().Buy(Player,Product,int(Count))
+                    Embed.set_author(name=Player.Name,url=User.avatar_url,icon_url=User.avatar_url)
+                    await Channel.send(embed=Embed)
+                except IndexError:
+                    raise CommandError("Пропущен обязательный аргумент","Shop","Shop Товар Количество")
+                except ValueError:
+                    raise Error(f"2 Аргумент {Debuger(Count,int)}")
         elif Commands[0].upper() == "Wiki".upper():
             await Message.delete()
             async with Channel.typing():
@@ -622,6 +652,18 @@ class MyClient(discord.Client):
                 Player.LevelUp(C_Player.mode.multiply,count=Level)
                 R_Level = ReplaceNumber(Level)
                 await Channel.send(embed=discord.Embed(title="Поздравляем",description=f"Вы получили {R_Level} уровней",colour=discord.Colour(6655214)))
+            elif Commands[0].upper() == "Develop".upper():
+                await self.change_presence(
+                    status=discord.Status.dnd,
+                    activity=discord.Activity(
+                        type=discord.ActivityType.playing, 
+                        name="технические работы"))
+            elif Commands[0].upper() == "Work".upper():
+                await self.change_presence(
+                    activity=discord.Activity(
+                        type=discord.ActivityType.watching, 
+                        name="новое обновление"))
+        
         if Content.count(")") > 0:
             if Message.author != self.user:
                 async with Channel.typing():
@@ -680,8 +722,9 @@ class MyClient(discord.Client):
             Embed = discord.Embed(title="Предупреждение",description=f"{Error.Message} \nСлово : {Error.Word} \nКоличество предупреждений {Error.Warns}/{Error.MaxWarns}",colour=discord.Colour.gold())
             await message.channel.send(embed=Embed,delete_after=60)
         except BaseException as Error:
-            Embed = discord.Embed(title="Ошибка",description=str(Error),colour=discord.Colour.red())
-            await message.channel.send(embed=Embed,delete_after=60)
+            if str(Error) != "404 Not Found (error code: 10008): Unknown Message":
+                Embed = discord.Embed(title="Ошибка",description=str(Error),colour=discord.Colour.red())
+                await message.channel.send(embed=Embed,delete_after=60)
     
     async def on_message_edit(self,before,after):
         try:
