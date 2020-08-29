@@ -1052,8 +1052,42 @@ class C_Player():
             print(Speed)
             print(Amount)
             await asyncio.sleep(Speed)
+    async def Repair(self):
+        while True:
+            Repair = self.GetTalant("Repair")
 
+            try:
+                self.Left_hand.ArmorEdit(self.Left_hand.Armor + 3 * Repair.Level)
+                self.RewriteItem(self.Left_hand)
+                self.EquipmentItem(self.Left_hand.ID,"Left_hand")
+            except: pass
+            try:
+                self.Right_hand.ArmorEdit(self.Right_hand.Armor + 3 * Repair.Level)
+                self.RewriteItem(self.Right_hand)
+                self.EquipmentItem(self.Right_hand.ID,"Right_hand")
+            except: pass
+            try:
+                self.Head.ArmorEdit(self.Head.Armor + 3 * Repair.Level)
+                self.RewriteItem(self.Head)
+                self.EquipmentItem(self.Head.ID,"Head")
+            except: pass
+            try:
+                self.Body.ArmorEdit(self.Body.Armor + 3 * Repair.Level)
+                self.RewriteItem(self.Body)
+                self.EquipmentItem(self.Body.ID,"Body")
+            except: pass
+            try:
+                self.Legs.ArmorEdit(self.Legs.Armor + 3 * Repair.Level)
+                self.RewriteItem(self.Legs)
+                self.EquipmentItem(self.Legs.ID,"Legs")
+            except: pass
+            try:
+                self.Boot.ArmorEdit(self.Boot.Armor + 3 * Repair.Level)
+                self.RewriteItem(self.Boot)
+                self.EquipmentItem(self.Boot.ID,"Boot")
+            except: pass
 
+            await asyncio.sleep(600)
 
 class Item():
     """
@@ -1176,8 +1210,13 @@ class Item():
                 else:
                     self.MaxGold = 10000000000000000
                 if self.TypeKey == "Weapon":
+                    Blacksmith = self.Player.GetTalant('Blacksmith')
+                    self.Damage += (2 * Blacksmith.Level) / 100
+                    self.Armor += (2 * Blacksmith.Level) / 100
                     self.Type = self.Types.Weapon(self.Damage,self.Armor,self.Magic)
                 elif self.TypeKey == "Equipment":
+                    self.Protect += (2 * Blacksmith.Level) / 100
+                    self.Armor += (2 * Blacksmith.Level) / 100
                     self.Type = self.Types.Equipment(self.Protect,self.Armor,self.Magic)
             self.Player.RemoveInventor(self.ID)
             self.Player.AddInventor(
@@ -2770,12 +2809,13 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
 
 if __name__ == "__main__":
     iam = C_Player("KOT32500")
-    
-    asyncio.run(iam.Regeneration())
-    # iam.PickTalant("Regeneration Amount")
-    # _Talant = Talant(iam,iam.Talants[iam.TalantPicked],iam.TalantPicked)
+    print(iam.Left_hand.Armor)
+
+    asyncio.run(iam.Repair())
+    iam.PickTalant("Repair")
+    _Talant = Talant(iam,iam.Talants[iam.TalantPicked],iam.TalantPicked)
     # asyncio.run(_Talant.Update())
-    # tt= iam.GetTalant(iam.TalantPicked)
-    # print(str(tt))
+    tt= iam.GetTalant(iam.TalantPicked)
+    print(str(tt))
     
     
