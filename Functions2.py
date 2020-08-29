@@ -1037,6 +1037,24 @@ class C_Player():
         Protect += self.Legs.Protect
         Protect += self.Boot.Protect
         return Protect
+    def AddHealth(self,Amount : int):
+        self.Health += Amount
+        if self.Health > self.MaxHealth:
+            self.Health = self.MaxHealth
+        self.Edit(Edit="Main",Health=self.Health)
+    async def Regeneration(self):
+        while True:
+            SpeedTalant = self.GetTalant('Regeneration Speed')
+            AmountTalant = self.GetTalant('Regeneration Amount')
+            Speed = 60 - SpeedTalant.Level
+            Amount = 10 * AmountTalant.Level
+            self.AddHealth(Amount)
+            print(Speed)
+            print(Amount)
+            await asyncio.sleep(Speed)
+
+
+
 class Item():
     """
     Предмет
@@ -2752,10 +2770,12 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
 
 if __name__ == "__main__":
     iam = C_Player("KOT32500")
-    iam.PickTalant("Regeneration")
+    
+    asyncio.run(iam.Regeneration())
+    # iam.PickTalant("Regeneration Amount")
     # _Talant = Talant(iam,iam.Talants[iam.TalantPicked],iam.TalantPicked)
     # asyncio.run(_Talant.Update())
-    tt= iam.GetTalant(iam.TalantPicked)
-    print(str(tt))
+    # tt= iam.GetTalant(iam.TalantPicked)
+    # print(str(tt))
     
     

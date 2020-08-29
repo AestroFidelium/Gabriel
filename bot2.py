@@ -98,6 +98,7 @@ class MyClient(discord.Client):
             try:
                 _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
                 Tasks.append(asyncio.create_task(_Talant.Update()))
+                Tasks.append(asyncio.create_task(Player.Regeneration()))
             except KeyError: pass
         Tasks.append(asyncio.create_task(self.MembersBanned()))
         asyncio.gather(*Tasks)
@@ -170,9 +171,9 @@ class MyClient(discord.Client):
         if Player.Exp >= Player.Level * 500:
             Player.LevelUp(C_Player.mode.one)
 
-        Player.Exp += 1
+        Player.Exp += 1 + Player.GetTalant("More Exp").Level
         Player.Messages += 1
-        if Player.Messages >= 5:
+        if Player.Messages >= 5 - Player.GetTalant("More Gold").Level:
             Player.Messages = 0
             Player.Gold += 1
         Player.Edit(
