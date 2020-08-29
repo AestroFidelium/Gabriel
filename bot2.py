@@ -653,11 +653,12 @@ class MyClient(discord.Client):
                 R_Level = ReplaceNumber(Level)
                 await Channel.send(embed=discord.Embed(title="Поздравляем",description=f"Вы получили {R_Level} уровней",colour=discord.Colour(6655214)))
             elif Commands[0].upper() == "Develop".upper():
+                Title = GetFromMessage(Content,'"')
                 await self.change_presence(
                     status=discord.Status.dnd,
                     activity=discord.Activity(
                         type=discord.ActivityType.playing, 
-                        name="технические работы"))
+                        name=Title))
             elif Commands[0].upper() == "Work".upper():
                 await self.change_presence(
                     activity=discord.Activity(

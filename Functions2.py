@@ -467,7 +467,8 @@ class C_Player():
                 "Age" : None,
                 "Gender" : None,
                 "Activity" : None,
-                "About me" : None
+                "About me" : None,
+                "ID" : None
             }
         }
         self.NewAccount = False
@@ -2398,21 +2399,53 @@ class Talant():
                     else:
                         await asyncio.sleep(5)
                 else:
+                    
                     Be = False
                     for NeedAt in self.NeedAt:
-                        for key in NeedAt.keys():
-                            Requester = NeedAt[key]
+                        if isinstance(NeedAt,str) == False:
+                            for key in NeedAt.keys():
+                                Requester = NeedAt[key]
+                                NeedLevel = Requester["Level"]
+                                Talant_ = self.Player.GetTalant(key)
+                                if Talant_.Level < NeedLevel and Be == False:
+                                    Be = True
+
+                                    self.Edit(Talant_)
+
+                                    self.Player.Edit(TalantPicked=key)
+                        else:
+                            Requester = self.NeedAt[NeedAt]
                             NeedLevel = Requester["Level"]
-                            Talant_ = self.Player.GetTalant(key)
+                            Talant_ = self.Player.GetTalant(NeedAt)
                             if Talant_.Level < NeedLevel and Be == False:
                                 Be = True
 
                                 self.Edit(Talant_)
 
                                 self.Player.Edit(TalantPicked=key)
+                    if Be == False:
+                        self.Player.UpdateTalant(Lock=0)
                     await asyncio.sleep(1)
-            except BaseException as Error: print(f"{self.Player.Name} ERROR WITH TALANTS \n{Error}")
+            except BaseException as Error:
+                await asyncio.sleep(1)
+                print(f"{self.Player.Name} ERROR WITH TALANTS \n{Error}")
 
+    def __str__(self):
+        dct = {
+            "MainName":self.MainName,
+            "Name": self.Name,
+            "Description": self.Description,
+            "PerLevel" : self.PerLevel,
+            "Level": self.Level,
+            "MaxLevel" : self.MaxLevel,
+            "Exp" : self.Exp,
+            "NeedExp" : self.NeedExp,
+            "Player" : self.Player.Name,
+            "Ready" : self.Ready,
+            "Lock" : self.Lock,
+            "NeedAt" : self.NeedAt
+                }
+        return str(dct)
 class Shop():
     """ Магазин """
 
@@ -2718,38 +2751,11 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
 
 
 if __name__ == "__main__":
-    # print(NowTime())
-
-    _Danya = C_Player("JesusPilatus")
-    _Danya.Edit(
-        Edit="Main",
-        Health=7901,
-        MaxHealth= 39837,
-        Exp= 123, 
-        Level =101, 
-        Damage= 2243,
-        Gold= 4744328,
-        Strength= 11.099999999999971, 
-        Agility= 1.002, 
-        Intelligence= 1.005,
-    )
-    _Danya.Edit(
-        Edit="Main",
-        Health=7901,
-        MaxHealth= 39837,
-        Exp= 123, 
-        Level =101, 
-        Damage= 2243,
-        Gold= 4744328,
-        Strength= 11.099999999999971, 
-        Agility= 1.002, 
-        Intelligence= 1.005,
-    )
-    # Players = os.listdir("./Stats/")
-    # for Player in Players:
-    #     if Player != "Main" and Player != "Boss":
-    #         Player = Player.split(".txt")[0]
-    #         Player = C_Player(Player)
-    #         Player.NewAcc()
-    # Iam = C_Player("KOT32500")
+    iam = C_Player("KOT32500")
+    iam.PickTalant("Regeneration")
+    # _Talant = Talant(iam,iam.Talants[iam.TalantPicked],iam.TalantPicked)
+    # asyncio.run(_Talant.Update())
+    tt= iam.GetTalant(iam.TalantPicked)
+    print(str(tt))
+    
     
