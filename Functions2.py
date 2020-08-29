@@ -788,7 +788,8 @@ class C_Player():
         self.Damage += random.randint(8,35) * count
         self.Level += 1 * count
         self.Exp = 0
-        if self.Level > self.MaxLevel:
+        Determination = self.GetTalant('Determination')
+        if self.Level > self.MaxLevel and Determination.Ready == False:
             self.Plus += self.Level - self.MaxLevel
             self.MaxLevel = self.Level
         self.Strength += 0.001 * count
@@ -1029,6 +1030,9 @@ class C_Player():
         GetDamage *= self.Strength
 
         GetDamage = round(GetDamage)
+        Determination = self.GetTalant('Determination')
+        if Determination.Ready:
+            GetDamage *= 2
 
         return GetDamage
     def MaxProtect(self):
@@ -1036,11 +1040,18 @@ class C_Player():
         Protect += self.Body.Protect
         Protect += self.Legs.Protect
         Protect += self.Boot.Protect
+        Determination = self.GetTalant('Determination')
+        if Determination.Ready:
+            Protect *= 2
         return Protect
     def AddHealth(self,Amount : int):
+        Determination = self.GetTalant('Determination')
+        if Determination.Ready:
+            Amount *= 2
         self.Health += Amount
         if self.Health > self.MaxHealth:
             self.Health = self.MaxHealth
+
         self.Edit(Edit="Main",Health=self.Health)
     async def Regeneration(self):
         while True:
