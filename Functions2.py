@@ -952,7 +952,7 @@ class C_Player():
     def Attack(self,Target):
         """Атаковать указанную цель"""
         GetDamage = random.randint(1,self.MaxDamage())
-        Target.Health -= GetDamage
+        Target.GetDamage(GetDamage)
         
         try:
             self.Left_hand.ArmorEdit(self.Left_hand.Armor - 1)
@@ -964,31 +964,20 @@ class C_Player():
             self.RewriteItem(self.Right_hand)
             self.EquipmentItem(self.Right_hand.ID,"Right_hand")
         except: pass
-        try:
-            Target.Head.ArmorEdit(self.Head.Armor - 1)
-            Target.RewriteItem(self.Head)
-            Target.EquipmentItem(self.Head.ID,self.Head.Where)
-        except: pass
-        try:
-            Target.Body.ArmorEdit(self.Body.Armor - 1)
-            Target.RewriteItem(self.Body)
-            Target.EquipmentItem(self.Body.ID,self.Body.Where)
-        except: pass
-        try:
-            Target.Legs.ArmorEdit(self.Legs.Armor - 1)
-            Target.RewriteItem(self.Legs)
-            Target.EquipmentItem(self.Legs.ID,self.Legs.Where)
-        except: pass
-        try:
-            Target.Boot.ArmorEdit(self.Boot.Armor - 1)
-            Target.RewriteItem(self.Boot)
-            Target.EquipmentItem(self.Boot.ID,self.Boot.Where)
-        except: pass
+        
         if Target.Health <= 0:
             Count = int(Target.Level / 5)
-            LostStatus = Target.LostLevel(Count)
+            LostStatus = {
+                    "Status"       : "Dead",
+                    "Level"        : Target.Level,
+                    "Damage"       : Target.Damage,
+                    "Health"       : Target.Health,
+                    "Agility"      : Target.Agility,
+                    "Intelligence" : Target.Intelligence,
+                    "Strength"     : Target.Strength,
+                    "GetDamage"    : GetDamage
+                }
             self.LevelUp(self.mode.multiply,count=Count)
-            LostStatus.update({"GetDamage":GetDamage})
             return LostStatus
         else:
             Target.Edit(
@@ -1057,6 +1046,43 @@ class C_Player():
             self.Health = self.MaxHealth
 
         self.Edit(Edit="Main",Health=self.Health)
+    def GetDamage(self,Amount : int):
+        Amount -= self.MaxProtect()
+        if Amount < 0: Amount = 1
+        Invincible = self.GetTalant('Invincible')
+        Need = 500 * Invincible.Level
+        self.Health -= Amount
+        if self.Health < Need:
+            self.Health = Need
+        try:
+            self.Head.ArmorEdit(self.Head.Armor - 1)
+            self.RewriteItem(self.Head)
+            self.EquipmentItem(self.Head.ID,self.Head.Where)
+        except: pass
+        try:
+            self.Body.ArmorEdit(self.Body.Armor - 1)
+            self.RewriteItem(self.Body)
+            self.EquipmentItem(self.Body.ID,self.Body.Where)
+        except: pass
+        try:
+            self.Legs.ArmorEdit(self.Legs.Armor - 1)
+            self.RewriteItem(self.Legs)
+            self.EquipmentItem(self.Legs.ID,self.Legs.Where)
+        except: pass
+        try:
+            self.Boot.ArmorEdit(self.Boot.Armor - 1)
+            self.RewriteItem(self.Boot)
+            self.EquipmentItem(self.Boot.ID,self.Boot.Where)
+        except: pass
+        if self.Health <= 0:
+            self.Death()
+        else:
+            self.Edit(
+                Edit="Main",
+                Health = Target.Health)
+    def Death(self):
+        Count = int(self.Level / 5)
+        self.LostLevel(Count)
     async def Regeneration(self):
         while True:
             SpeedTalant = self.GetTalant('Regeneration Speed')
@@ -1064,8 +1090,6 @@ class C_Player():
             Speed = 60 - SpeedTalant.Level
             Amount = 10 * AmountTalant.Level
             self.AddHealth(Amount)
-            print(Speed)
-            print(Amount)
             await asyncio.sleep(Speed)
     async def Repair(self):
         while True:
@@ -2824,13 +2848,13 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
 
 if __name__ == "__main__":
     iam = C_Player("KOT32500")
-    print(iam.Left_hand.Armor)
+    # print(iam.Left_hand.Armor)
 
-    asyncio.run(iam.Repair())
-    iam.PickTalant("Repair")
-    _Talant = Talant(iam,iam.Talants[iam.TalantPicked],iam.TalantPicked)
-    # asyncio.run(_Talant.Update())
-    tt= iam.GetTalant(iam.TalantPicked)
-    print(str(tt))
+    # asyncio.run(iam.Repair())
+    # iam.PickTalant("Repair")
+    # _Talant = Talant(iam,iam.Talants[iam.TalantPicked],iam.TalantPicked)
+    # # asyncio.run(_Talant.Update())
+    # tt= iam.GetTalant(iam.TalantPicked)
+    # print(str(tt))
     
     
