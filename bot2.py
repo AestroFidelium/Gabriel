@@ -100,6 +100,7 @@ class MyClient(discord.Client):
                 Tasks.append(asyncio.create_task(_Talant.Update()))
                 Tasks.append(asyncio.create_task(Player.Regeneration()))
                 Tasks.append(asyncio.create_task(Player.Repair()))
+                Tasks.append(asyncio.create_task(Player.GeneratorExp()))
             except KeyError: pass
         Tasks.append(asyncio.create_task(self.MembersBanned()))
         asyncio.gather(*Tasks)

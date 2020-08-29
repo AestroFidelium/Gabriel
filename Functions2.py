@@ -810,8 +810,8 @@ class C_Player():
     def LostLevel(self,count):
         """ Потерять уровень. """
         lostHealth = random.randint(55,100) * count
-        self.Health -= lostHealth
         self.MaxHealth -= lostHealth
+        self.Health = self.MaxHealth
         if self.Health <= 0:
             self.Health = 35
         if self.MaxHealth <= 0:
@@ -1014,7 +1014,7 @@ class C_Player():
         GetDamage = 1 + self.Damage + self.Left_hand.Damage + self.Right_hand.Damage
         
         MoreDamage = self.GetTalant("More Damage")
-        GetDamage += (5 * MoreDamage.Level) / 100
+        GetDamage += GetDamage * ((5 * MoreDamage.Level) / 100)
 
         GetDamage *= self.Strength
 
@@ -1026,6 +1026,13 @@ class C_Player():
         Annihilator = self.GetTalant('Annihilator')
         if random.randint(0,1000) <= Annihilator.Level:
             GetDamage *= 5
+
+        Berserk = self.GetTalant('Berserk')
+        Procent = (self.Health * 100) / self.MaxHealth
+        Procent -= 100
+        print(int(Procent))
+        GetDamage += GetDamage * ((Procent * Berserk.Level) / 100)
+
 
         return GetDamage
     def MaxProtect(self):
@@ -1049,11 +1056,16 @@ class C_Player():
     def GetDamage(self,Amount : int):
         Amount -= self.MaxProtect()
         if Amount < 0: Amount = 1
-        Invincible = self.GetTalant('Invincible')
-        Need = 500 * Invincible.Level
+    
         self.Health -= Amount
-        if self.Health < Need:
-            self.Health = Need
+        
+        if self.Health <= 0:
+            self.Death()
+        else:
+            self.Edit(
+                Edit="Main",
+                Health = self.Health)
+
         try:
             self.Head.ArmorEdit(self.Head.Armor - 1)
             self.RewriteItem(self.Head)
@@ -1074,15 +1086,15 @@ class C_Player():
             self.RewriteItem(self.Boot)
             self.EquipmentItem(self.Boot.ID,self.Boot.Where)
         except: pass
-        if self.Health <= 0:
-            self.Death()
-        else:
-            self.Edit(
-                Edit="Main",
-                Health = Target.Health)
     def Death(self):
         Count = int(self.Level / 5)
         self.LostLevel(Count)
+    def GetExp(self,Amount : int):
+        self.Exp += Amount
+        if self.Exp >= self.Level * 500:
+            self.LevelUp(C_Player.mode.one)
+        else:
+            self.Edit(Edit="Main",Exp=self.Exp)
     async def Regeneration(self):
         while True:
             SpeedTalant = self.GetTalant('Regeneration Speed')
@@ -1090,6 +1102,16 @@ class C_Player():
             Speed = 60 - SpeedTalant.Level
             Amount = 10 * AmountTalant.Level
             self.AddHealth(Amount)
+            await asyncio.sleep(Speed)
+    async def GeneratorExp(self):
+        while True:
+            Generator = self.GetTalant('Passive Generator')
+            SpeedTalant = self.GetTalant('Updater Generator Amount')
+            AmountTalant = self.GetTalant('Updater Generator Speed')
+            Speed = 3600 - (60 * SpeedTalant.Level)
+            Amount = 10 * AmountTalant.Level
+            if Generator.Ready:
+                self.GetExp(Amount)
             await asyncio.sleep(Speed)
     async def Repair(self):
         while True:
@@ -2848,12 +2870,15 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
 
 if __name__ == "__main__":
     iam = C_Player("KOT32500")
-    # print(iam.Left_hand.Armor)
+    print(iam.Exp)
+    # iam.PickTalant('Updater Generator Speed')
+    # iam.UpdateTalant(Level=1)
+    asyncio.run(iam.GeneratorExp())
 
     # asyncio.run(iam.Repair())
-    # iam.PickTalant("Repair")
+    # iam.PickTalant("More Damage")
     # _Talant = Talant(iam,iam.Talants[iam.TalantPicked],iam.TalantPicked)
-    # # asyncio.run(_Talant.Update())
+    # asyncio.run(_Talant.Update())
     # tt= iam.GetTalant(iam.TalantPicked)
     # print(str(tt))
     
