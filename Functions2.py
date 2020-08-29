@@ -1033,6 +1033,10 @@ class C_Player():
         Determination = self.GetTalant('Determination')
         if Determination.Ready:
             GetDamage *= 2
+        
+        Annihilator = self.GetTalant('Annihilator')
+        if random.randint(0,1000) <= Annihilator.Level:
+            GetDamage *= 5
 
         return GetDamage
     def MaxProtect(self):
