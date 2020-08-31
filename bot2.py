@@ -96,11 +96,15 @@ class MyClient(discord.Client):
             Player = Player.split(".txt")[0]
             Player = C_Player(Player)
             try:
-                _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
-                Tasks.append(asyncio.create_task(_Talant.Update()))
-                Tasks.append(asyncio.create_task(Player.Regeneration()))
-                Tasks.append(asyncio.create_task(Player.Repair()))
-                Tasks.append(asyncio.create_task(Player.GeneratorExp()))
+                try:
+                    try:
+                        _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
+                        Tasks.append(asyncio.create_task(_Talant.Update()))
+                    except: pass
+                    Tasks.append(asyncio.create_task(Player.Regeneration()))
+                    Tasks.append(asyncio.create_task(Player.Repair()))
+                    Tasks.append(asyncio.create_task(Player.GeneratorExp()))
+                except: print(f"{Player.Name} Error with corutines")
             except KeyError: pass
         Tasks.append(asyncio.create_task(self.MembersBanned()))
         asyncio.gather(*Tasks)

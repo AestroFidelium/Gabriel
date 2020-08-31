@@ -480,6 +480,9 @@ class C_Player():
                 file.write(str(self.StartStats))
                 self.Stats = self.StartStats
                 self.NewAccount = True
+        except:
+            print(f"{self.Name} ошибка при прочтении")
+            raise Error("Не смогла открыть профиль")
 
         self._selfStats()
         if self.NewAccount == True: self.NewAcc()
@@ -1097,6 +1100,7 @@ class C_Player():
             self.Edit(Edit="Main",Exp=self.Exp)
     def PlusUpgrade(self,Count : int, Name : str):
         if Name == "Сила":
+            self.Plus -= Count
             Plus = 0.001 * Count
             self.Strength += Plus
             Answer = discord.Embed(
@@ -1105,8 +1109,10 @@ class C_Player():
                 colour=discord.Colour(14378289))
             self.Edit(
                 Edit="Main",
-                Strength=self.Strength)
+                Strength=self.Strength,
+                Plus=self.Plus)
         elif Name == "Ловкость":
+            self.Plus -= Count
             Plus = 0.002 * Count
             self.Agility += Plus
             Answer = discord.Embed(
@@ -1115,8 +1121,10 @@ class C_Player():
                 colour=discord.Colour(8055946))
             self.Edit(
                 Edit="Main",
-                Agility=self.Agility)
+                Agility=self.Agility,
+                Plus=self.Plus)
         elif Name == "Интеллект":
+            self.Plus -= Count
             Plus = 0.005 * Count
             self.Intelligence += Plus
             Answer = discord.Embed(
@@ -1125,7 +1133,10 @@ class C_Player():
                 colour=discord.Colour(8052972))
             self.Edit(
                 Edit="Main",
-                Intelligence=self.Intelligence)
+                Intelligence=self.Intelligence,
+                Plus=self.Plus)
+        else:
+            raise CommandError("Ошибка в команде","Talant Point","Talant Point Сила(Ловкость или Интеллект) Количество поинтов")
         return Answer
     async def Regeneration(self):
         while True:
@@ -2488,6 +2499,7 @@ class Talant():
     def __init__(self,Player : C_Player,Talant,MainName):
         self.MainName = MainName
         self.Name = Talant["Name"]
+        # if self.Name == "Талант не выбран": return
         self.Description = Talant["Description"]
         self.PerLevel = Talant["PerLevel"]
 
@@ -2912,10 +2924,7 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
 
 if __name__ == "__main__":
     iam = C_Player("KOT32500")
-    print(iam.Exp)
-    # iam.PickTalant('Updater Generator Speed')
-    # iam.UpdateTalant(Level=1)
-    asyncio.run(iam.GeneratorExp())
+    _Talant = Talant(iam,iam.Talants["Талант не выбран"],iam.TalantPicked)
 
     # asyncio.run(iam.Repair())
     # iam.PickTalant("More Damage")
