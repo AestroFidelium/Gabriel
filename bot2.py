@@ -119,7 +119,7 @@ class MyClient(discord.Client):
                 self.C_Guilds.append(Guild)
                 Tasks.append(asyncio.create_task(self.WannaSpeak(Guild)))
                 print(f"{GuildName} загружена")
-            
+        
         print("работает все да")
     
     async def MembersBanned(self):
@@ -158,14 +158,17 @@ class MyClient(discord.Client):
                     rand -= 1
                     ChannelID = Guild.ChannelsForSaveWords[rand]
                     Channel = await self.fetch_channel(ChannelID)
-                    Message = self.Gabriel.Message(random.randint(Guild.StandartWords[0],Guild.StandartWords[1]),Guild.Name,"Usual")
-                    # print(Message)
-                    BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0",'<#>',"@",'\n']
-                    async with Channel.typing():
-                        for bd in BadList: Message = Message.replace(bd,"")
-                        await Channel.send(Message)
+                    
+                    history = await Channel.history(limit=1).flatten()
+                    history = history[0]
+                    if history.author.bot == False:
+                        Message = self.Gabriel.Message(random.randint(Guild.StandartWords[0],Guild.StandartWords[1]),Guild.Name,"Usual")
+                        BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0",'<#>',"@"]
+                        async with Channel.typing():
+                            for bd in BadList: Message = Message.replace(bd,"")
+                            await Channel.send(Message)
             except BaseException as Error:
-                print(f"{Error} with Guild : {Guild.Name}")
+                print(f"{Error}\n({Guild.Name})\n\n")
             await asyncio.sleep(Guild.EveryTime)
     async def Command(self,message):
         """ Команды """
@@ -398,40 +401,37 @@ class MyClient(discord.Client):
         elif Commands[0].upper() == "G".upper():
             await Message.delete()
             if MUTE == True: return
-            BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0",'<#>',"@",'\n']
             async with Channel.typing():
                 try:
                     if Commands[1].upper() == "S".upper():
                         try: Count = int(Commands[2])
                         except: Count = random.randint(Guild_Function.StandartWords)
                         _Message = self.Gabriel.Message(Count,Guild.name,"Usual")
-                        for bd in BadList: _Message = _Message.replace(bd,"")
                         await Channel.send(_Message)
                     elif Commands[1].upper() == "D".upper():
                         try: Count = int(Commands[2])
                         except: Count = random.randint(3,7)
                         _Message = self.Gabriel.Message(Count,Guild.name,"D")
-                        for bd in BadList: _Message = _Message.replace(bd,"")
                         await Channel.send(_Message)
                     elif Commands[1].upper() == "B".upper():
                         try: Count = int(Commands[2])
                         except: Count = random.randint(3,7)
                         _Message = self.Gabriel.Message(Count,Guild.name,"B")
-                        for bd in BadList: _Message = _Message.replace(bd,"")
+
                         await Channel.send(_Message)
                     else:
                         Types = ["Usual","D","B"]
                         try: Count = int(Commands[2])
                         except: Count = random.randint(3,7)
                         _Message = self.Gabriel.Message(Count,Guild.name,Types[random.randint(0,2)])
-                        for bd in BadList: _Message = _Message.replace(bd,"")
+
                         await Channel.send(_Message)
                 except:
                     Types = ["Usual","D","B"]
                     try: Count = int(Commands[2])
                     except: Count = random.randint(3,7)
                     _Message = self.Gabriel.Message(Count,Guild.name,Types[random.randint(0,2)])
-                    for bd in BadList: _Message = _Message.replace(bd,"")
+
                     await Channel.send(_Message)
         elif Commands[0].upper() == "Talants".upper():
             await Message.delete()
@@ -632,10 +632,8 @@ class MyClient(discord.Client):
             if Message.author.bot == False:
                 if random.randint(1,100) >= Guild_Function.ChanceSays:
                     try:
-                        BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0",'\n']
                         Count = random.randint(Guild_Function.StandartWords)
                         _Message = self.Gabriel.Message(Count,Guild.name,"Usual")
-                        for bd in BadList: _Message = _Message.replace(bd,"")
                         await Channel.send(_Message)
                     except: pass
                 if Admin == True:
@@ -663,7 +661,7 @@ class MyClient(discord.Client):
                         await Message.delete()
                         async with Channel.typing():
                             await Channel.send(Guild_Function.BadWords)
-                    if Commands[0].upper() == "Gabriel".upper():
+                    elif Commands[0].upper() == "Gabriel".upper():
                         if Commands[1].upper() == "Setup".upper():
                             await Guild_Function.Setup(Channel)
                         elif Commands[1].upper() == "AddChannel".upper():
@@ -683,6 +681,8 @@ class MyClient(discord.Client):
                                     Guild_Function.ChannelWithIgnoreCommand.append(ChannelID)
                                     Guild_Function.SaveStats()
                                     await Channel.send(f"Этот канал стал быть противным `{ChannelID}`")
+                                else:
+                                    await Channel.send(f"Этот канал и так противен мне`{ChannelID}`")
                             except: raise Error("Канал не найден")
                         elif Commands[1].upper() == "BanRemoveChannel".upper():
                             try:
@@ -711,7 +711,7 @@ class MyClient(discord.Client):
                             except: raise Error(Debuger(Count1,int))
 
                             try: 
-                                Count2 = Commands[2]
+                                Count2 = Commands[3]
                                 Count2 = int(Count2)
                             except: raise Error(Debuger(Count2,int))
 
@@ -733,20 +733,112 @@ class MyClient(discord.Client):
                             await Channel.send(f"Теперь я использую с {Count1} слов до {Count2}")
                         elif Commands[1].upper() == "Speak".upper():
                             try:
-                                Guild_Function.Speak = bool(Commands[2])
+                                Say = bool(int(Commands[2]))
+                                Guild_Function.Speak = Say
                                 Guild_Function.SaveStats()
-                            except: raise CommandError("Следует отправлять в аргументе 1 либо 0. Или True либо False","Gabriel Speak","Gabriel Speak True")
+                                if Say:
+                                    await Channel.send(f"Спасибо что разрешаете мне разговаривать")
+                                else:
+                                    await Channel.send(f":C")
+                            except: raise CommandError("Следует отправлять в аргументе 1 либо 0","Gabriel Speak","Gabriel Speak 1")
                         elif Commands[1].upper() == "EveryTime".upper():
-                            try:
-                                Count = Commands[2]
-                                try: Count = int(Count)
-                                except: raise Error(Debug(Count,int))
-                                if Count < 30:
-                                    Count = 30
-                                    await Channel.send("Не могу установить скорость ниже 30 секунд.")
-                                Guild_Function.EveryTime = Count
-                                Guild_Function.SaveStats()
-                            except: raise CommandError("Следует отправлять в аргументе 1 либо 0. Или True либо False","Gabriel Speak","Gabriel Speak True")
+                            Count = Commands[2]
+                            try: Count = int(Count)
+                            except: raise Error(Debug(Count,int))
+                            if Count < 30:
+                                Count = 30
+                                await Channel.send("Не могу установить скорость ниже 30 секунд.")
+                            Guild_Function.EveryTime = Count
+                            Guild_Function.SaveStats()
+                            await Channel.send(f"Теперь я разговариваю сама, каждые {Count}с.")
+                        elif Commands[1].upper() == "Help".upper():
+                            Embed = discord.Embed(title='Команды для Габриэль',description="Для того чтобы ими воспользоваться, вам нужны права админа")
+                            Embed.add_field(
+                                name="Setup",
+                                value=f"Устанавливает этот канал главным. А так же создает голосовой канал `{Guild_Function.NameToCreateRoom}`",
+                                inline=False)
+                            Embed.add_field(
+                                name="AddChannel",
+                                value=f"Добавить канал в список общения",
+                                inline=False)
+                            Embed.add_field(
+                                name="RemoveChannel",
+                                value=f"Убрать канал из списка общения",
+                                inline=False)
+                            Embed.add_field(
+                                name="BanAddChannel",
+                                value=f"Буду игнорировать канал",
+                                inline=False)
+                            Embed.add_field(
+                                name="BanRemoveChannel",
+                                value=f"Не буду игнорировать канал",
+                                inline=False)
+                            Embed.add_field(
+                                name="Chance",
+                                value=f"Изменить шанс, при котором я общаюсь с вами",
+                                inline=False)
+                            Embed.add_field(
+                                name="Words",
+                                value=f"Изменить минимальное и максимальное количество слов, которые я использую",
+                                inline=False)
+                            Embed.add_field(
+                                name="Speak",
+                                value=f"Разрешить мне общаться без команд",
+                                inline=False)
+                            Embed.add_field(
+                                name="EveryTime",
+                                value=f"Каждые {Guild_Function.EveryTime} секунд я буду общаться с вами",
+                                inline=False)
+                            await Channel.send(embed=Embed)
+                        else:
+                            Embed = discord.Embed(title='Команды для Габриэль',description="Для того чтобы ими воспользоваться, вам нужны права админа")
+                            Embed.add_field(
+                                name="Setup",
+                                value=f"Устанавливает этот канал главным. А так же создает голосовой канал `{Guild_Function.NameToCreateRoom}`",
+                                inline=False)
+                            Embed.add_field(
+                                name="AddChannel",
+                                value=f"Добавить канал в список общения",
+                                inline=False)
+                            Embed.add_field(
+                                name="RemoveChannel",
+                                value=f"Убрать канал из списка общения",
+                                inline=False)
+                            Embed.add_field(
+                                name="BanAddChannel",
+                                value=f"Буду игнорировать канал",
+                                inline=False)
+                            Embed.add_field(
+                                name="BanRemoveChannel",
+                                value=f"Не буду игнорировать канал",
+                                inline=False)
+                            Embed.add_field(
+                                name="Chance",
+                                value=f"Изменить шанс, при котором я общаюсь с вами",
+                                inline=False)
+                            Embed.add_field(
+                                name="Words",
+                                value=f"Изменить минимальное и максимальное количество слов, которые я использую",
+                                inline=False)
+                            Embed.add_field(
+                                name="Speak",
+                                value=f"Разрешить мне общаться без команд",
+                                inline=False)
+                            Embed.add_field(
+                                name="EveryTime",
+                                value=f"Каждые {Guild_Function.EveryTime} секунд я буду общаться с вами",
+                                inline=False)
+                            await Channel.send(embed=Embed)
+                    elif Commands[0].upper() == "ReadMessages".upper():
+                        Count = int(Commands[1])
+                        if Count > 700:
+                            Count = 700
+                        async for message in Channel.history(limit=Count):
+                            if message.author != self.user:
+                                Content = message.content
+                                PlayerName = message.author.name
+                                Content = Content.replace('░',"")
+                                self.Gabriel.Save(Content,PlayerName,Guild.name)
                     else:
                         if Message.author != self.user:
                             await Guild_Function.CheckMessage(Message,Content,Member)

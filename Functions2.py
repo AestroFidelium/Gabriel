@@ -1445,6 +1445,7 @@ class Gabriel():
         ReturnMessage = ""
         self.GetMessages(ServerName)
         if CountMessages == 0: CountMessages = 1
+        BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0"]
         if Mode == "Usual":
             while CountMessages > 0:
                 try:
@@ -1460,10 +1461,14 @@ class Gabriel():
                         message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
                         for content in message.Content.split(" "):
                             if CountMessages <= 0:
+                                for bl in BadList:
+                                    ReturnMessage = ReturnMessage.replace(bl,"")
                                 return ReturnMessage
                             if random.randint(0,1) == 1:
                                 ReturnMessage += f"{content} "
                                 CountMessages -= 1
+            for bl in BadList:
+                ReturnMessage = ReturnMessage.replace(bl,"")
             return ReturnMessage
         elif Mode == "D":
             try:
@@ -1488,6 +1493,8 @@ class Gabriel():
                 BadLetter = [")","$","%","^","&","*",";",'"',"'"]
                 for replace in BadLetter: Title = Title.replace(replace,"")
                 ReturnMessage += Title.capitalize()
+                for bl in BadList:
+                    ReturnMessage = ReturnMessage.replace(bl,"")
                 
                 # Поиск участников диалога
 
@@ -1527,17 +1534,12 @@ class Gabriel():
                                                     Content += f"{content} "
                                                     _preCount += 1
                     for replace in BadLetter: Content = Content.replace(replace,"")
+                    for bl in BadList:
+                        Content = Content.replace(bl,"")
                     ReturnMessage += Content.capitalize()
                     OldSay = NowSay
-
-
-
-
-
-
-
-                
-            except ValueError: return ReturnMessage
+            except ValueError: 
+                return ReturnMessage
             return ReturnMessage
         elif Mode == "B":
             try:
@@ -1557,8 +1559,12 @@ class Gabriel():
                                     Count += 1
                                     PreCount += 1
                     ReturnMessage += "\n@\n"
-            except ValueError: return ReturnMessage[:len(ReturnMessage) - 3:]
-
+            except ValueError: 
+                for bl in BadList:
+                    ReturnMessage = ReturnMessage.replace(bl,"")
+                return ReturnMessage[:len(ReturnMessage) - 3:]
+            for bl in BadList:
+                ReturnMessage = ReturnMessage.replace(bl,"")
             return ReturnMessage[:len(ReturnMessage) - 3:]
     
     def Delete(self,Count : int,Server : str):
@@ -1694,7 +1700,7 @@ class C_Guild():
             "ChannelsForSaveWords" : [],
             "ChannelWithIgnoreCommand": [],
             "ChanceSays" : 35,
-            "StandartWords" : "1:35",
+            "StandartWords" : (1,35),
             "IngoreMember" : [],
             "ID" : GuildID,
             "Name" : GuildName,
@@ -1766,8 +1772,7 @@ class C_Guild():
         self.ChannelsForSaveWords = self.Stats["ChannelsForSaveWords"]
         self.ChannelWithIgnoreCommand = self.Stats["ChannelWithIgnoreCommand"]
         self.ChanceSays = self.Stats["ChanceSays"]
-        StandartWords = self.Stats["StandartWords"].split(":")
-        self.StandartWords = (int(StandartWords[0]),int(StandartWords[1]))
+        self.StandartWords = self.Stats['StandartWords']
         self.IngoreMember = self.Stats["IngoreMember"]
         self.Name = self.Stats["Name"]
         self.MainChannel = self.Stats["MainChannel"]
