@@ -1445,13 +1445,15 @@ class Gabriel():
         ReturnMessage = ""
         self.GetMessages(ServerName)
         if CountMessages == 0: CountMessages = 1
-        BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0"]
+        BadList = ["!",'@',"&","1","2","3","4","5","6","7","8","9","0",'<','>',")","$","%","^","&","*",";",'"',"'",'-','=','+']
         if Mode == "Usual":
             while CountMessages > 0:
                 try:
                     message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
                 except: raise Error("Габриэль знает слишко мало слов")
                 for content in message.Content.split(" "):
+                    for bl in BadList:
+                        content = content.replace(bl,"")
                     if CountMessages <= 0:
                         return ReturnMessage
                     if random.randint(0,1) == 1:
@@ -1460,15 +1462,13 @@ class Gabriel():
                     elif random.randint(0,1) == 1:
                         message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
                         for content in message.Content.split(" "):
+                            for bl in BadList:
+                                content = content.replace(bl,"")
                             if CountMessages <= 0:
-                                for bl in BadList:
-                                    ReturnMessage = ReturnMessage.replace(bl,"")
                                 return ReturnMessage
                             if random.randint(0,1) == 1:
                                 ReturnMessage += f"{content} "
                                 CountMessages -= 1
-            for bl in BadList:
-                ReturnMessage = ReturnMessage.replace(bl,"")
             return ReturnMessage
         elif Mode == "D":
             try:
@@ -1488,13 +1488,12 @@ class Gabriel():
                                     for content in Message.Content.split(" "):
                                         if random.randint(0,3) != 1 or _preCount < 3:
                                             if content != "" and content != " ":
+                                                for bl in BadList:
+                                                    content = content.replace(bl,"")
                                                 Title += f"{content} "
                                                 _preCount += 1
-                BadLetter = [")","$","%","^","&","*",";",'"',"'"]
-                for replace in BadLetter: Title = Title.replace(replace,"")
+
                 ReturnMessage += Title.capitalize()
-                for bl in BadList:
-                    ReturnMessage = ReturnMessage.replace(bl,"")
                 
                 # Поиск участников диалога
 
@@ -1533,7 +1532,6 @@ class Gabriel():
                                                 if content != "" and content != " ":
                                                     Content += f"{content} "
                                                     _preCount += 1
-                    for replace in BadLetter: Content = Content.replace(replace,"")
                     for bl in BadList:
                         Content = Content.replace(bl,"")
                     ReturnMessage += Content.capitalize()
@@ -1555,16 +1553,14 @@ class Gabriel():
                             PreCount = 0
                             for content in Message.Content.split(" "):
                                 if random.randint(0,3) != 1 or PreCount == 0:
+                                    for bl in BadList:
+                                        content = content.replace(bl,"")
                                     ReturnMessage += f"{content} "
                                     Count += 1
                                     PreCount += 1
                     ReturnMessage += "\n@\n"
             except ValueError: 
-                for bl in BadList:
-                    ReturnMessage = ReturnMessage.replace(bl,"")
                 return ReturnMessage[:len(ReturnMessage) - 3:]
-            for bl in BadList:
-                ReturnMessage = ReturnMessage.replace(bl,"")
             return ReturnMessage[:len(ReturnMessage) - 3:]
     
     def Delete(self,Count : int,Server : str):

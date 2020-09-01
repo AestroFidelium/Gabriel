@@ -93,9 +93,9 @@ class MyClient(discord.Client):
         Tasks.append(asyncio.create_task(self.Boss.Respawn()))
         Tasks.append(asyncio.create_task(self.Race.Main(self)))
         for Player in os.listdir(f"./Stats/"):
-            Player = Player.split(".txt")[0]
-            Player = C_Player(Player)
             try:
+                Player = Player.split(".txt")[0]
+                Player = C_Player(Player)
                 try:
                     try:
                         _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
@@ -106,6 +106,8 @@ class MyClient(discord.Client):
                     Tasks.append(asyncio.create_task(Player.GeneratorExp()))
                 except: print(f"{Player.Name} Error with corutines")
             except KeyError: pass
+            except Error as error:
+                print(error)
         Tasks.append(asyncio.create_task(self.MembersBanned()))
         asyncio.gather(*Tasks)
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
@@ -691,6 +693,57 @@ class MyClient(discord.Client):
                                 Guild_Function.SaveStats()
                                 await Channel.send(f"Этот канал перестал быть противным `{ChannelID}`")
                             except: raise Error("Канал не найден")
+                        elif Commands[1].upper() == "Channels".upper():
+                            Embed = discord.Embed(title='Каналы')
+                            Embed.add_field(
+                                name="Каналы где я общаюсь с вами",
+                                value=f"{Guild_Function.ChannelsForSaveWords}",
+                                inline=False)
+                            Embed.add_field(
+                                name="Каналы где меня нет",
+                                value=f"{Guild_Function.ChannelWithIgnoreCommand}",
+                                inline=False)
+                            await Channel.send(embed=Embed)
+                        elif Commands[1].upper() == "Info".upper():
+                            Embed = discord.Embed(title='Информация о Гильдии')
+                            Embed.add_field(
+                                name="Каналы где я могу разговаривать",
+                                value=f"{Guild_Function.ChannelsForSaveWords}",
+                                inline=False)
+                            Embed.add_field(
+                                name="Каналы которые мне не интересны",
+                                value=f"{Guild_Function.ChannelWithIgnoreCommand}",
+                                inline=False)
+                            Embed.add_field(
+                                name="С каким шансом мне стоит отвечать?",
+                                value=f"{Guild_Function.ChanceSays}%",
+                                inline=False)
+                            Embed.add_field(
+                                name="Сколько слов я могу использовать? от мин. до макс.",
+                                value=f"{Guild_Function.StandartWords}",
+                                inline=False)
+                            Embed.add_field(
+                                name="Эти личности мне не интересны",
+                                value=f"{Guild_Function.IngoreMember}",
+                                inline=False)
+                            Embed.add_field(
+                                name="Главный канал",
+                                value=f"{Guild_Function.MainChannel}",
+                                inline=False)
+                            Embed.add_field(
+                                name="Канал который я создала",
+                                value=f"{Guild_Function.CreatedChannel}",
+                                inline=False)
+                            Embed.add_field(
+                                name="Могу ли я сама разговаривать?",
+                                value=f"{Guild_Function.Speak} \nИмеется ввиду, что если каналы настроены верно, то каждые {Guild_Function.EveryTime} секунд, она будет писать, если последнее сообщение не от лица бота",
+                                inline=False)
+                            Embed.add_field(
+                                name="Как часто я могу разговаривать?",
+                                value=f"{Guild_Function.EveryTime}с.",
+                                inline=False)
+                                                       
+                            await Channel.send(embed=Embed)
                         elif Commands[1].upper() == "Chance".upper():
                             try: 
                                 Count = Commands[2]
@@ -789,50 +842,27 @@ class MyClient(discord.Client):
                                 name="EveryTime",
                                 value=f"Каждые {Guild_Function.EveryTime} секунд я буду общаться с вами",
                                 inline=False)
+                            Embed.add_field(
+                                name="Help",
+                                value=f"Помощь по этому списку команд",
+                                inline=False)
+                            Embed.add_field(
+                                name="Info",
+                                value=f"Узнать текущую информацию об Гильдии",
+                                inline=False)
                             await Channel.send(embed=Embed)
                         else:
-                            Embed = discord.Embed(title='Команды для Габриэль',description="Для того чтобы ими воспользоваться, вам нужны права админа")
-                            Embed.add_field(
-                                name="Setup",
-                                value=f"Устанавливает этот канал главным. А так же создает голосовой канал `{Guild_Function.NameToCreateRoom}`",
-                                inline=False)
-                            Embed.add_field(
-                                name="AddChannel",
-                                value=f"Добавить канал в список общения",
-                                inline=False)
-                            Embed.add_field(
-                                name="RemoveChannel",
-                                value=f"Убрать канал из списка общения",
-                                inline=False)
-                            Embed.add_field(
-                                name="BanAddChannel",
-                                value=f"Буду игнорировать канал",
-                                inline=False)
-                            Embed.add_field(
-                                name="BanRemoveChannel",
-                                value=f"Не буду игнорировать канал",
-                                inline=False)
-                            Embed.add_field(
-                                name="Chance",
-                                value=f"Изменить шанс, при котором я общаюсь с вами",
-                                inline=False)
-                            Embed.add_field(
-                                name="Words",
-                                value=f"Изменить минимальное и максимальное количество слов, которые я использую",
-                                inline=False)
-                            Embed.add_field(
-                                name="Speak",
-                                value=f"Разрешить мне общаться без команд",
-                                inline=False)
-                            Embed.add_field(
-                                name="EveryTime",
-                                value=f"Каждые {Guild_Function.EveryTime} секунд я буду общаться с вами",
-                                inline=False)
+                            Embed = discord.Embed(title='Команды для Габриэль',description="Вероятно вы где то ошиблись, попробуйте прочитать `Gabriel Help`")
+                            
                             await Channel.send(embed=Embed)
                     elif Commands[0].upper() == "ReadMessages".upper():
                         Count = int(Commands[1])
                         if Count > 700:
                             Count = 700
+                        try:
+                            ChannelID = int(Commands[2])
+                            Channel = await self.fetch_channel(ChannelID)
+                        except: pass
                         async for message in Channel.history(limit=Count):
                             if message.author != self.user:
                                 Content = message.content
