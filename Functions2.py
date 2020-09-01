@@ -1447,7 +1447,9 @@ class Gabriel():
         if CountMessages == 0: CountMessages = 1
         if Mode == "Usual":
             while CountMessages > 0:
-                message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                try:
+                    message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                except: raise Error("Габриэль знает слишко мало слов")
                 for content in message.Content.split(" "):
                     if CountMessages <= 0:
                         return ReturnMessage
@@ -1674,7 +1676,7 @@ class Gabriel():
                     return Embed
 
 class C_Guild():
-    def __init__(self,Client,GuildName : str):
+    def __init__(self,Client,GuildID : int,GuildName : str):
         self.PATH = f"./Servers/{GuildName}"
         self.Client = Client
         self.StandartStats = {
@@ -1685,9 +1687,21 @@ class C_Guild():
                 "Do" : "Say without the words"
             },
             "Rooms" : {
-                "Save" : [],
+                "Save" : ["Создать комнату","Резерв","Музыка"],
                 "General" : []
-            }
+            },
+            "NameToCreateRoom": "Создать комнату",
+            "ChannelsForSaveWords" : [],
+            "ChannelWithIgnoreCommand": [],
+            "ChanceSays" : 35,
+            "StandartWords" : "1:35",
+            "IngoreMember" : [],
+            "ID" : GuildID,
+            "Name" : GuildName,
+            "MainChannel" : None,
+            "CreatedChannel" : None,
+            "Speak" : True,
+            "EveryTime" : 300
         }
         self.Main()
     
@@ -1747,6 +1761,19 @@ class C_Guild():
     def _selfStats(self):
         self.Moderators = self.Stats['Moderators']
         self.Rooms = self.Stats['Rooms']
+        self.ID = self.Stats["ID"]
+        self.NameToCreateRoom = self.Stats["NameToCreateRoom"]
+        self.ChannelsForSaveWords = self.Stats["ChannelsForSaveWords"]
+        self.ChannelWithIgnoreCommand = self.Stats["ChannelWithIgnoreCommand"]
+        self.ChanceSays = self.Stats["ChanceSays"]
+        StandartWords = self.Stats["StandartWords"].split(":")
+        self.StandartWords = (int(StandartWords[0]),int(StandartWords[1]))
+        self.IngoreMember = self.Stats["IngoreMember"]
+        self.Name = self.Stats["Name"]
+        self.MainChannel = self.Stats["MainChannel"]
+        self.CreatedChannel = self.Stats["CreatedChannel"]
+        self.Speak = self.Stats['Speak']
+        self.EveryTime = self.Stats['EveryTime']
 
         self.BadWords = self.Moderators['Bad Words']
         self.Players = self.Moderators['Players with Warns']
@@ -1756,17 +1783,39 @@ class C_Guild():
         self.Save = self.Rooms['Save']
         self.General = self.Rooms['General']
 
+    def Edit(self,**fields):
+        self.Stats.update(fields)
+        self.SaveStats()
+        self._selfStats()
+
     def Main(self):
         try: os.makedirs(self.PATH)
         except: pass
+        self.New = False
         try:
             with codecs.open(f"{self.PATH}/Main.txt","r",encoding="utf-8") as file:
                 self.Stats = StrToDict(str(file.readline()))
         except:
             with codecs.open(f"{self.PATH}/Main.txt","w",encoding="utf-8") as file:
+                self.New = True
                 self.Stats = self.StandartStats
                 file.write(str(self.Stats))
         self._selfStats()
+    def AddChannel(self,ChannelID):
+        if ChannelID not in self.ChannelsForSaveWords:
+            self.ChannelsForSaveWords.append(ChannelID)
+    async def Setup(self,Channel : discord.TextChannel):
+        """ Установка Габриэль в Гильдию """
+        Guild = await self.Client.fetch_guild(self.ID)
+        self.MainChannel = Channel.id
+        self.AddChannel(Channel.id)
+
+        await Guild.create_voice_channel(name="Создать комнату")
+        await Channel.send(embed=discord.Embed(title="Установка",description=f'`{Channel.name}` - Установлен как основной канал\nБыла создана голосовая комната с именем `Создать комнату`'))
+        await Channel.send(embed=discord.Embed(
+            title="Текущие настройки",
+            description=f'Основной канал : `{self.MainChannel}`\nГолосовую комнату зайду когда будите в : `{self.NameToCreateRoom}`\nКаналы где я могу общаться с вами : `{self.ChannelsForSaveWords}`\nТекстовые каналы которые мне противны : `{self.ChannelWithIgnoreCommand}`\nШанс что я захочу ответить вам : `{self.ChanceSays}% / 100%`\nСколько слов я могу себе позволить? : `{self.StandartWords}`\nУчастники которые мне противны : `{self.IngoreMember}`\nID Гильдии : `{self.ID}`\nМогу я общаться, даже когда вы все молчите? : `{self.Speak}`\nОбщаться буду каждые : `{self.EveryTime} секунд`'))
+        self.SaveStats()
 
 def _writeInPicture(area,content,font,draw,color):
     """ Рисовать что либо на холсте """
@@ -2090,7 +2139,7 @@ class Boss():
                                 Item.CreateName("Медный шлем","Легкий шлем, особо не защищает"),
                             ]
                             self.GetItem = Player.AddInventor(
-                                Type = Item.Types.Equipment(random.randint(100,350),random.randint(75,100),RandomEquipment,None),
+                                Type = Item.Types.Equipment(random.randint(1000000,3500000),random.randint(75,100),RandomEquipment,None),
                                 Name = Names[random.randint(0,len(Names) - 1)],
                                 Class = Item.Classes.Первоначальный(),
                                 ID=random.randint(1,9999999999),
@@ -2154,7 +2203,7 @@ class Boss():
                             Item.CreateName("Железный топор","Обычный топор, который можно взять в руки как оружие")
                         ]
                         self.GetItem = Player.AddInventor(
-                            Type = Item.Types.Weapon(random.randint(5000,30000),random.randint(1000,3000),None),
+                            Type = Item.Types.Weapon(random.randint(500000000,30000000000),random.randint(1000000,300000),None),
                             Name = Names[random.randint(0,len(Names) - 1)],
                             Class = Item.Classes.Обычный(),
                             ID=random.randint(1,9999999999),
@@ -2173,7 +2222,7 @@ class Boss():
                                     Item.CreateName("Шлем стражника","Шлем который носят стражники")
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(1800,2200),random.randint(1000,2000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(1000800,22000000),random.randint(1000,2000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Обычный(),
                                     ID=random.randint(1,9999999999),
@@ -2189,7 +2238,7 @@ class Boss():
                                     Item.CreateName("Мантия","Мантия которую носили волшебники"),
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(3000,4000),random.randint(2000,2500),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(30000000,40000000),random.randint(2000,2500),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Обычный(),
                                     ID=random.randint(1,9999999999),
@@ -2254,7 +2303,7 @@ class Boss():
                             Item.CreateName("Платиновый меч","Меч которое обычно экипированы герои")
                         ]
                         self.GetItem = Player.AddInventor(
-                            Type = Item.Types.Weapon(random.randint(53000,80000),random.randint(7000,13000),None),
+                            Type = Item.Types.Weapon(random.randint(53000000000000,80000000000000),random.randint(7000,13000),None),
                             Name = Names[random.randint(0,len(Names) - 1)],
                             Class = Item.Classes.Редкий(),
                             ID=random.randint(1,9999999999),
@@ -2274,7 +2323,7 @@ class Boss():
                                     Item.CreateName("Шлем мага","Шлем который носят маги")
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(20000,30000),random.randint(10000,20000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(20000000000000,30000000000000),random.randint(10000,20000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Редкий(),
                                     ID=random.randint(1,9999999999),
@@ -2289,7 +2338,7 @@ class Boss():
                                     Item.CreateName("Мантия мага","Мантия которую носят маги")
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(50000,150000),random.randint(30000,50000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(50000000000,150000000000),random.randint(30000,50000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Редкий(),
                                     ID=random.randint(1,9999999999),
@@ -2303,7 +2352,7 @@ class Boss():
                                     Item.CreateName("Поножи тени","Поножи которые выдают войнам тени, за их подвиги"),
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(35000,50000),random.randint(25000,30000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(35000000000,50000000000),random.randint(25000,30000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Редкий(),
                                     ID=random.randint(1,9999999999),
@@ -2317,7 +2366,7 @@ class Boss():
                                     Item.CreateName("Сабатоны тени","Сабатоны которые выдают войнам тени, за их подвиги")
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(30000,40000),random.randint(20000,25000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(30000000000,40000000000),random.randint(20000,25000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Редкий(),
                                     ID=random.randint(1,9999999999),
@@ -2353,7 +2402,7 @@ class Boss():
                             Item.CreateName("Убийца Мурлоков","Клинок который заколенный в боях против мурлоков")
                         ]
                         self.GetItem = Player.AddInventor(
-                            Type = Item.Types.Weapon(random.randint(800000,9000000),random.randint(9000,33000),None),
+                            Type = Item.Types.Weapon(random.randint(8000000000000000000,90000000000000000000),random.randint(9000,33000),None),
                             Name = Names[random.randint(0,len(Names) - 1)],
                             Class = Item.Classes.Эпический(),
                             ID=random.randint(1,9999999999),
@@ -2373,7 +2422,7 @@ class Boss():
                                     Item.CreateName("Драконий Шлем","Шлем выкованный из Драконией чешуи")
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(1000000,2000000),random.randint(33000,50000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(10000000000000000000,20000000000000000000),random.randint(33000,50000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Эпический(),
                                     ID=random.randint(1,9999999999),
@@ -2388,7 +2437,7 @@ class Boss():
                                     Item.CreateName("Драконья кираса","Кираса выкованная из Драконией чешуи")
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(5000000,55000000),random.randint(300000,500000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(50000000000000000000,550000000000000000000),random.randint(300000,500000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Эпический(),
                                     ID=random.randint(1,9999999999),
@@ -2403,7 +2452,7 @@ class Boss():
                                     Item.CreateName("Драконье Поножи","Поножи выкованные из Драконией чешуи")
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(1000000,2000000),random.randint(33000,50000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(10000000000000000000,20000000000000000000),random.randint(33000,50000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Эпический(),
                                     ID=random.randint(1,9999999999),
@@ -2418,7 +2467,7 @@ class Boss():
                                     Item.CreateName("Драконье сабатоны","Сабатоны выкованные из Драконией чешуи")
                                 ]
                                 self.GetItem = Player.AddInventor(
-                                    Type = Item.Types.Equipment(random.randint(800000,1000000),random.randint(33000,50000),RandomEquipment,None),
+                                    Type = Item.Types.Equipment(random.randint(8000000000000000000,10000000000000000000),random.randint(33000,50000),RandomEquipment,None),
                                     Name = Names[random.randint(0,len(Names) - 1)],
                                     Class = Item.Classes.Эпический(),
                                     ID=random.randint(1,9999999999),
@@ -2923,8 +2972,7 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
 
 
 if __name__ == "__main__":
-    iam = C_Player("KOT32500")
-    _Talant = Talant(iam,iam.Talants["Талант не выбран"],iam.TalantPicked)
+    pass
 
     # asyncio.run(iam.Repair())
     # iam.PickTalant("More Damage")

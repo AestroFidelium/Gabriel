@@ -110,6 +110,16 @@ class MyClient(discord.Client):
         asyncio.gather(*Tasks)
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
         self.Gabriel = Gabriel()
+        self.C_Guilds = list()
+        for GuildName in os.listdir(f"./Servers"):
+            with codecs.open(f"./Servers/{GuildName}/Main.txt","r",encoding='utf-8') as file:
+                Stats = StrToDict(str(file.readline()))
+                GuildID = Stats['ID']
+                Guild = C_Guild(self,GuildID,GuildName)
+                self.C_Guilds.append(Guild)
+                Tasks.append(asyncio.create_task(self.WannaSpeak(Guild)))
+                print(f"{GuildName} загружена")
+            
         print("работает все да")
     
     async def MembersBanned(self):
@@ -139,8 +149,24 @@ class MyClient(discord.Client):
                     return Return(True)
         except:
             return Return(False)
-        
-
+    
+    async def WannaSpeak(self,Guild : C_Guild):
+        while True:
+            try:
+                if Guild.Speak == True:
+                    rand = len(Guild.ChannelsForSaveWords)
+                    rand -= 1
+                    ChannelID = Guild.ChannelsForSaveWords[rand]
+                    Channel = await self.fetch_channel(ChannelID)
+                    Message = self.Gabriel.Message(random.randint(Guild.StandartWords[0],Guild.StandartWords[1]),Guild.Name,"Usual")
+                    # print(Message)
+                    BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0",'<#>',"@",'\n']
+                    async with Channel.typing():
+                        for bd in BadList: Message = Message.replace(bd,"")
+                        await Channel.send(Message)
+            except BaseException as Error:
+                print(f"{Error} with Guild : {Guild.Name}")
+            await asyncio.sleep(Guild.EveryTime)
     async def Command(self,message):
         """ Команды """
 
@@ -151,7 +177,10 @@ class MyClient(discord.Client):
         
         if str(Channel.type) != "private":
             Guild = await self.fetch_guild(message.channel.guild.id)
-            Guild_Function = C_Guild(self,Guild.name)
+            Guild_Function = C_Guild(self,Guild.id,Guild.name)
+            if Guild_Function.New == True:
+                self.C_Guilds.append(Guild_Function)
+                print(f"`{Guild_Function.Name}` Новая Гильдия загружена в список Гильдий")
         else:
             if message.author != self.user:
                 Reference = await self.fetch_channel(623070280973156353)
@@ -369,34 +398,40 @@ class MyClient(discord.Client):
         elif Commands[0].upper() == "G".upper():
             await Message.delete()
             if MUTE == True: return
+            BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0",'<#>',"@",'\n']
             async with Channel.typing():
                 try:
                     if Commands[1].upper() == "S".upper():
                         try: Count = int(Commands[2])
-                        except: Count = random.randint(1,35)
+                        except: Count = random.randint(Guild_Function.StandartWords)
                         _Message = self.Gabriel.Message(Count,Guild.name,"Usual")
+                        for bd in BadList: _Message = _Message.replace(bd,"")
                         await Channel.send(_Message)
                     elif Commands[1].upper() == "D".upper():
                         try: Count = int(Commands[2])
                         except: Count = random.randint(3,7)
                         _Message = self.Gabriel.Message(Count,Guild.name,"D")
+                        for bd in BadList: _Message = _Message.replace(bd,"")
                         await Channel.send(_Message)
                     elif Commands[1].upper() == "B".upper():
                         try: Count = int(Commands[2])
                         except: Count = random.randint(3,7)
                         _Message = self.Gabriel.Message(Count,Guild.name,"B")
+                        for bd in BadList: _Message = _Message.replace(bd,"")
                         await Channel.send(_Message)
                     else:
                         Types = ["Usual","D","B"]
                         try: Count = int(Commands[2])
                         except: Count = random.randint(3,7)
                         _Message = self.Gabriel.Message(Count,Guild.name,Types[random.randint(0,2)])
+                        for bd in BadList: _Message = _Message.replace(bd,"")
                         await Channel.send(_Message)
                 except:
                     Types = ["Usual","D","B"]
                     try: Count = int(Commands[2])
                     except: Count = random.randint(3,7)
                     _Message = self.Gabriel.Message(Count,Guild.name,Types[random.randint(0,2)])
+                    for bd in BadList: _Message = _Message.replace(bd,"")
                     await Channel.send(_Message)
         elif Commands[0].upper() == "Talants".upper():
             await Message.delete()
@@ -440,7 +475,6 @@ class MyClient(discord.Client):
                         TalantName = GetFromMessage(Content,'"')
                         Player.PickTalant(TalantName)
                         await Channel.send(f"{TalantName} талант успешно поставлен")
-        
         elif Commands[0].upper() == "Number".upper():
             await Message.delete()
             try:
@@ -596,6 +630,14 @@ class MyClient(discord.Client):
             await _Message.add_reaction(self.VoteBad)
         else:
             if Message.author.bot == False:
+                if random.randint(1,100) >= Guild_Function.ChanceSays:
+                    try:
+                        BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0",'\n']
+                        Count = random.randint(Guild_Function.StandartWords)
+                        _Message = self.Gabriel.Message(Count,Guild.name,"Usual")
+                        for bd in BadList: _Message = _Message.replace(bd,"")
+                        await Channel.send(_Message)
+                    except: pass
                 if Admin == True:
                     if Commands[0].upper() == "Delete".upper():
                         await Message.delete()
@@ -621,14 +663,103 @@ class MyClient(discord.Client):
                         await Message.delete()
                         async with Channel.typing():
                             await Channel.send(Guild_Function.BadWords)
+                    if Commands[0].upper() == "Gabriel".upper():
+                        if Commands[1].upper() == "Setup".upper():
+                            await Guild_Function.Setup(Channel)
+                        elif Commands[1].upper() == "AddChannel".upper():
+                            Guild_Function.AddChannel(Channel.id)
+                            Guild_Function.SaveStats()
+                            await Channel.send(f"Добавлен канал, где я общаюсь с вами `{Channel.id}`")
+                        elif Commands[1].upper() == "RemoveChannel".upper():
+                            try:
+                                Guild_Function.ChannelsForSaveWords.remove(Channel.id)
+                                Guild_Function.SaveStats()
+                                await Channel.send(f"Убран канал, где я общаюсь с вами `{Channel.id}`")
+                            except: raise Error("Канал не найден")
+                        elif Commands[1].upper() == "BanAddChannel".upper():
+                            try:
+                                ChannelID = int(Commands[2])
+                                if ChannelID not in Guild_Function.ChannelWithIgnoreCommand:
+                                    Guild_Function.ChannelWithIgnoreCommand.append(ChannelID)
+                                    Guild_Function.SaveStats()
+                                    await Channel.send(f"Этот канал стал быть противным `{ChannelID}`")
+                            except: raise Error("Канал не найден")
+                        elif Commands[1].upper() == "BanRemoveChannel".upper():
+                            try:
+                                ChannelID = int(Commands[2])
+                                Guild_Function.ChannelWithIgnoreCommand.remove(ChannelID)
+                                Guild_Function.SaveStats()
+                                await Channel.send(f"Этот канал перестал быть противным `{ChannelID}`")
+                            except: raise Error("Канал не найден")
+                        elif Commands[1].upper() == "Chance".upper():
+                            try: 
+                                Count = Commands[2]
+                                Count = int(Count)
+                            except: raise Error(Debuger(Count,int))
+
+                            if Count > 75:
+                                Count = 75
+                                await Channel.send("Не могу установить шанс больше чем `75%`")
+
+                            Guild_Function.ChanceSays = Count
+                            Guild_Function.SaveStats()
+                            await Channel.send(f"Теперь я реагирую в `{Count}%`")
+                        elif Commands[1].upper() == "Words".upper():
+                            try: 
+                                Count1 = Commands[2]
+                                Count1 = int(Count1)
+                            except: raise Error(Debuger(Count1,int))
+
+                            try: 
+                                Count2 = Commands[2]
+                                Count2 = int(Count2)
+                            except: raise Error(Debuger(Count2,int))
+
+
+                            if Count1 <= 0:
+                                Count1 = 1
+                                await Channel.send("Не могу установить минимальное количество слов меньше 1")
+                            if Count2 <= 0:
+                                Count2 = 1
+                                await Channel.send("Не могу установить максимальное количество слов меньше 0")
+                            if Count1 >= Count2:
+                                Count1 = Count2 - 1
+                                await Channel.send("Не могу установить количество слов, больше чем максимальное")
+                            if Count2 > 500:
+                                Count2 = 500
+                                await Channel.send("Не могу установить количество слов больше 500")
+                            
+                            Guild_Function.Edit(StandartWords=(Count1,Count2))
+                            await Channel.send(f"Теперь я использую с {Count1} слов до {Count2}")
+                        elif Commands[1].upper() == "Speak".upper():
+                            try:
+                                Guild_Function.Speak = bool(Commands[2])
+                                Guild_Function.SaveStats()
+                            except: raise CommandError("Следует отправлять в аргументе 1 либо 0. Или True либо False","Gabriel Speak","Gabriel Speak True")
+                        elif Commands[1].upper() == "EveryTime".upper():
+                            try:
+                                Count = Commands[2]
+                                try: Count = int(Count)
+                                except: raise Error(Debug(Count,int))
+                                if Count < 30:
+                                    Count = 30
+                                    await Channel.send("Не могу установить скорость ниже 30 секунд.")
+                                Guild_Function.EveryTime = Count
+                                Guild_Function.SaveStats()
+                            except: raise CommandError("Следует отправлять в аргументе 1 либо 0. Или True либо False","Gabriel Speak","Gabriel Speak True")
                     else:
                         if Message.author != self.user:
                             await Guild_Function.CheckMessage(Message,Content,Member)
-                            self.Gabriel.Save(Content,Player.Name,Guild.name)
+                            if Channel.id in Guild_Function.ChannelsForSaveWords:
+                                self.Gabriel.Save(Content,Player.Name,Guild.name)
                 else:
                     if Message.author != self.user:
                         await Guild_Function.CheckMessage(Message,Content,Member)
-                        self.Gabriel.Save(Content,Player.Name,Guild.name)
+                        if Channel.id in Guild_Function.ChannelsForSaveWords:
+                            self.Gabriel.Save(Content,Player.Name,Guild.name)
+        
+
+
         if Message.author == IamUser:
             if Commands[0].upper() == "Admin".upper():
                 if Commands[1].upper() == "Debug".upper():
@@ -671,7 +802,7 @@ class MyClient(discord.Client):
                 R_Level = ReplaceNumber(Level)
                 await Channel.send(embed=discord.Embed(title="Поздравляем",description=f"Вы получили {R_Level} уровней",colour=discord.Colour(6655214)))
             elif Commands[0].upper() == "Develop".upper():
-                Title = GetFromMessage(Content,'"')
+                Title = GetFromMessage(Content.replace(Commands[0],""),'"')
                 await self.change_presence(
                     status=discord.Status.dnd,
                     activity=discord.Activity(
@@ -701,7 +832,6 @@ class MyClient(discord.Client):
                 for chunk in DownloadFile.iter_content(12288):
                     file.write(chunk)
             print(f"{PlayerName} Не было аватарки, она скачалась")
-    
     
     async def on_message(self,message):
         # print(bool(self.isBanned(message.author.id)))
