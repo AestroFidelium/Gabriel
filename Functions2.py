@@ -1325,13 +1325,14 @@ class Item():
                     self.MaxGold = 10000000000000000
                 if self.TypeKey == "Weapon":
                     Blacksmith = self.Player.GetTalant('Blacksmith')
-                    self.Damage += (2 * Blacksmith.Level) / 100
-                    self.Armor += (2 * Blacksmith.Level) / 100
+                    self.Damage += Damage * (2 * Blacksmith.Level) / 100
+                    self.Armor += Armor * (2 * Blacksmith.Level) / 100
                     self.Type = self.Types.Weapon(self.Damage,self.Armor,self.Magic)
                 elif self.TypeKey == "Equipment":
-                    self.Protect += (2 * Blacksmith.Level) / 100
-                    self.Armor += (2 * Blacksmith.Level) / 100
-                    self.Type = self.Types.Equipment(self.Protect,self.Armor,self.Magic)
+                    Blacksmith = self.Player.GetTalant('Blacksmith')
+                    self.Protect += Protect * (2 * Blacksmith.Level) / 100
+                    self.Armor += Armor * (2 * Blacksmith.Level) / 100
+                    self.Type = self.Types.Equipment(self.Protect,self.Armor,self.Where,self.Magic)
             self.Player.RemoveInventor(self.ID)
             self.Player.AddInventor(
                 Type=self.Type,
@@ -1589,7 +1590,7 @@ class Gabriel():
     def Save(self,Content : str,Who : str,Server : str):
         """ Сохранить слова """
         self.Read(Server)
-        if Content.find("https://") == -1:
+        if Content.find("http") == -1:
             appen = {Who:Content}
             if appen not in self.Words:
                 self.Words.append(appen)

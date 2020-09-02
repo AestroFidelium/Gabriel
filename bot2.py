@@ -394,8 +394,8 @@ class MyClient(discord.Client):
                         await item.Upgrade(int(Gold),self,self.GodsAndCat,Member.id)
                         AllGold = ReplaceNumber(item.AllGold)
                         await Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
-                    except:
-                        await Channel.send(f"Предмет не найден")
+                    except BaseException as Error:
+                        await Channel.send(f"Ошибка в предмете. \nErrorOutput : {Error}")
                 except IndexError:
                     raise CommandError("Пропущен обязательный аргумент","Upgrade_Item","Upgrade_Item ID Монеты")
                 except ValueError:
