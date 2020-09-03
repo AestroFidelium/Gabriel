@@ -17,6 +17,7 @@ import json
 import time
 import ast
 from bs4 import BeautifulSoup
+import pickle
 
 def GetFromMessage(message : str,Znak : str):
     """ Получить выбранный объект в знаках 
@@ -1261,7 +1262,7 @@ class Item():
         if self.TypeKey == "Weapon":
             self.Type = Item.Types.Weapon(self.Damage,Armor,self.Magic)
         elif self.TypeKey == "Equipment":
-            self.Type = Item.Types.Equipment(self.Protect,Armor,self.Magic)
+            self.Type = Item.Types.Equipment(self.Protect,Armor,self.Where,self.Magic)
         self.Armor = Armor
     async def Upgrade(self,Gold,Client,GodsAndCat,MemberID : int):
         Evil = [721144024676827167,721144836199284848,691209621968519188,721145114558332938]
@@ -1316,11 +1317,13 @@ class Item():
                     self.Protect += random.randint(100000000,400000000)
                     self.Armor += random.randint(700000,900000)
                     self.MaxGold += 10000000
+                    self.Class = self.Classes.Демонический()
                 elif self.Class == self.Classes.Божественный():
                     self.Damage += random.randint(700000000,835000000)
                     self.Protect += random.randint(200000000,335000000)
                     self.Armor += random.randint(800000,850000)
                     self.MaxGold += 10000000
+                    self.Class = self.Classes.Божественный()
                 else:
                     self.MaxGold = 10000000000000000
                 if self.TypeKey == "Weapon":
@@ -2090,8 +2093,6 @@ class Boss():
         df = discord.File("TheBoss.png","TheBoss.png")
 
         return df
-
-        pass
     def GetAttack(self,Player : C_Player,Damage : int):
         """ Получить атаку от босса """
         Embed = discord.Embed(
@@ -2214,7 +2215,7 @@ class Boss():
                             AllGold = 0)
                     else:
                         Ring_ = randomBool(0,5,1)
-                        if Ring == False:
+                        if Ring_ == False:
                             PossibleEquipment = ["Head","Body","Legs","Boot"]
                             RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
                             if RandomEquipment == "Head":
@@ -2314,7 +2315,7 @@ class Boss():
                             AllGold = 0)
                     else:
                         Ring_ = randomBool(0,5,1)
-                        if Ring == False:
+                        if Ring_ == False:
                             PossibleEquipment = ["Head","Body","Legs","Boot"]
                             RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
                             if RandomEquipment == "Head":
@@ -2413,7 +2414,7 @@ class Boss():
                             AllGold = 0)
                     else:
                         Ring_ = randomBool(0,5,1)
-                        if Ring == False:
+                        if Ring_ == False:
                             PossibleEquipment = ["Head","Body","Legs","Boot"]
                             RandomEquipment = PossibleEquipment[random.randint(0,len(PossibleEquipment) - 1)]
                             if RandomEquipment == "Head":
@@ -2974,13 +2975,5 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
 
 
 if __name__ == "__main__":
-    pass
-
-    # asyncio.run(iam.Repair())
-    # iam.PickTalant("More Damage")
-    # _Talant = Talant(iam,iam.Talants[iam.TalantPicked],iam.TalantPicked)
-    # asyncio.run(_Talant.Update())
-    # tt= iam.GetTalant(iam.TalantPicked)
-    # print(str(tt))
-    
-    
+    with codecs.open("KOT32500","wb",'utf-8') as file:
+        pass
