@@ -1325,13 +1325,13 @@ class Item():
                     self.MaxGold = 10000000000000000
                 if self.TypeKey == "Weapon":
                     Blacksmith = self.Player.GetTalant('Blacksmith')
-                    self.Damage += Damage * (2 * Blacksmith.Level) / 100
-                    self.Armor += Armor * (2 * Blacksmith.Level) / 100
+                    self.Damage += self.Damage * (2 * Blacksmith.Level) / 100
+                    self.Armor += self.Armor * (2 * Blacksmith.Level) / 100
                     self.Type = self.Types.Weapon(self.Damage,self.Armor,self.Magic)
                 elif self.TypeKey == "Equipment":
                     Blacksmith = self.Player.GetTalant('Blacksmith')
-                    self.Protect += Protect * (2 * Blacksmith.Level) / 100
-                    self.Armor += Armor * (2 * Blacksmith.Level) / 100
+                    self.Protect += self.Protect * (2 * Blacksmith.Level) / 100
+                    self.Armor += self.Armor * (2 * Blacksmith.Level) / 100
                     self.Type = self.Types.Equipment(self.Protect,self.Armor,self.Where,self.Magic)
             self.Player.RemoveInventor(self.ID)
             self.Player.AddInventor(
