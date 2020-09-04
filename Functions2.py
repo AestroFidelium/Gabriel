@@ -1034,11 +1034,12 @@ class C_Player():
         Berserk = self.GetTalant('Berserk')
         Procent = (self.Health * 100) / self.MaxHealth
         Procent -= 100
+        Procent *= -1
         print(int(Procent))
         GetDamage += GetDamage * ((Procent * Berserk.Level) / 100)
 
 
-        return GetDamage
+        return round(GetDamage)
     def MaxProtect(self):
         Protect = self.Head.Protect
         Protect += self.Body.Protect
@@ -1047,7 +1048,7 @@ class C_Player():
         Determination = self.GetTalant('Determination')
         if Determination.Ready:
             Protect *= 2
-        return Protect
+        return round(Protect)
     def AddHealth(self,Amount : int):
         Determination = self.GetTalant('Determination')
         if Determination.Ready:
@@ -1421,12 +1422,15 @@ class Item():
         def Запретный(): return "Запретный"
 
         @staticmethod
+        def Лоли(): return "Лоли"
+
+        @staticmethod
         def GetList():
             List = [
                 "Сломанный","Первоначальный","Обычный","Сломанный",
                 "Редкий","Эпический","Легендарный","Мифический",
                 "Демонический","Божественный","Уникальный","Реликвия",
-                "Запретный"]
+                "Запретный","Лоли"]
             return List
 
 class Gabriel():
@@ -1898,16 +1902,26 @@ class Boss():
             Время жизни : 0:20:00
             """
             pass
+        class Loli():
+            """
+            Сильнейший сет в игре
+            Выпадает :
+                Сет лоли
+            Особенности : 
+                Атакует. Имеет бронь.
+            Время жизни : 0:20:00
+            """
+            pass
     def __init__(self):
         self.PATH_VERSION = "./Stats"
         self.Read()
         self._selfStats()
     
-    def Create(self):
+    def Create(self,
+        Different : None = ["Easy","Easy","Easy","Easy","Easy","Medium","Medium","Medium","Medium","Hard","Hard","Hard","Hard+","Hard+"]):
         """ Создать нового босса """
-
-        Different = ["Easy","Medium","Hard","Hard+"]
-        Different = Different[random.randint(0,len(Different) - 1)]
+        if isinstance(Different,list):
+            Different = Different[random.randint(0,len(Different) - 1)]
         with codecs.open(f"{self.PATH_VERSION}/Boss/Boss.txt","w",encoding="utf-8") as file:
             BossImage = os.listdir(f"./Resurses/Bosses/{Different}/")
             BossImage = BossImage[random.randint(0,len(BossImage) - 1)]
@@ -1973,6 +1987,23 @@ class Boss():
                     "LastGetDamage" : 0,
                     "GetItem" : None
                 }
+            elif Different == "Loli":
+                MaxHealth = random.randint(
+                    100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+                    10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)
+                self.Stats = {
+                    "Different" : "Loli",
+                    "Image" : BossImage,
+                    "Health" : MaxHealth,
+                    "MaxHealth" : MaxHealth,
+                    "Damage" : 1000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+                    "Armor" : 1000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+                    "Time" : "0:60:00",
+                    "Murder" : None,
+                    "Status" : "Life",
+                    "LastGetDamage" : 0,
+                    "GetItem" : None
+                }
             file.write(str(self.Stats))
     
     def Read(self):
@@ -1993,10 +2024,10 @@ class Boss():
     def _selfStats(self):
         self.Different = self.Stats["Different"]
         self.Image = self.Stats["Image"]
-        self.Health = self.Stats["Health"]
-        self.MaxHealth = self.Stats["MaxHealth"]
-        self.Damage = self.Stats["Damage"]
-        self.Armor = self.Stats["Armor"]
+        self.Health = int(self.Stats["Health"])
+        self.MaxHealth = int(self.Stats["MaxHealth"])
+        self.Damage = int(self.Stats["Damage"])
+        self.Armor = int(self.Stats["Armor"])
         self.Time = str(self.Stats["Time"])
         self.Murder = self.Stats["Murder"]
         self.Status = self.Stats["Status"]
@@ -2010,7 +2041,10 @@ class Boss():
         self.TimeMinute = int(Timer[1])
         self.TimeSecond = int(Timer[2])
         self.Gold = 500
-        if self.MaxHealth >= 500000000000000000000000000:
+        if self.MaxHealth >= 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000:
+            count = int(self.MaxHealth / 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000)
+            self.Gold += 500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 * count
+        elif self.MaxHealth >= 500000000000000000000000000:
             count = int(self.MaxHealth / 10000000000000000000000000)
             self.Gold += 50000000 * count
         elif self.MaxHealth >= 500000000000000000:
@@ -2493,6 +2527,40 @@ class Boss():
                                 Gold=0,
                                 MaxGold = random.randint(50000000,500000000),
                                 AllGold = 0)
+                elif self.Different == "Loli___offline":
+                    Sword = Item.CreateName("Лолирд","Был получен после победы над Лоли")
+                    
+                    self.GetItem = Player.AddInventor(
+                        Type = Item.Types.Weapon(random.randint(
+                            10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+                            100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+                            ),random.randint(500,900),None),
+                        Name = Sword,
+                        Class = Item.Classes.Лоли(),
+                        ID=random.randint(1,99999999999),
+                        Gold=0,
+                        MaxGold = random.randint(1,2),
+                        AllGold = 0)
+                    PossibleEquipment = ["Head","Body","Legs","Boot"]
+                    for RE in PossibleEquipment:
+                        if RE == "Head":
+                            _Item = Item.CreateName("Лолихерд","Шапка Лоли")
+                        elif RE == "Body":
+                            _Item = Item.CreateName("Лолиберд","Майка Лоли")
+                        elif RE == "Legs":
+                            _Item = Item.CreateName("Лолиленг","Юбка Лоли")
+                        elif RE == "Boot":
+                            _Item = Item.CreateName("Лолибуут","Милые ботинки")
+                        self.GetItem = Player.AddInventor(
+                            Type = Item.Types.Equipment(random.randint(
+                                100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000,
+                                100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000),random.randint(33000,50000),RandomEquipment,None),
+                            Name = _Item,
+                            Class = Item.Classes.Лоли(),
+                            ID=random.randint(1,9999999999),
+                            Gold=0,
+                            MaxGold = random.randint(1,2),
+                            AllGold = 0)
                 self.Edit(GetItem=self.GetItem)
             self.Edit(
                 Health = self.Health,

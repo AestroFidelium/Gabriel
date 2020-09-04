@@ -78,11 +78,18 @@ class MyClient(discord.Client):
                 activity=discord.Activity(
                     type=discord.ActivityType.playing, 
                     name="технические работы"))
+        
         for emodji in self.emojis:
             if emodji.id == 745998760361852999:
                 self.VoteOkay = emodji
             elif emodji.id == 745997811518275595:
                 self.VoteBad = emodji
+            elif emodji.id == 751489305020596326:
+                self.EmodjiGame = emodji
+            elif emodji.id == 751490563316121693:
+                self.EmodjiShop = emodji
+            elif emodji.id == 751489305696010260:
+                self.EmodjiReference = emodji
         self.MiniGame = MiniGame()
         self.Race = self.MiniGame.Race()
         self.Boss = Boss()
@@ -334,7 +341,7 @@ class MyClient(discord.Client):
                 if Message.author == IamUser:
                     if Commands[1].upper() == "Create".upper():
                         async with Channel.typing():
-                            self.Boss.Create()
+                            self.Boss.Create(Commands[2])
                             await Channel.send(f"Создан новый босс")
                     else:
                         raise Error("Команды не существует")
@@ -407,7 +414,7 @@ class MyClient(discord.Client):
                 try:
                     if Commands[1].upper() == "S".upper():
                         try: Count = int(Commands[2])
-                        except: Count = random.randint(Guild_Function.StandartWords)
+                        except: Count = random.randint(Guild_Function.StandartWords[0],Guild_Function.StandartWords[1])
                         _Message = self.Gabriel.Message(Count,Guild.name,"Usual")
                         await Channel.send(_Message)
                     elif Commands[1].upper() == "D".upper():
@@ -630,6 +637,13 @@ class MyClient(discord.Client):
             _Message = await Channel.send(embed=Embed)
             await _Message.add_reaction(self.VoteOkay)
             await _Message.add_reaction(self.VoteBad)
+        elif Commands[0].upper() == "Help".upper():
+            Embed = discord.Embed(title="Габриэль помощь",colour=discord.Colour(6828997))
+            Embed.set_image(url="https://media.discordapp.net/attachments/730683862836838430/751463545903906816/HelpINFO.png")
+            _Message = await Channel.send(embed=Embed)
+            await _Message.add_reaction(self.EmodjiGame)
+            await _Message.add_reaction(self.EmodjiReference)
+            await _Message.add_reaction(self.EmodjiShop)
         else:
             if Message.author.bot == False:
                 if random.randint(1,100) >= Guild_Function.ChanceSays:
@@ -880,8 +894,6 @@ class MyClient(discord.Client):
                         if Channel.id in Guild_Function.ChannelsForSaveWords:
                             self.Gabriel.Save(Content,Player.Name,Guild.name)
         
-
-
         if Message.author == IamUser:
             if Commands[0].upper() == "Admin".upper():
                 if Commands[1].upper() == "Debug".upper():
@@ -1114,7 +1126,7 @@ class MyClient(discord.Client):
             Player = C_Player(_PlayerName)
             Player.SaveRoom(after.guild.id,after.name,PermissionsAll)
     
-    async def on_raw_reaction_add(self,payload):   
+    async def on_raw_reaction_add(self,payload):
         Channel = await self.fetch_channel(payload.channel_id)
         Message = await Channel.fetch_message(payload.message_id)
         Guild = await self.fetch_guild(Message.channel.guild.id)
@@ -1320,6 +1332,205 @@ class MyClient(discord.Client):
         elif Emoji == self.VoteBad:
             if Player != self.user:
                 await Message.remove_reaction(self.VoteOkay,Member)
+        elif Emoji == self.VoteBad:
+            if Player != self.user:
+                await Message.remove_reaction(self.VoteOkay,Member)
+        elif Emoji == self.EmodjiGame:
+            if Player != self.user:
+                await Message.clear_reactions()
+                Embed = discord.Embed(
+                    title="Габриэль помощь по игре",
+                    description="Ниже указаны все команды связанные о игре. и их краткое содержание",
+                    colour=discord.Colour(5086956))
+                Embed.add_field(
+                    name="Profile (и/или ник другого игрока)",
+                    value="Открытие вашего(или другого игрока) профиля",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Attack (Имя игрока)",
+                    value="Вы атакуете выбранного вами игрока",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Event",
+                    value="Не является полноценной командой. Подробнее ниже",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Event Profile",
+                    value="Открыть профиль Босса",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Event Attack",
+                    value="Атаковать Босса",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Event Bonus",
+                    value="Взять ежедневную награду",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Event Create (Команда Администрации)",
+                    value="Создать босса. Аргумент : Сложность Босса",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Inv",
+                    value="Открытие вашего инвентаря",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Item (ID предмета)",
+                    value="Узнать информацию о предмете",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Upgrade_Item (ID предмета) (Золотых)",
+                    value="Прокачать предмет",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Talants",
+                    value="Открытие списка ваших талантов",
+                    inline=False
+                )
+                Embed.add_field(
+                    name='Talant "(Англ. название таланта)"',
+                    value="Поставить талант на прокачку",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Talant Point (Сила, Ловкость, Интеллект)",
+                    value="Потратить очки навыков на (см. выше)",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Number (Число)",
+                    value="Не является полноценной командой. Нужна чтобы сокращать цифры. Пример : Number 10000. Будет 10K",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Equip",
+                    value="Узнать что на вас сейчас экипированно",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Nev_Avatar (ссылка на аватар)",
+                    value="Изменить аватар в профиле",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="New_Background (ссылка на фон)",
+                    value="Изменить фон в профиле",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Wear (ID предмета) (Куда следует экипировать. Не обязательно для самой экипировки. Англ название. Пример : Left_hand)",
+                    value="Экипируете выбранный предмет, получая его характеристики, и/или дополнительные свойства",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Race (лошадь от 1 до 5) (ставка)",
+                    value="Поставить на X лошадь. в Случае победы ставка возрастет",
+                    inline=False
+                )
+                Embed.add_field(
+                    name="Help",
+                    value="Вызвать меню выбора заного",
+                    inline=False
+                )
+                await Message.edit(embed=Embed)
+                await Message.add_reaction(self.EmodjiGame)
+                await Message.add_reaction(self.EmodjiReference)
+                await Message.add_reaction(self.EmodjiShop)
+        elif Emoji == self.EmodjiShop:
+            if Player != self.user:
+                await Message.clear_reactions()
+                Embed = discord.Embed(
+                    title="Габриэль помощь по магазину",
+                    description="Ниже указаны все ценники, и использование команды магазина",
+                    colour=discord.Colour(15394144))
+                Embed.add_field(
+                    name="Shop (Товар) (Количество)",
+                    value="Товары указаны ниже. И их стоимость",
+                    inline=False
+                    )
+                Embed.add_field(
+                    name="Лечение (15 золотых за штуку)",
+                    value="Лечит вашего персонажа на 3К за штуку",
+                    inline=False
+                    )
+                Embed.add_field(
+                    name="Здоровье (100 золотых за штуку)",
+                    value="Увеличивает вашему персонажу здоровье на 35 ед. за штуку",
+                    inline=False
+                    )
+                Embed.add_field(
+                    name="Урон (50 золотых за штуку)",
+                    value="Увеличивает урон от кулаков на 50 ед. за штуку",
+                    inline=False
+                    )
+                Embed.add_field(
+                    name="Уровень (300 золотых за штуку)",
+                    value="Увеличивает уровень вашего персонажа на 1 за штуку. (Является полноценным получением уровня. Означает вы получаете 100% из этого уровня)",
+                    inline=False
+                    )
+                await Message.edit(embed=Embed)
+                await Message.add_reaction(self.EmodjiGame)
+                await Message.add_reaction(self.EmodjiReference)
+                await Message.add_reaction(self.EmodjiShop)
+        elif Emoji == self.EmodjiReference:
+            if Player != self.user:
+                await Message.clear_reactions()
+                Embed = discord.Embed(
+                    title="Габриэль справка",
+                    description="Справка по Габриэль. И все оставшиеся команды",
+                    colour=discord.Colour(15394144))
+                Embed.add_field(
+                    name="G (S/D/B - не обязательны) (Число - не обязательно)",
+                    value="Габриэль скажет что либо. Для того чтобы она говорила (см. ниже)",
+                    inline=False)
+                Embed.add_field(
+                    name="Gs (ID голосовой комнаты - не обязательно, если вы подключаете её в ту же комнату, где и вы)",
+                    value="Заставляет Габриэль зайти в вашу голосовую комнату, и произвести одно из заранее подготовленных аудио (Внимание, временно не работает)",
+                    inline=False)
+                Embed.add_field(
+                    name='Wiki "(Что следует найти в Википедии)"',
+                    value="Габриэль найдет это в Википедии. Если же нет, то покажет похожие",
+                    inline=False)
+                Embed.add_field(
+                    name='Vote "(Название)" "(Описание. Не обязательный аргумент)" "(URL картинка. Не обязательный аргумент)"',
+                    value="Запускает голосование, где вы выбираете название, описание, и картинку",
+                    inline=False)
+                Embed.add_field(
+                    name="Gabriel Help",
+                    value=f"Следующий список команд. Находиться в отдельном списке, так как он нужен для Администрации `{Guild.name}`",
+                    inline=False)
+                Embed.add_field(
+                    name="Вопросы и ответы",
+                    value="Далее ответ - вопрос",
+                    inline=False)
+                Embed.add_field(
+                    name="Почему Габриэль постоянно улыбается?",
+                    value="Габриэль поддерживает актив. Из за чего когда вы улыбаетесь, она улыбается тоже!",
+                    inline=False)
+                Embed.add_field(
+                    name="Почему Габриэль молчит?",
+                    value="Видимо установка прошла мимо вас. Чтобы исправить это, необходимо её установить. (см. команду Gabriel Help)",
+                    inline=False)
+                Embed.add_field(
+                    name="Почему Габриэль разговаривает сама по себе?",
+                    value="Изначально если Габриэль видит что последнее сообщение не от лица бота, она понимает что актив упал. И возможно если она напишет что либо, актив вернется. \n`Чтобы это убрать, смотрите команду Gabriel Help`",
+                    inline=False)
+                
+                
+                await Message.edit(embed=Embed)
+                await Message.add_reaction(self.EmodjiGame)
+                await Message.add_reaction(self.EmodjiReference)
+                await Message.add_reaction(self.EmodjiShop)
 
     async def AddOneRole(self,ID,Member,Guild,RolesID):
         Role = Guild.get_role(ID)
