@@ -18,6 +18,8 @@ import time
 import ast
 from bs4 import BeautifulSoup
 import pickle
+import re
+from sys import platform
 
 def GetFromMessage(message : str,Znak : str):
     """ Получить выбранный объект в знаках 
@@ -1350,9 +1352,64 @@ class Item():
             self.Player.CheckEquipItem("Left_hand")
             self.Player.CheckEquipItem("Right_hand")
         self.Player.Edit(Edit="Main",Gold=self.Player.Gold)
-    
+    def Profile(self):
+        """ Открыть профиль предмета. Выход : discord.File """
+        Main = Image.open(f"./Resurses/System/Item/Main.png")
+        Draw = ImageDraw.Draw(Main)
+
+        font = ImageFont.truetype("./Resurses/System/AlienEncounter.otf",30)
+        Name = self.Name.replace(f"({self.Player.Name})","")
+        Draw.text((65,1),Name,font=font,fill=(255,222,0))
+
+        font = ImageFont.truetype("./Resurses/System/AlienEncounter.otf",14)
+        Draw.text((45,50),self.Description,font=font,fill=(217,201,190))
+        
+        font = ImageFont.truetype("./Resurses/System/AlienEncounter.otf",30)
+        Damage = str(ReplaceNumber(self.Damage))
+        Draw.text((185,83),Damage,font=font,fill=(227,141,77))
+
+        Protect = str(ReplaceNumber(self.Protect))
+        Draw.text((420,83),Protect,font=font,fill=(84,214,200))
+
+        Armor = str(ReplaceNumber(self.Armor))
+        Draw.text((343,118),Armor,font=font,fill=(255,255,255))
+
+        Gold = str(ReplaceNumber(self.Gold))
+        MaxGold = str(ReplaceNumber(self.MaxGold))
+        Draw.text((232,211),str(f"{Gold} из {MaxGold}"),font=font,fill=(252,255,0))
+
+        Draw.text((96,272),str(self.ID),font=font,fill=(212,115,227))
+
+
+        font = ImageFont.truetype("arial.ttf",15)
+        Draw.text((280,165),self.Where,font=font,fill=(255,255,255))
+
+        Main.save("SendItem.png")
+        return discord.File("SendItem.png","SendItem.png")
     def Return(self):
         return 
+    def Sell(self):
+        Money = self.AllGold
+        if self.Class == Item.Classes.Первоначальный():
+            return "Невозможно продать первоначальную экипировку"
+        elif self.Class == Item.Classes.Обычный():
+            Money += 10000
+        elif self.Class == Item.Classes.Редкий():
+            Money += 20000
+        elif self.Class == Item.Classes.Эпический():
+            Money += 60000
+        elif self.Class == Item.Classes.Легендарный():
+            Money += 120000
+        elif self.Class == Item.Classes.Мифический():
+            Money += 360000
+        elif self.Class == Item.Classes.Демонический() or self.Class == Item.Classes.Божественный():
+            Money += 10000000
+        elif self.Class == Item.Classes.Лоли:
+            Money += 10000000 ** 10
+        self.Player.Gold += Money
+        self.Player.Edit(Edit="Main",Gold=self.Player.Gold)
+        self.Player.RemoveInventor(self.ID)
+        return f"Успешно продали предмет, за {Money} золотых"
     @staticmethod
     def Find(ID : int,Player : C_Player):
         Player.GetInventor()
@@ -1448,36 +1505,28 @@ class Gabriel():
                 self.Author = str(key)
             self.Content = str(Content[self.Author]) 
 
-    def Message(self,CountMessages : int,ServerName : str,Mode : "Usual or D / B"):
+    def Message(self,CountMessages : int,ServerName : str,Mode : "Usual or D / B",GetMessage : str = None):
         """ Сообщение """
         ReturnMessage = ""
         self.GetMessages(ServerName)
         if CountMessages == 0: CountMessages = 1
         BadList = ["!",'@',"&","1","2","3","4","5","6","7","8","9","0",'<','>',")","$","%","^","&","*",";",'"',"'",'-','=','+']
         if Mode == "Usual":
-            while CountMessages > 0:
+            while len(ReturnMessage.split(" ")) < CountMessages:
                 try:
                     message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
                 except: raise Error("Габриэль знает слишко мало слов")
                 for content in message.Content.split(" "):
-                    for bl in BadList:
-                        content = content.replace(bl,"")
-                    if CountMessages <= 0:
-                        return ReturnMessage
+                    content = re.sub(r"[^А-я]"," ",content)
                     if random.randint(0,1) == 1:
                         ReturnMessage += f"{content} "
-                        CountMessages -= 1
                     elif random.randint(0,1) == 1:
                         message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
                         for content in message.Content.split(" "):
-                            for bl in BadList:
-                                content = content.replace(bl,"")
-                            if CountMessages <= 0:
-                                return ReturnMessage
                             if random.randint(0,1) == 1:
+                                content = re.sub(r"[^А-я]"," ",content)
                                 ReturnMessage += f"{content} "
-                                CountMessages -= 1
-            return ReturnMessage
+            return SoMuchSpaces(ReturnMessage.capitalize())
         elif Mode == "D":
             try:
                 Title = ""
@@ -1496,8 +1545,7 @@ class Gabriel():
                                     for content in Message.Content.split(" "):
                                         if random.randint(0,3) != 1 or _preCount < 3:
                                             if content != "" and content != " ":
-                                                for bl in BadList:
-                                                    content = content.replace(bl,"")
+                                                content = SoMuchSpaces(re.sub(r"[^А-я]"," ",content))
                                                 Title += f"{content} "
                                                 _preCount += 1
 
@@ -1540,37 +1588,47 @@ class Gabriel():
                                                 if content != "" and content != " ":
                                                     Content += f"{content} "
                                                     _preCount += 1
-                    for bl in BadList:
-                        Content = Content.replace(bl,"")
+                    Content = SoMuchSpaces(re.sub(r"[^А-я]"," ",Content))
                     ReturnMessage += Content.capitalize()
                     OldSay = NowSay
             except ValueError: 
                 return ReturnMessage
             return ReturnMessage
-        elif Mode == "B":
-            try:
-                for replic in range(CountMessages):
-                    Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
-                    Count = 0
-                    for content in Message.Content.split(" "):
-                        if random.randint(0,1) == 1 or Count == 0:
-                            ReturnMessage += f"{content} "
-                            Count += 1
-                        elif random.randint(0,3) != 1:
-                            Message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
-                            PreCount = 0
-                            for content in Message.Content.split(" "):
-                                if random.randint(0,3) != 1 or PreCount == 0:
-                                    for bl in BadList:
-                                        content = content.replace(bl,"")
+        elif Mode == "A":
+            if GetMessage:
+                for index, message in enumerate(self.GotMessages):
+                    for x in range(len(GetMessage.split(" "))):
+                        if message.Content.upper().find(GetMessage.upper().split(" ")[x]) >= 0:
+                            # Находим ответ на вопрос
+                            for index2 in range(10):
+                                _Message = self.GotMessages[index - 1 - index2]
+                                if message.Author != _Message.Author:
+                                    self.GotMessages.remove(_Message)
+                                    break
+                            # Изначальное сообщение
+                            content = SoMuchSpaces(re.sub(r"[^А-я]"," ",_Message.Content))
+                            
+                            for content in content.split(" "):
+                                if random.randint(0,1) == 1:
                                     ReturnMessage += f"{content} "
-                                    Count += 1
-                                    PreCount += 1
-                    ReturnMessage += "\n@\n"
-            except ValueError: 
-                return ReturnMessage[:len(ReturnMessage) - 3:]
-            return ReturnMessage[:len(ReturnMessage) - 3:]
-    
+                                elif random.randint(0,1) == 1:
+                                    message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                                    content = SoMuchSpaces(re.sub(r"[^А-я]"," ",message.Content))
+                                    
+                                    for content in content.split(" "):
+                                        if random.randint(0,1) == 1:
+                                            ReturnMessage += f"{content} "
+
+                            if len(ReturnMessage.split(" ")) >= CountMessages:
+                                return ReturnMessage.capitalize()
+            return self.Message(CountMessages,ServerName,"Usual")
+        elif Mode == "C":
+            message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+            author = f'"{message.Author}"'
+            ReturnMessage = self.Message(CountMessages,ServerName,"Usual")
+            return f'"{ReturnMessage}"\nСказал {author}'
+
+
     def Delete(self,Count : int,Server : str):
         self.Read(Server)
         try:
@@ -2975,6 +3033,17 @@ class MiniGame():
                 self.Speed = random.randint(1,250)
 
 
+class C_Color():
+    def __init__(self,Color : tuple = (0,0,0)):
+        self.Color = Color
+
+    def Create(self):
+        BackGround = Image.new("RGBA",(1000,1000),(0,0,0,0))
+        Draw = ImageDraw.Draw(BackGround)
+        Draw.ellipse((0,0,1000,1000),fill=self.Color)
+        return BackGround
+
+
 async def Notification(Function,Timer : int,End : "Loop or off",**fields):
     """ Поставить фунцию на уведомление. Чтобы выключить должен получить с функции слово NoNotification = True """
     
@@ -3042,6 +3111,30 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
         return f"Получен неверный аргумент{arg_type}. Ожидался аргумент{Correct_type}"
 
 
+def rgbToColor(r, g, b):
+    return (r << 16) + (g << 8) + b
+
+def colorToRGB(c):
+    r = c >> 16
+    c -= r * 65536
+    g = c / 256
+    c -= g * 256
+    b = c
+
+    return (round(r), round(g), round(b))
+
+def ClearConsole():
+    if platform == "win32":
+        os.system('cls')
+    elif platform == "linux":
+        os.system('clear')
+
+def SoMuchSpaces(Message : str) -> str:
+    Return = ""
+    for Mess in re.split(r"[\b\s]",Message):
+        if Mess != "": Return += f"{Mess} "
+    return Return[:-1:]
+
 if __name__ == "__main__":
-    with codecs.open("KOT32500","wb",'utf-8') as file:
-        pass
+    ClearConsole()
+    

@@ -118,6 +118,7 @@ class MyClient(discord.Client):
         Tasks.append(asyncio.create_task(self.MembersBanned()))
         asyncio.gather(*Tasks)
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
+        self.DevelopGuild = await self.fetch_guild(716945063351156736)
         self.Gabriel = Gabriel()
         self.C_Guilds = list()
         for GuildName in os.listdir(f"./Servers"):
@@ -130,7 +131,20 @@ class MyClient(discord.Client):
                 print(f"{GuildName} загружена")
         
         print("работает все да")
-    
+    async def CreateColor(self,Color : tuple,Name : str):
+        _Color = C_Color(Color)
+        Emodji = _Color.Create()
+        image = Emodji.save("Delete.png")
+        with open("Delete.png", "rb") as image:
+            f = image.read()
+            b = bytearray(f)
+
+        Emodji = await self.DevelopGuild.create_custom_emoji(name=Name,image=b,reason="Создаем новую цветную роль")
+
+        Role = await self.GodsAndCat.create_role(name="⁯⁬⁬⁫⁫⁫⁫⁫⁫⁫⁫⁪⁪⁪⁪⁪⁪⁪⁪⁪⁪ ‫‫‫‫‪",colour=discord.Colour(rgbToColor(*Color)))
+        
+        return (Emodji.name, Role.id)
+
     async def MembersBanned(self):
         Count = 1
         while True:
@@ -378,18 +392,18 @@ class MyClient(discord.Client):
                     await Channel.send(embed=Embed)
         elif Commands[0].upper() == "Item".upper():
             await Message.delete()
-            async with Channel.typing():
-                try:
-                    ID = Commands[1]
-                    item = Item.Find(int(ID),Player)
-                    AllGold = ReplaceNumber(item.AllGold)
-                    await Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
-                except IndexError:
-                    raise CommandError("Нужно указать ID предмета","Item","Item ID")
-                except ValueError:
-                    raise CommandError(f"{Debuger(ID,int)}\nНужно передавать ID предмета","Item","Item ID")
-                except:
-                    raise Error("Этот предмет сломан, либо его не существует")
+            try:
+                async with Channel.typing():
+                    if Commands[1].upper() == "Sell".upper():
+                        ID = Commands[2]
+                        item = Item.Find(int(ID),Player)
+                        await Channel.send(item.Sell())
+                    else:
+                            ID = Commands[1]
+                            item = Item.Find(int(ID),Player)
+                            await Channel.send(file=item.Profile())
+            except:
+                raise CommandError("Отсуствует ID и/или режим выбран неправильно.","Item","Item (ID предмета) \nItem Sell (ID предмета)")
         elif Commands[0].upper() == "Upgrade_Item".upper():
             await Message.delete()
             async with Channel.typing():
@@ -400,7 +414,7 @@ class MyClient(discord.Client):
                     try:
                         await item.Upgrade(int(Gold),self,self.GodsAndCat,Member.id)
                         AllGold = ReplaceNumber(item.AllGold)
-                        await Channel.send(f"```py\nИмя : `{item.Name}`\nОписание : `{item.Description}`\nТип : {item.Type}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nID : {item.ID}```")
+                        await Channel.send(file=item.Profile())
                     except BaseException as Error:
                         await Channel.send(f"Ошибка в предмете. \nErrorOutput : {Error}")
                 except IndexError:
@@ -422,14 +436,13 @@ class MyClient(discord.Client):
                         except: Count = random.randint(3,7)
                         _Message = self.Gabriel.Message(Count,Guild.name,"D")
                         await Channel.send(_Message)
-                    elif Commands[1].upper() == "B".upper():
+                    elif Commands[1].upper() == "C".upper():
                         try: Count = int(Commands[2])
                         except: Count = random.randint(3,7)
-                        _Message = self.Gabriel.Message(Count,Guild.name,"B")
-
+                        _Message = self.Gabriel.Message(Count,Guild.name,"C")
                         await Channel.send(_Message)
                     else:
-                        Types = ["Usual","D","B"]
+                        Types = ["Usual","D","C"]
                         try: Count = int(Commands[2])
                         except: Count = random.randint(3,7)
                         _Message = self.Gabriel.Message(Count,Guild.name,Types[random.randint(0,2)])
@@ -649,7 +662,7 @@ class MyClient(discord.Client):
                 if random.randint(1,100) >= Guild_Function.ChanceSays:
                     try:
                         Count = random.randint(Guild_Function.StandartWords)
-                        _Message = self.Gabriel.Message(Count,Guild.name,"Usual")
+                        _Message = self.Gabriel.Message(Count,Guild.name,"A",Content)
                         await Channel.send(_Message)
                     except: pass
                 if Admin == True:
@@ -1288,9 +1301,6 @@ class MyClient(discord.Client):
                 716928286776754178, 716928286965498007
 
                     ]
-            RoleList = list()
-            for Role in RolesID:
-                RoleList.append(Guild.get_role(Role))
             if str(Emoji.name) == "⚫": await self.AddOneRole(713477362058002535,Member,Guild,RolesID)
             elif str(Emoji.name) == "🔵": await self.AddOneRole(713477367061938180,Member,Guild,RolesID)
             elif str(Emoji.name) == "🟤": await self.AddOneRole(713681425056006154,Member,Guild,RolesID)
@@ -1438,10 +1448,11 @@ class MyClient(discord.Client):
                     inline=False
                 )
                 Embed.add_field(
-                    name="Help",
-                    value="Вызвать меню выбора заного",
+                    name="Item Sell (ID предмета)",
+                    value="Продать выбранный предмет",
                     inline=False
                 )
+                Embed.set_image(url="https://media.discordapp.net/attachments/730683862836838430/751463545903906816/HelpINFO.png")
                 await Message.edit(embed=Embed)
                 await Message.add_reaction(self.EmodjiGame)
                 await Message.add_reaction(self.EmodjiReference)
@@ -1478,6 +1489,7 @@ class MyClient(discord.Client):
                     value="Увеличивает уровень вашего персонажа на 1 за штуку. (Является полноценным получением уровня. Означает вы получаете 100% из этого уровня)",
                     inline=False
                     )
+                Embed.set_image(url="https://media.discordapp.net/attachments/730683862836838430/751463545903906816/HelpINFO.png")
                 await Message.edit(embed=Embed)
                 await Message.add_reaction(self.EmodjiGame)
                 await Message.add_reaction(self.EmodjiReference)
@@ -1526,7 +1538,7 @@ class MyClient(discord.Client):
                     value="Изначально если Габриэль видит что последнее сообщение не от лица бота, она понимает что актив упал. И возможно если она напишет что либо, актив вернется. \n`Чтобы это убрать, смотрите команду Gabriel Help`",
                     inline=False)
                 
-                
+                Embed.set_image(url="https://media.discordapp.net/attachments/730683862836838430/751463545903906816/HelpINFO.png")
                 await Message.edit(embed=Embed)
                 await Message.add_reaction(self.EmodjiGame)
                 await Message.add_reaction(self.EmodjiReference)
