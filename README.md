@@ -9,7 +9,7 @@
 
 Добро пожаловать в репозиторий Габриэль. Репозиторий сделан исключительно ради удовольствия.
 
-#### [Добавить Габриэль к себе в Гильдию](https://discordapp.com/oauth2/authorize?client_id=656808327954825216&permissions=554036288&scope=bot)
+#### [Добавить Габриэль к себе в Гильдию](https://discordapp.com/oauth2/authorize?client_id=656808327954825216&permissions=557182032&scope=bot)
 
 
 <h3>Установка в Гильдии</h3>
