@@ -1510,7 +1510,7 @@ class Gabriel():
         ReturnMessage = ""
         self.GetMessages(ServerName)
         if CountMessages == 0: CountMessages = 1
-        BadList = ["!",'@',"&","1","2","3","4","5","6","7","8","9","0",'<','>',")","$","%","^","&","*",";",'"',"'",'-','=','+']
+        
         if Mode == "Usual":
             while len(ReturnMessage.split(" ")) < CountMessages:
                 try:
@@ -1567,7 +1567,7 @@ class Gabriel():
                     if _count <= 0: break
                 OldSay = None
                 NowSay = None
-                for rng in range(CountMessages):
+                for _ in range(CountMessages):
                     while OldSay == NowSay:
                         NowSay = Players[random.randint(0,len(Players) - 1)]
                     ReturnMessage += f"\n• {NowSay}: "
@@ -1632,7 +1632,7 @@ class Gabriel():
     def Delete(self,Count : int,Server : str):
         self.Read(Server)
         try:
-            for rng in range(Count):
+            for _ in range(Count):
                 self.Words.remove(self.Words[-1])
             self.Stats.update({"Words":self.Words})
             with codecs.open(f"./Servers/{Server}/Words.txt","w",encoding='utf-8') as file:
@@ -2907,7 +2907,7 @@ class MiniGame():
             try:
                 with codecs.open(f"./Resurses/Race.txt","r",encoding="utf-8") as file:
                     self.Stats = StrToDict(str(file.readline()))
-            except FileNotFoundError:
+            except:
                 with codecs.open(f"./Resurses/Race.txt","w",encoding="utf-8") as file:
                     self.Stats = self.StandartStats
                     file.write(str(self.Stats))
@@ -3056,7 +3056,6 @@ async def Notification(Function,Timer : int,End : "Loop or off",**fields):
 
 
 async def MemberMuted(Message : discord.Message,Content : str,Member : discord.Member,Client):
-    Be = False
     for words in Content:
         Content = Content.replace(words,"░" * int(len(words)))
     Content = Content.capitalize()

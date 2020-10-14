@@ -2,6 +2,8 @@ import ffmpeg
 import BazaDate
 import urllib
 import time
+
+#pylint: disable=unused-wildcard-import
 from Functions2 import *
 
 def is_internet():
@@ -20,7 +22,6 @@ def is_internet():
 def InternetActive():
     client = MyClient()
     client.run(BazaDate.token)
-
 
 class MyClient(discord.Client):
 
@@ -285,11 +286,8 @@ class MyClient(discord.Client):
                     await Channel.send(" ", file = Player.Profile())
         elif Commands[0].upper() == "Attack".upper():
             await Message.delete()
-            try:
-                Player2 = Commands[1]
-            except: 
-                raise Error("Нужно указать имя игрока")
-                return
+            try: Player2 = Commands[1]
+            except: raise Error("Нужно указать имя игрока")
             Be = False
             for _Player in Players:
                 if _Player.upper() == Player2.upper():
@@ -516,8 +514,6 @@ class MyClient(discord.Client):
                 count = 0
                 Embed = discord.Embed(title=f"Статистика : {Player.Name}")
                 for Equip in Player.GetEquipmented:
-                    SpaceCenter = " " * 35
-                    SpaceLeftCenter = " " * 17
                     Header = Headers[count]
                     Gold = ReplaceNumber(Equip.Gold)
                     MaxGold = ReplaceNumber(Equip.MaxGold)
@@ -824,7 +820,7 @@ class MyClient(discord.Client):
                         elif Commands[1].upper() == "EveryTime".upper():
                             Count = Commands[2]
                             try: Count = int(Count)
-                            except: raise Error(Debug(Count,int))
+                            except: raise Error(Debuger(Count,int))
                             if Count < 30:
                                 Count = 30
                                 await Channel.send("Не могу установить скорость ниже 30 секунд.")
@@ -1149,7 +1145,7 @@ class MyClient(discord.Client):
         for part in str(Player.name).split(" "):
             UserName_ += part
         DevelopGabriel = await self.fetch_guild(716945063351156736)
-        EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
+        # EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
         Emoji = payload.emoji
         MessageRoles = [714080637648240690,737503063409033247]
         if Message.id == 713880721709727754:
