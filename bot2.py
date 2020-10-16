@@ -267,6 +267,18 @@ class MyClient(discord.Client):
         Player.GetInventor()
         Player.GetTalants()
         Day = datetime.datetime.now().day
+
+        try:
+            if Message.raw_mentions[0] == self.user.id:
+                _Gabriel = Gabriel()
+                
+                try: _Message = _Gabriel.Message(random.randint(*Guild_Function.StandartWords),Guild.name,"A",Content.replace("<@!656808327954825216>",""))
+                except: _Message = _Gabriel.Message(random.randint(*Guild_Function.StandartWords),Guild.name,"Usual")
+                await Channel.send(f"> {Content}\n{Message.author.mention}, {_Message}")
+                return
+        except: pass
+        
+
         if Commands[0].upper() == "Profile".upper():
             await Message.delete()
             async with Channel.typing():
@@ -657,7 +669,7 @@ class MyClient(discord.Client):
             if Message.author.bot == False:
                 if random.randint(1,100) >= Guild_Function.ChanceSays:
                     try:
-                        Count = random.randint(Guild_Function.StandartWords)
+                        Count = random.randint(*Guild_Function.StandartWords)
                         _Message = self.Gabriel.Message(Count,Guild.name,"A",Content)
                         await Channel.send(_Message)
                     except: pass

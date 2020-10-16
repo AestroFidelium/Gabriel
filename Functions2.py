@@ -1503,7 +1503,14 @@ class Gabriel():
             self.Main = Content
             for key in Content.keys():
                 self.Author = str(key)
-            self.Content = str(Content[self.Author]) 
+            self.Content = self.ConvertToSimpleText(str(Content[self.Author]))
+
+        def ConvertToSimpleText(self,Text : str) -> str:
+            return str(SoMuchSpaces(re.sub(r"[^А-я]"," ",Text)))
+
+    def ConvertToSimpleText(self,Text : str) -> str:
+        return str(SoMuchSpaces(re.sub(r"[^А-я]"," ",Text)))
+
 
     def Message(self,CountMessages : int,ServerName : str,Mode : "Usual or D / B",GetMessage : str = None):
         """ Сообщение """
@@ -1517,16 +1524,14 @@ class Gabriel():
                     message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
                 except: raise Error("Габриэль знает слишко мало слов")
                 for content in message.Content.split(" "):
-                    content = re.sub(r"[^А-я]"," ",content)
                     if random.randint(0,1) == 1:
                         ReturnMessage += f"{content} "
                     elif random.randint(0,1) == 1:
                         message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
                         for content in message.Content.split(" "):
                             if random.randint(0,1) == 1:
-                                content = re.sub(r"[^А-я]"," ",content)
                                 ReturnMessage += f"{content} "
-            return SoMuchSpaces(ReturnMessage.capitalize())
+            return ReturnMessage.capitalize()
         elif Mode == "D":
             try:
                 Title = ""
@@ -1596,37 +1601,68 @@ class Gabriel():
             return ReturnMessage
         elif Mode == "A":
             if GetMessage:
-                for index, message in enumerate(self.GotMessages):
-                    for x in range(len(GetMessage.split(" "))):
-                        if message.Content.upper().find(GetMessage.upper().split(" ")[x]) >= 0:
-                            # Находим ответ на вопрос
-                            for index2 in range(10):
-                                _Message = self.GotMessages[index - 1 - index2]
-                                if message.Author != _Message.Author:
-                                    self.GotMessages.remove(_Message)
-                                    break
-                            # Изначальное сообщение
-                            content = SoMuchSpaces(re.sub(r"[^А-я]"," ",_Message.Content))
-                            
-                            for content in content.split(" "):
-                                if random.randint(0,1) == 1:
-                                    ReturnMessage += f"{content} "
-                                elif random.randint(0,1) == 1:
-                                    message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
-                                    content = SoMuchSpaces(re.sub(r"[^А-я]"," ",message.Content))
-                                    
-                                    for content in content.split(" "):
-                                        if random.randint(0,1) == 1:
-                                            ReturnMessage += f"{content} "
+                FoundList = list()
+                SpliedList = list()
 
-                            if len(ReturnMessage.split(" ")) >= CountMessages:
-                                return ReturnMessage.capitalize()
-            return self.Message(CountMessages,ServerName,"Usual")
+                class Message():
+                    def __init__(self,Quest,Answer):
+                        self.Quest = Quest
+                        self.Answer = Answer
+                    def __repr__(self):
+                        rr = f"1: {self.Quest.Content}\n2: {self.Answer.Content}\n"
+                        ll = "-" * len(rr)
+                        return f"{rr}\n{ll}"
+                
+                def Search(message,GotMessages,index):
+                    next_message = Ellipsis
+                    for index2 in range(10):
+                        try:
+                            next_message = GotMessages[index + 1 + index2]
+                        except: return next_message
+                        if message.Author != next_message.Author:
+                            return next_message
+                
+                for splied in GetMessage.split(" "):
+                    if len(splied) >= 3:
+                        SpliedList.append(splied)
+                for index, message in enumerate(self.GotMessages):
+                    for splied in SpliedList:
+                        next_message = Search(message,self.GotMessages,index)
+                        if message.Content.lower().find(splied.lower()) >= 0:
+                            FoundList.append(Message(message,next_message))
+                found = FoundList[random.randint(0,len(FoundList) - 1)]
+
+                Main = ""
+                for word in found.Answer.Content.split(" "):
+                    if random.randint(1,3) == 3:
+                        Main += f"{word} "
+                    if random.randint(1,2) == 2:
+                        new_line = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                        for word2 in new_line.Content.split(" "):
+                            if random.randint(1,2) == 2:
+                                Main += f"{word2} "
+                    if len(Main.split(" ")) >= CountMessages: return Main.capitalize()
+                while len(Main.split(" ")) < CountMessages:
+                    try:
+                        for word in Main.split(" "):
+                            if random.randint(1,3) == 3:
+                                new_line = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                                for word2 in new_line.Content.split(" "):
+                                    if random.randint(1,2) == 2:
+                                        Main += f"{word2} "
+                                    if len(Main.split(" ")) >= CountMessages: return Main.capitalize()
+                            if random.randint(1,2) == 2:
+                                new_line = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
+                                if random.randint(1,3) == 3:
+                                    Main += f"{word2} "
+                                if len(Main.split(" ")) >= CountMessages: return Main.capitalize()
+                    except: return Main.capitalize()
+                return Main.capitalize()
         elif Mode == "C":
             message = self.GotMessages.pop(random.randint(0,len(self.GotMessages) - 1))
             author = f'"{message.Author}"'
             ReturnMessage = self.Message(CountMessages,ServerName,"Usual")
-            return f'"{ReturnMessage}"\nСказал {author}'
+            return f'"{ReturnMessage}"\nСказал **{author}**'
 
 
     def Delete(self,Count : int,Server : str):
