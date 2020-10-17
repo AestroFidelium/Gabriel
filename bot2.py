@@ -667,7 +667,7 @@ class MyClient(discord.Client):
             await _Message.add_reaction(self.EmodjiShop)
         else:
             if Message.author.bot == False:
-                if random.randint(1,100) >= Guild_Function.ChanceSays:
+                if random.randint(1,100) <= Guild_Function.ChanceSays:
                     try:
                         Count = random.randint(*Guild_Function.StandartWords)
                         _Message = self.Gabriel.Message(Count,Guild.name,"A",Content)
