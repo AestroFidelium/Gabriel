@@ -40,7 +40,12 @@ class Item():
         self.Player = Player
         self.Type = Type
         self.Gold = 0
+        self.MaxGold = 0
+        self.AllGold = 0
 
+    @property
+    def Magic(self):
+        return "Отсуствуют"
     
     @property
     def Damage(self):
@@ -61,6 +66,8 @@ class Item():
     def __repr__(self):
         return f"ID: {self.ID}\nName: {self.Name}\nDescription: {self.Description}\nType: {self.Type}\nClass: {self.Class}\nUnbreaking: {self.Unbreaking}\nDamage: {self.Damage}\nProtect: {self.Protect}\nWhere: {self.Where}\nGold: {self.Gold}"
 
+    def __str__(self):
+        return f"ID: {self.ID}\nИмя: {self.Name}\nОписание: {self.Description}\nТип: {self.Type}\nКласс: {self.Class}\nПрочность: {self.Unbreaking}\nУран: {self.Damage}\nЗащита: {self.Protect}\nКуда экипируется: {self.Where}\nЗолото: {self.Gold}"
 
 class Your_first_things(Item):
     """ Начальное снаряжение """

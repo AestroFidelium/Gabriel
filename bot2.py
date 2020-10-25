@@ -6,7 +6,6 @@ import time
 #pylint: disable=unused-wildcard-import
 from Functions2 import *
 
-
 def is_internet():
     """
     Query internet using python
@@ -95,10 +94,13 @@ class MyClient(discord.Client):
         self.MiniGame = MiniGame()
         self.Race = self.MiniGame.Race()
         self.Boss = Boss()
-        self.Messages = list()
-        self.BanList = list()
-        self.AgainTheMessage = dict()
+        self.Players = list()
+
+        for player in os.listdir("./Stats/"):
+            if player.endswith(".txt"):
+                self.Players.append(C_Player.Open(player.replace(".txt","")))
         
+
         # Tasks.append(asyncio.create_task(self.Boss.Respawn()))
         # Tasks.append(asyncio.create_task(self.Race.Main(self)))
         # for Player in os.listdir(f"./Stats/"):
@@ -147,33 +149,6 @@ class MyClient(discord.Client):
         
         return (Emodji.name, Role.id)
 
-    async def MembersBanned(self):
-        Count = 1
-        while True:
-            for _Member in self.BanList:
-                MemberID = _Member["Member"]
-                Time = _Member["Time"]
-                Time -= Count
-                NewMember = {"Member":MemberID,"Time":Time}
-                self.BanList.remove(_Member)
-                if Time > 0:
-                    self.BanList.append(NewMember)
-                print(NewMember)
-            await asyncio.sleep(Count)
-    
-    def isBanned(self,MemberID):
-        class Return():
-            def __init__(self,Ban : bool):
-                self.Ban = Ban
-            def __bool__(self):
-                return self.Ban
-        try:
-            for _Member in self.BanList:
-                _MemberID = _Member["Member"]
-                if MemberID == _MemberID:
-                    return Return(True)
-        except:
-            return Return(False)
     
     async def WannaSpeak(self,Guild : C_Guild):
         while True:
@@ -200,8 +175,6 @@ class MyClient(discord.Client):
 
         Channel = await self.fetch_channel(message.channel.id)
         Message = await Channel.fetch_message(message.id)
-
-        # print()
         
         if str(Channel.type) != "private":
             Guild = await self.fetch_guild(message.channel.guild.id)
@@ -236,17 +209,13 @@ class MyClient(discord.Client):
         if Player.Exp >= Player.Level * 500:
             Player.LevelUp(C_Player.mode.one)
 
-        Player.Exp += 1 + Player.GetTalant("More Exp").Level
+        Player.Exp += 1 + Player.More_Exp.Level
         Player.Messages += 1
-        if Player.Messages >= 5 - Player.GetTalant("More Gold").Level:
+        if Player.Messages >= 5 - Player.More_Gold.Level:
             Player.Messages = 0
             Player.Gold += 1
         Player.Save()
 
-        Players = list()
-        for _Player in os.listdir(f"./Stats/"):
-            _Player = _Player.split(".txt")[0]
-            Players.append(_Player)
         Admin = False
         MUTE = False
         try:
@@ -280,25 +249,29 @@ class MyClient(discord.Client):
         if Commands[0].upper() == "Profile".upper():
             await Message.delete()
             async with Channel.typing():
-                # try:
-                #     Player2 = Commands[1]
-                # except: Player2 = ""
-                # if Player2 != "":
-                #     Be = False
-                #     for Player in Players:
-                #         if Player2.upper() == Player.upper():
-                            
-                #             # Player = C_Player(Player)
-                #             Be = True
-                #             # await Channel.send(" ", file = Player.Profile())
-                #     if Be == False:
-                #         raise Error("Такого пользователя не существует")
-                # else: pass
-                await Channel.send(" ", file = Player.Profile())
+                try:
+                    Player2 = Commands[1]
+                    if Player2.isnumeric():
+                        Player = C_Player.Open(Player2)
+                    else:
+                        NickName = Content.upper().replace("PROFILE ","")
+                        FoundList = list()
+                        for player in self.Players:
+                            if player.Name.upper() == NickName:
+                                Player = player
+                                FoundList.append(player)
+                        if len(FoundList) > 1:
+                            await Channel.send(f"Было найдено ({len(FoundList)}) игроков с таким же ником", file = Player.Profile())
+                            return
+                    await Channel.send(" ", file = Player.Profile())
+                except (IndexError,ValueError):
+                    await Channel.send(" ", file = Player.Profile())
+                except:
+                    raise BaseException("Такого пользователя не существует")
         elif Commands[0].upper() == "Attack".upper():
             await Message.delete()
             try: Player2 = Commands[1]
-            except: raise Error("Нужно указать имя игрока")
+            except: raise BaseException("Нужно указать имя игрока")
             Be = False
             for _Player in Players:
                 if _Player.upper() == Player2.upper():
@@ -330,7 +303,7 @@ class MyClient(discord.Client):
 
                     await Channel.send(f"`{Player.Name}` вы убили `{Target.Name}`, нанеся {GetDamage}\nСтатистика `{Target.Name}` упала на : \nУровень : {LostLevel}\nЗдоровье : {LostHealth}\nУрон : {LostDamage}\nЛовкость : {LostAgility}\nИнтеллект : {LostIntelligence}\nСила : {LostStrength}")
             else:
-                raise Error(f"{Player2} не существует")
+                raise BaseException(f"{Player2} не существует")
         elif Commands[0].upper() == "Event".upper():
             await Message.delete()
             if Commands[1].upper() == "Profile".upper():
@@ -346,8 +319,8 @@ class MyClient(discord.Client):
             elif Commands[1].upper() == "Bonus".upper():
                 async with Channel.typing():
                     if Player.BonusDay != Day:
-                        GetGold = random.randint(300,1000 + (1250 * Player.GetTalant("Max Bonus").Level))
-                        GetGold += 300 * Player.GetTalant("Bonus").Level
+                        GetGold = random.randint(300,1000 + (1250 * Player.Max_Bonus.Level))
+                        GetGold += 300 * Player.Bonus.Level
                         Player.Everyday_bonus.Day = Day
                         Player.Everyday_bonus.Gold = GetGold
                         Player.Gold += GetGold
@@ -362,9 +335,9 @@ class MyClient(discord.Client):
                             self.Boss.Create(Commands[2])
                             await Channel.send(f"Создан новый босс")
                     else:
-                        raise Error("Команды не существует")
+                        raise BaseException("Команды не существует")
                 else:
-                    raise Error("Команды не существует")
+                    raise BaseException("Команды не существует")
         elif Commands[0].upper() == "Inv".upper():
             await Message.delete()
             async with Channel.typing():
@@ -424,7 +397,7 @@ class MyClient(discord.Client):
                 except IndexError:
                     raise CommandError("Пропущен обязательный аргумент","Upgrade_Item","Upgrade_Item ID Монеты")
                 except ValueError:
-                    raise Error(f"Оба аргумента должны быть в 'int'")
+                    raise BaseException(f"Оба аргумента должны быть в 'int'")
         elif Commands[0].upper() == "G".upper():
             await Message.delete()
             if MUTE == True: return
@@ -510,25 +483,26 @@ class MyClient(discord.Client):
             except IndexError:
                 raise CommandError("2 обязательный аргумент является целое число","Number","Number число")
             except ValueError:
-                raise Error(Debuger(Count,int))
+                raise BaseException(Debuger(Count,int))
         elif Commands[0].upper() == "Equip".upper():
             await Message.delete()
             async with Channel.typing():
-                Player.GetEquipment()
                 Headers = ["Head","Body","Legs","Boot","Left_hand","Right_hand","Ring_1"
                 ,"Ring_2","Ring_3","Ring_4","Ring_5"]
-                count = 0
-                Embed = discord.Embed(title=f"Статистика : {Player.Name}")
-                for Equip in Player.GetEquipmented:
-                    Header = Headers[count]
-                    Gold = ReplaceNumber(Equip.Gold)
-                    MaxGold = ReplaceNumber(Equip.MaxGold)
-                    AllGold = ReplaceNumber(Equip.AllGold)
-                    Protect = ReplaceNumber(Equip.Protect)
-                    Armor = ReplaceNumber(Equip.Armor)
-                    Damage = ReplaceNumber(Equip.Damage)
-                    Embed.add_field(name=Header,value=f"Название : {Equip.Name}\nОписание : {Equip.Description}\nID : {Equip.ID}\nУрон : {Damage} / Защита : {Protect}\nПрочность : {Armor}\nЗолото : {Gold}/{MaxGold} ({AllGold})\nМагические свойства : {Equip.Magic}",inline=False)
-                    count += 1
+                Embed = discord.Embed(title=f"Инвентарь : {Player.Name}")
+                List = [Player.Head,Player.Body,Player.Legs,Player.Boot,Player.Left_hand,Player.Right_hand,Player.Ring_1,Player.Ring_2,Player.Ring_3,Player.Ring_4,Player.Ring_5]
+                for index,Equip in enumerate(List):
+                    Header = Headers[index]
+                    try:
+                        Gold = ReplaceNumber(Equip.Gold)
+                        MaxGold = ReplaceNumber(Equip.MaxGold)
+                        AllGold = ReplaceNumber(Equip.AllGold)
+                        Protect = ReplaceNumber(Equip.Protect)
+                        Armor = ReplaceNumber(Equip.Unbreaking)
+                        Damage = ReplaceNumber(Equip.Damage)
+                        Embed.add_field(name=Header,value=f"Название : {Equip.Name}\nОписание : {Equip.Description}\nID : {Equip.ID}\nУрон : {Damage} / Защита : {Protect}\nПрочность : {Armor}\nЗолото : {Gold}/{MaxGold} ({AllGold})\nМагические свойства : {Equip.Magic}",inline=False)
+                    except: Embed.add_field(name=Header,value="Ничего не экипировано",inline=False)
+                    
                 await Channel.send(embed=Embed)
         elif Commands[0].upper() == "Gs".upper():
             await Message.delete()
@@ -565,7 +539,7 @@ class MyClient(discord.Client):
                             file.write(chunk)
                     await Channel.send("Новый аватар поставлен",delete_after=30)
                 except:
-                    raise Error("Поставить новый аватар не удалось")
+                    raise BaseException("Поставить новый аватар не удалось")
         elif Commands[0].upper() == "New_Background".upper():
             await Message.delete()
             async with Channel.typing():
@@ -577,7 +551,7 @@ class MyClient(discord.Client):
                             file.write(chunk)
                     await Channel.send("Новый фон поставлен",delete_after=30)
                 except:
-                    raise Error("Поставить новый фон не удалось")
+                    raise BaseException("Поставить новый фон не удалось")
         elif Commands[0].upper() == "Shop".upper():
             await Message.delete()
             async with Channel.typing():
@@ -590,7 +564,7 @@ class MyClient(discord.Client):
                 except IndexError:
                     raise CommandError("Пропущен обязательный аргумент","Shop","Shop Товар Количество")
                 except ValueError:
-                    raise Error(f"2 Аргумент {Debuger(Count,int)}")
+                    raise BaseException(f"2 Аргумент {Debuger(Count,int)}")
         elif Commands[0].upper() == "Wiki".upper():
             await Message.delete()
             async with Channel.typing():
@@ -605,13 +579,13 @@ class MyClient(discord.Client):
             await Message.delete()
             async with Channel.typing():
                 try: ID = int(Commands[1])
-                except: raise Error("Не указан ID предмета")
+                except: raise BaseException("Не указан ID предмета")
                 Item_ = Item.Find(ID,Player)
                 if Item_.TypeKey.upper() == "Equipment".upper():
                     Player.EquipmentItem(ID,Item_.Where)
                 else:
                     try: Where = Commands[2]
-                    except: raise Error("Не указано куда следует экипировать предмет")
+                    except: raise BaseException("Не указано куда следует экипировать предмет")
                     
                     Player.EquipmentItem(ID,Where)
                 await Channel.send("Вы успешно экипировали предмет")
@@ -619,9 +593,9 @@ class MyClient(discord.Client):
             await Message.delete()
             async with Channel.typing():
                 try: ID = int(Commands[1])
-                except: raise Error("Не указана лошадь. От 1 до 5")
+                except: raise BaseException("Не указана лошадь. От 1 до 5")
                 try: Gold = int(Commands[2])
-                except: raise Error("Не указана цена")
+                except: raise BaseException("Не указана цена")
 
                 Embed = self.Race.AddRate(Player,ID,Gold)
                 
@@ -645,7 +619,7 @@ class MyClient(discord.Client):
             try:
                 Image = GetFromMessage(_Content,'"')
                 if Image.find("https://") == -1:
-                    raise Error("Ожидалась ссылка")
+                    raise BaseException("Ожидалась ссылка")
                 Embed.set_image(url=Image)
             except: pass
             await Message.delete()
@@ -704,7 +678,7 @@ class MyClient(discord.Client):
                                 Guild_Function.ChannelsForSaveWords.remove(Channel.id)
                                 Guild_Function.SaveStats()
                                 await Channel.send(f"Убран канал, где я общаюсь с вами `{Channel.id}`")
-                            except: raise Error("Канал не найден")
+                            except: raise BaseException("Канал не найден")
                         elif Commands[1].upper() == "BanAddChannel".upper():
                             try:
                                 ChannelID = int(Commands[2])
@@ -714,14 +688,14 @@ class MyClient(discord.Client):
                                     await Channel.send(f"Этот канал стал быть противным `{ChannelID}`")
                                 else:
                                     await Channel.send(f"Этот канал и так противен мне`{ChannelID}`")
-                            except: raise Error("Канал не найден")
+                            except: raise BaseException("Канал не найден")
                         elif Commands[1].upper() == "BanRemoveChannel".upper():
                             try:
                                 ChannelID = int(Commands[2])
                                 Guild_Function.ChannelWithIgnoreCommand.remove(ChannelID)
                                 Guild_Function.SaveStats()
                                 await Channel.send(f"Этот канал перестал быть противным `{ChannelID}`")
-                            except: raise Error("Канал не найден")
+                            except: raise BaseException("Канал не найден")
                         elif Commands[1].upper() == "Channels".upper():
                             Embed = discord.Embed(title='Каналы')
                             Embed.add_field(
@@ -777,7 +751,7 @@ class MyClient(discord.Client):
                             try: 
                                 Count = Commands[2]
                                 Count = int(Count)
-                            except: raise Error(Debuger(Count,int))
+                            except: raise BaseException(Debuger(Count,int))
 
                             if Count > 75:
                                 Count = 75
@@ -790,12 +764,12 @@ class MyClient(discord.Client):
                             try: 
                                 Count1 = Commands[2]
                                 Count1 = int(Count1)
-                            except: raise Error(Debuger(Count1,int))
+                            except: raise BaseException(Debuger(Count1,int))
 
                             try: 
                                 Count2 = Commands[3]
                                 Count2 = int(Count2)
-                            except: raise Error(Debuger(Count2,int))
+                            except: raise BaseException(Debuger(Count2,int))
 
 
                             if Count1 <= 0:
@@ -826,7 +800,7 @@ class MyClient(discord.Client):
                         elif Commands[1].upper() == "EveryTime".upper():
                             Count = Commands[2]
                             try: Count = int(Count)
-                            except: raise Error(Debuger(Count,int))
+                            except: raise BaseException(Debuger(Count,int))
                             if Count < 30:
                                 Count = 30
                                 await Channel.send("Не могу установить скорость ниже 30 секунд.")
@@ -944,7 +918,7 @@ class MyClient(discord.Client):
                             Embed = discord.Embed(title="Админ меню",description=f"Программа вывела : \n{Answer}",colour=discord.Colour(65520))
                             await Channel.send(embed=Embed)
                 else:
-                    raise Error("Таких команд нет")
+                    raise BaseException("Таких команд нет")
             elif Commands[0].upper() == "LevelUpMe".upper():
                 Level = int(Commands[1])
                 Player.LevelUp(C_Player.mode.multiply,count=Level)
@@ -983,34 +957,15 @@ class MyClient(discord.Client):
             print(f"{PlayerName} Не было аватарки, она скачалась")
     
     async def on_message(self,message):
-        # print(bool(self.isBanned(message.author.id)))
-        Saved = {"Member":message.author.id,"Message":message.content}
-        if Saved not in self.Messages:
-            self.Messages.append(Saved)
-            self.AgainTheMessage.update({message.author.id:{"Member":message.author.id,"Count":3,"Time":NowTime()}})
-        else:
-            Old = self.AgainTheMessage[message.author.id]
-            Time = int(Old["Time"])
-            if Time >= NowTime() - 15:
-                print("СЛИШКОМ БЫСТРААА")
-                Count = Old["Count"]
-                Count -= 1
-                self.AgainTheMessage.update({message.author.id:{"Member":message.author.id,"Count":Count,"Time":NowTime()}})
-                if Count <= 0:
-                    NewBan = {"Member":message.author.id,"Time":300}
-                    if NewBan not in self.BanList:
-                        self.BanList.append(NewBan)
-        if message.author != self.user:
-            await self.Command(message)
-            return
+        # if message.author != self.user:
+        #     await self.Command(message)
+        #     return
         try:
             if message.author != self.user:
                 await self.Command(message)
         except OverflowError:
             Embed = discord.Embed(title="Ваша статистика бессконечна",description=f"Из за этого ваши действия невозможно сканировать",colour=discord.Colour.red())
-            
             await message.channel.send(embed=Embed,delete_after=60)
-
         except OSError:
             Embed = discord.Embed(title="Ошибка",description=f"{message.author.mention} , не могу создать аккаунт под ваше имя",colour=discord.Colour.red())
             await message.channel.send(embed=Embed,delete_after=60)

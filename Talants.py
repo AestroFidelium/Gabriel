@@ -19,30 +19,40 @@ class Talant():
         self.Lock = Lock
         self.NeedAt = NeedAt
 
-    def Update(self,Exp : int):
+    def Update(self,Player,Exp : int):
         if self.Level < self.MaxLevel and self.Lock == False:
             self.Exp += Exp
             if self.Exp >= self.NeedExp:
-                self.NeedExp *= 2
+                self.NeedExp = round(self.NeedExp * 1.505)
                 self.Level += 1
                 self.Updated()
                 return True
         elif self.Lock:
+            Be = True
             for talant in self.NeedAt:
-                if talant.NeedLevel < talant.Stats.Level:
-                    if talant.Talant.Update(Exp):
-                        break
+                _Talant = Player.__getattribute__(talant.Name)
+                if talant.NeedLevel > _Talant.Level:
+                    Be = False
+                    if _Talant.Update(Player,Exp): break
+            if Be:
+                self.Lock = False
         else:
             return False
-
     
     def Updated(self): pass
+
+    def __repr__(self):
+        return f"Name: [{self.Name}]         Description: [{self.Description}]         PerLevel: [{self.PerLevel}]\nLevel: {self.Level}         MaxLevel: {self.MaxLevel}         Exp: {self.Exp}         NeedExp: {self.NeedExp}\nLock: {self.Lock}         NeedAt: {self.NeedAt}"
 
 
 class TalantNeedAt():
     def __init__(self,Talant,NeedLevel : int):
         self.Stats = Talant
+        self.Name = str(Talant).split(".")[-1].split("'")[0]
         self.NeedLevel = NeedLevel
+    
+    def __repr__(self):
+        return f"`{self.Name}`   Уровня: {self.NeedLevel}"
 
 class Heroic_Level(Talant):
     def __init__(self,Player):
@@ -65,9 +75,11 @@ class Heroic_Level(Talant):
         self.Player.Health       += 320
         self.Player.MaxHealth    += 320
         self.Player.Exp          += 100
-        self.Player.LevelUp()
+        self.Player.LevelUp(self.Player.mode.one)
+        self.Player.Save()
+    
 
-class More_Exp():
+class More_Exp(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Больше опыта",
@@ -81,7 +93,7 @@ class More_Exp():
             NeedAt=[])
         self.Player = Player
 
-class More_Gold():
+class More_Gold(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Больше золота",
@@ -95,7 +107,7 @@ class More_Gold():
             NeedAt=[])
         self.Player = Player
 
-class More_Damage():
+class More_Damage(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Усиленный урон",
@@ -109,7 +121,7 @@ class More_Damage():
             NeedAt=[])
         self.Player = Player
 
-class More_Protect():
+class More_Protect(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Броня",
@@ -123,7 +135,7 @@ class More_Protect():
             NeedAt=[])
         self.Player = Player
 
-class Passive_Generator():
+class Passive_Generator(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Пассивный генератор опыта",
@@ -137,7 +149,7 @@ class Passive_Generator():
             NeedAt=[TalantNeedAt(Heroic_Level,3)])
         self.Player = Player
 
-class Updater_Generator_Amount():
+class Updater_Generator_Amount(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Генератор Опыта",
@@ -151,7 +163,7 @@ class Updater_Generator_Amount():
             NeedAt=[TalantNeedAt(Passive_Generator,1)])
         self.Player = Player
 
-class Updater_Generator_Speed():
+class Updater_Generator_Speed(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Улучшенный Генератор Опыта",
@@ -166,7 +178,7 @@ class Updater_Generator_Speed():
         self.Player = Player
 
 
-class Cheater_Generator():
+class Cheater_Generator(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Не честный генератор опыта",
@@ -180,7 +192,7 @@ class Cheater_Generator():
             NeedAt=[TalantNeedAt(Heroic_Level,10000)])
         self.Player = Player
 
-class Regeneration():
+class Regeneration(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Регенерация",
@@ -194,7 +206,7 @@ class Regeneration():
             NeedAt=[TalantNeedAt(Heroic_Level,5)])
         self.Player = Player
 
-class Regeneration_Amount():
+class Regeneration_Amount(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Усиленная Регенерация",
@@ -208,7 +220,7 @@ class Regeneration_Amount():
             NeedAt=[TalantNeedAt(Regeneration,1)])
         self.Player = Player
 
-class Regeneration_Speed():
+class Regeneration_Speed(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Ускоренная Регенерация",
@@ -222,7 +234,7 @@ class Regeneration_Speed():
             NeedAt=[TalantNeedAt(Regeneration,1)])
         self.Player = Player
 
-class Cheater_Regeneration():
+class Cheater_Regeneration(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Сверх реген",
@@ -236,7 +248,7 @@ class Cheater_Regeneration():
             NeedAt=[TalantNeedAt(Regeneration,1),TalantNeedAt(Heroic_Level,5000)])
         self.Player = Player
 
-class Blacksmith():
+class Blacksmith(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Кузнец",
@@ -250,7 +262,7 @@ class Blacksmith():
             NeedAt=[])
         self.Player = Player
 
-class Immunity():
+class Immunity(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Иммунитет",
@@ -264,7 +276,7 @@ class Immunity():
             NeedAt=[])
         self.Player = Player
 
-class Immunity_from_poison():
+class Immunity_from_poison(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Иммунитет От Яда",
@@ -278,7 +290,7 @@ class Immunity_from_poison():
             NeedAt=[TalantNeedAt(Immunity,1)])
         self.Player = Player
 
-class Bonus():
+class Bonus(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Бонусы",
@@ -292,7 +304,7 @@ class Bonus():
             NeedAt=[])
         self.Player = Player
 
-class Max_Bonus():
+class Max_Bonus(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Бонусы",
@@ -306,7 +318,7 @@ class Max_Bonus():
             NeedAt=[TalantNeedAt(Bonus,10)])
         self.Player = Player
 
-class Spells():
+class Spells(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Способности",
@@ -320,7 +332,7 @@ class Spells():
             NeedAt=[TalantNeedAt(Heroic_Level,10)])
         self.Player = Player
 
-class Berserk():
+class Berserk(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Берсерк",
@@ -335,7 +347,7 @@ class Berserk():
         self.Player = Player
 
 
-class Invincible():
+class Invincible(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Непобедимый",
@@ -350,7 +362,7 @@ class Invincible():
         self.Player = Player
 
 
-class Annihilator():
+class Annihilator(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Уничтожитель",
@@ -365,7 +377,7 @@ class Annihilator():
         self.Player = Player
 
 
-class Repair():
+class Repair(Talant):
     def __init__(self,Player):
         super().__init__(
             Name="Починка",

@@ -22,6 +22,7 @@ import re
 from sys import platform
 import Items
 import Talants
+import threading
 
 
 def GetFromMessage(message : str,Znak : str):
@@ -577,6 +578,7 @@ class C_Player():
         with open(f"./Stats/{self.ID}.txt","wb") as file:
             pickle.dump(self,file)
     
+    
         
     def GetTalants(self):
         """Получить таланты. Использовать всего 1 раз"""
@@ -712,10 +714,6 @@ class C_Player():
         self.Stats_Room.update({Guild:{"Name":self.RoomName,"Permissions":self.RoomPermissions}})
         with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","w",encoding="utf-8") as file:
             file.write(str(self.Stats))
-    def GetTalant(self,TalantName):
-        """ Получить статистику о таланте. """
-
-        return Talant(self,self.Talants[TalantName],TalantName)
     def PickTalant(self,TalantName):
         try:
             self.Talants[TalantName]
@@ -747,25 +745,12 @@ class C_Player():
         self.Damage += random.randint(8,35) * count
         self.Level += 1 * count
         self.Exp = 0
-        Determination = self.GetTalant('Determination')
-        if self.Level > self.MaxLevel and Determination.Ready == False:
+        if self.Level > self.MaxLevel :
             self.Plus += self.Level - self.MaxLevel
             self.MaxLevel = self.Level
         self.Strength += 0.001 * count
         self.Agility += 0.002 * count
         self.Intelligence += 0.005 * count
-        self.Edit(
-            Edit="Main",
-            Health = self.Health,
-            MaxHealth = self.MaxHealth,
-            Damage = self.Damage,
-            Level = self.Level,
-            Exp = self.Exp,
-            Plus = self.Plus,
-            Strength = self.Strength,
-            Agility = self.Agility,
-            Intelligence = self.Intelligence
-        )
     def LostLevel(self,count):
         """ Потерять уровень. """
         lostHealth = random.randint(55,100) * count
@@ -902,12 +887,6 @@ class C_Player():
         for item in self.Inventor:
             item = Item(self,item)
             self.GetInventored.append(item)
-    def GetEquipment(self):
-        self.GetEquipmented = list()
-        for item in self.Equipped:
-            ItemEquipped = self.Equipped[item]
-            item = Item(self,ItemEquipped)
-            self.GetEquipmented.append(item)
     def Attack(self,Target):
         """Атаковать указанную цель"""
         GetDamage = random.randint(1,self.MaxDamage())
@@ -970,28 +949,26 @@ class C_Player():
     def MaxDamage(self):
         """ Урон который наносит герой. """
 
-        GetDamage = 1 + self.Damage + self.Left_hand.Damage + self.Right_hand.Damage
+        GetDamage = 1 + self.Damage
+        try: GetDamage += self.Left_hand.Damage
+        except: pass
+        try: GetDamage += self.Right_hand.Damage
+        except: pass
         
-        MoreDamage = self.GetTalant("More Damage")
-        GetDamage += GetDamage * ((5 * MoreDamage.Level) / 100)
+        GetDamage += GetDamage * ((5 * self.More_Damage.Level) / 100)
 
         GetDamage *= self.Strength
 
         GetDamage = round(GetDamage)
-        Determination = self.GetTalant('Determination')
-        if Determination.Ready:
-            GetDamage *= 2
         
-        Annihilator = self.GetTalant('Annihilator')
-        if random.randint(0,1000) <= Annihilator.Level:
+        if random.randint(0,1000) <= self.Annihilator.Level:
             GetDamage *= 5
 
-        Berserk = self.GetTalant('Berserk')
         Procent = (self.Health * 100) / self.MaxHealth
         Procent -= 100
         Procent *= -1
         print(int(Procent))
-        GetDamage += GetDamage * ((Procent * Berserk.Level) / 100)
+        GetDamage += GetDamage * ((Procent * self.Berserk.Level) / 100)
 
 
         return round(GetDamage)
@@ -1000,14 +977,8 @@ class C_Player():
         Protect += self.Body.Protect
         Protect += self.Legs.Protect
         Protect += self.Boot.Protect
-        Determination = self.GetTalant('Determination')
-        if Determination.Ready:
-            Protect *= 2
         return round(Protect)
     def AddHealth(self,Amount : int):
-        Determination = self.GetTalant('Determination')
-        if Determination.Ready:
-            Amount *= 2
         self.Health += Amount
         if self.Health > self.MaxHealth:
             self.Health = self.MaxHealth
@@ -1149,9 +1120,11 @@ class C_Player():
             except: pass
 
             await asyncio.sleep(600)
-
+    def TalantUpdater(self):
+        if self.TalantPicked is not Ellipsis:
+            self.TalantPicked.Update(self,int(self.Intelligence))
     def __repr__(self):
-        return f"""ID: {self.ID}\nName: {self.Name}\nStatictics:\nHealth: {self.Health}\nMaxHealth: {self.MaxHealth}\nShield: {self.Shield}\nMaxShield: {self.MaxShield}\nMana: {self.Mana}\nMaxMana: {self.MaxMana}\nDamage: {self.Damage}\nLeveling:\nLevel: {self.Level}\nMaxLevel: {self.MaxLevel}\nExp: {self.Exp}\nPlus: {self.Plus}\nEconomy:\nGold: {self.Gold}\nMessages: {self.Messages}\nStatictics v2:\nStrength: {self.Strength}\nAgility: {self.Agility}\nIntelligence: {self.Intelligence}\nEquip:\nHead: {self.Head}\nBody: {self.Body}\nLegs: {self.Legs}\nBoots: {self.Boot}\nLeft hand: {self.Left_hand}\nRight hand: {self.Right_hand}\nRings:\n...1: {self.Ring_1}\n..2: {self.Ring_2}\n..3: {self.Ring_3}\n..4: {self.Ring_4}\n..5: {self.Ring_5}\nOther:\nQuests: {self.Quests}\nTalants: {self.Talants}\nTalant picked: {self.TalantPicked}"""
+        return f"""ID: {self.ID}        Name: `{self.Name}`\nStatictics:\nHealth: `{self.Health}`         MaxHealth: `{self.MaxHealth}`         Shield: `{self.Shield}`         MaxShield: `{self.MaxShield}`       Mana: `{self.Mana}`         MaxMana: `{self.MaxMana}`       Damage: `{self.Damage}`\nLeveling:\nLevel: `{self.Level}`           MaxLevel: `{self.MaxLevel}`         Exp: `{self.Exp}`           Plus: `{self.Plus}`\nEconomy:\nGold: `{self.Gold}`            Messages: `{self.Messages}`\nStatictics v2:\nStrength: `{self.Strength}`          Agility: `{self.Agility}`           Intelligence: `{self.Intelligence}`\nEquip:\nHead:[{self.Head}]\nBody:[{self.Body}]\nLegs:[{self.Legs}]\nBoots:[{self.Boot}]\nLeft hand:[{self.Left_hand}]\nRight hand:[{self.Right_hand}]\nRings:\n...1:[{self.Ring_1}]\n..2:[{self.Ring_2}]\n..3:[{self.Ring_3}]\n..4:[{self.Ring_4}]\n..5:[{self.Ring_5}]\nOther:\nQuests: `{self.Quests}`\nTalants: `{self.Talants}`\nTalant picked: `{self.TalantPicked}`\n\n"""
 
 # class Item():
 #     """
@@ -3132,5 +3105,16 @@ if __name__ == "__main__":
         Iam = C_Player.Open(414150542017953793)
     except: Iam = C_Player(414150542017953793,"Aestro Fidelium")
 
-    print(Iam)
+    try: Gab = C_Player.Open(656808327954825216)
+    except: Gab = C_Player(656808327954825216,"Габриэль")
+
     
+    Iam.TalantPicked = Iam.Berserk
+
+    # while Iam.TalantPicked.Level < Iam.TalantPicked.MaxLevel:
+    #     ClearConsole()
+    #     Iam.Intelligence = Iam.TalantPicked.NeedExp
+    #     Iam.TalantUpdater()
+    #     print(Iam.TalantPicked)
+    #     time.sleep(0.1)
+    Iam.Save()
