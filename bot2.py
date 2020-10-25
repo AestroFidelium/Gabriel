@@ -6,6 +6,7 @@ import time
 #pylint: disable=unused-wildcard-import
 from Functions2 import *
 
+
 def is_internet():
     """
     Query internet using python
@@ -98,40 +99,40 @@ class MyClient(discord.Client):
         self.BanList = list()
         self.AgainTheMessage = dict()
         
-        Tasks.append(asyncio.create_task(self.Boss.Respawn()))
-        Tasks.append(asyncio.create_task(self.Race.Main(self)))
-        for Player in os.listdir(f"./Stats/"):
-            try:
-                Player = Player.split(".txt")[0]
-                Player = C_Player(Player)
-                try:
-                    try:
-                        _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
-                        Tasks.append(asyncio.create_task(_Talant.Update()))
-                    except: pass
-                    Tasks.append(asyncio.create_task(Player.Regeneration()))
-                    Tasks.append(asyncio.create_task(Player.Repair()))
-                    Tasks.append(asyncio.create_task(Player.GeneratorExp()))
-                except: print(f"{Player.Name} Error with corutines")
-            except KeyError: pass
-            except Error as error:
-                print(error)
-        Tasks.append(asyncio.create_task(self.MembersBanned()))
-        asyncio.gather(*Tasks)
+        # Tasks.append(asyncio.create_task(self.Boss.Respawn()))
+        # Tasks.append(asyncio.create_task(self.Race.Main(self)))
+        # for Player in os.listdir(f"./Stats/"):
+        #     try:
+        #         Player = Player.split(".txt")[0]
+        #         Player = C_Player(Player)
+        #         try:
+        #             try:
+        #                 _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
+        #                 Tasks.append(asyncio.create_task(_Talant.Update()))
+        #             except: pass
+        #             Tasks.append(asyncio.create_task(Player.Regeneration()))
+        #             Tasks.append(asyncio.create_task(Player.Repair()))
+        #             Tasks.append(asyncio.create_task(Player.GeneratorExp()))
+        #         except: print(f"{Player.Name} Error with corutines")
+        #     except KeyError: pass
+        #     except Error as error:
+        #         print(error)
+        # Tasks.append(asyncio.create_task(self.MembersBanned()))
+        # asyncio.gather(*Tasks)
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
         self.DevelopGuild = await self.fetch_guild(716945063351156736)
         self.Gabriel = Gabriel()
         self.C_Guilds = list()
-        for GuildName in os.listdir(f"./Servers"):
-            with codecs.open(f"./Servers/{GuildName}/Main.txt","r",encoding='utf-8') as file:
-                Stats = StrToDict(str(file.readline()))
-                GuildID = Stats['ID']
-                Guild = C_Guild(self,GuildID,GuildName)
-                self.C_Guilds.append(Guild)
-                Tasks.append(asyncio.create_task(self.WannaSpeak(Guild)))
-                print(f"{GuildName} загружена")
+        # for GuildName in os.listdir(f"./Servers"):
+        #     with codecs.open(f"./Servers/{GuildName}/Main.txt","r",encoding='utf-8') as file:
+        #         Stats = StrToDict(str(file.readline()))
+        #         GuildID = Stats['ID']
+        #         Guild = C_Guild(self,GuildID,GuildName)
+        #         self.C_Guilds.append(Guild)
+        #         Tasks.append(asyncio.create_task(self.WannaSpeak(Guild)))
+        #         print(f"{GuildName} загружена")
         
-        print("работает все да")
+        # print("работает все да")
     async def CreateColor(self,Color : tuple,Name : str):
         _Color = C_Color(Color)
         Emodji = _Color.Create()
@@ -228,7 +229,9 @@ class MyClient(discord.Client):
             PlayerName += part
         
         PlayerName = PlayerName
-        Player = C_Player(PlayerName)
+        try:
+            Player = C_Player.Open(Message.author.id)
+        except: Player = C_Player(Message.author.id,Message.author.name)
 
         if Player.Exp >= Player.Level * 500:
             Player.LevelUp(C_Player.mode.one)
@@ -238,12 +241,7 @@ class MyClient(discord.Client):
         if Player.Messages >= 5 - Player.GetTalant("More Gold").Level:
             Player.Messages = 0
             Player.Gold += 1
-        Player.Edit(
-            Edit="Main",
-            Exp = Player.Exp,
-            Messages = Player.Messages,
-            Gold = Player.Gold
-            )
+        Player.Save()
 
         Players = list()
         for _Player in os.listdir(f"./Stats/"):
@@ -282,20 +280,21 @@ class MyClient(discord.Client):
         if Commands[0].upper() == "Profile".upper():
             await Message.delete()
             async with Channel.typing():
-                try:
-                    Player2 = Commands[1]
-                except: Player2 = ""
-                if Player2 != "":
-                    Be = False
-                    for Player in Players:
-                        if Player2.upper() == Player.upper():
-                            Player = C_Player(Player)
-                            Be = True
-                            await Channel.send(" ", file = Player.Profile())
-                    if Be == False:
-                        raise Error("Такого пользователя не существует")
-                else:
-                    await Channel.send(" ", file = Player.Profile())
+                # try:
+                #     Player2 = Commands[1]
+                # except: Player2 = ""
+                # if Player2 != "":
+                #     Be = False
+                #     for Player in Players:
+                #         if Player2.upper() == Player.upper():
+                            
+                #             # Player = C_Player(Player)
+                #             Be = True
+                #             # await Channel.send(" ", file = Player.Profile())
+                #     if Be == False:
+                #         raise Error("Такого пользователя не существует")
+                # else: pass
+                await Channel.send(" ", file = Player.Profile())
         elif Commands[0].upper() == "Attack".upper():
             await Message.delete()
             try: Player2 = Commands[1]
@@ -304,8 +303,8 @@ class MyClient(discord.Client):
             for _Player in Players:
                 if _Player.upper() == Player2.upper():
                     Be = True
-                    Target = C_Player(_Player)
-                    AttackStatus = Player.Attack(Target)
+                    # Target = C_Player(_Player)
+                    # AttackStatus = Player.Attack(Target)
             if Be == True:
                 if AttackStatus["Status"] == "Dead":
                     LostLevel = AttackStatus["Level"]
@@ -349,15 +348,10 @@ class MyClient(discord.Client):
                     if Player.BonusDay != Day:
                         GetGold = random.randint(300,1000 + (1250 * Player.GetTalant("Max Bonus").Level))
                         GetGold += 300 * Player.GetTalant("Bonus").Level
-                        Player.Edit(
-                            Edit="Everyday bonus",
-                            Day = Day,
-                            Gold = GetGold)
+                        Player.Everyday_bonus.Day = Day
+                        Player.Everyday_bonus.Gold = GetGold
                         Player.Gold += GetGold
-                        Player.Edit(
-                            Edit = "Main",
-                            Gold = Player.Gold
-                        )
+                        Player.Save()
                         await Channel.send(f"`{Player.Name}` взял(а) ежедневный бонус в размере {GetGold} золотых")
                     else:
                         await Channel.send(f"`{Player.Name}`, Вы уже брали ежедневный бонус в размере {Player.BonusGold} золотых")
@@ -1006,8 +1000,9 @@ class MyClient(discord.Client):
                     NewBan = {"Member":message.author.id,"Time":300}
                     if NewBan not in self.BanList:
                         self.BanList.append(NewBan)
-        # if message.author != self.user:
-        #     await self.Command(message)
+        if message.author != self.user:
+            await self.Command(message)
+            return
         try:
             if message.author != self.user:
                 await self.Command(message)
@@ -1056,6 +1051,7 @@ class MyClient(discord.Client):
         OurServer = await self.fetch_guild(_Player_.guild.id)
         EveryOne = OurServer.roles[0]
         Roles = OurServer.get_role(623063847497891840)
+        return
         PlayerName = ""
         for part in str(_Player_.name).split(" "):
             PlayerName += part
@@ -1143,9 +1139,9 @@ class MyClient(discord.Client):
                     for part in str(overwrite.name).split(" "):
                         PlayerName += part
                     Maines.append(PlayerName)
-        for _PlayerName in Maines:
-            Player = C_Player(_PlayerName)
-            Player.SaveRoom(after.guild.id,after.name,PermissionsAll)
+        # for _PlayerName in Maines:
+            # Player = C_Player(_PlayerName)
+            # Player.SaveRoom(after.guild.id,after.name,PermissionsAll)
     
     async def on_raw_reaction_add(self,payload):
         Channel = await self.fetch_channel(payload.channel_id)
