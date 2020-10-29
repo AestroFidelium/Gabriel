@@ -23,6 +23,7 @@ from sys import platform
 import Items
 import Talants
 import threading
+import Mobe
 
 
 def GetFromMessage(message : str,Znak : str):
@@ -191,15 +192,17 @@ class C_Player():
         self.MaxMana      = 100
         
         self.Exp          = 0
+        self.ExpRequest   = 500   # ExpRequest * Level = сколько требуется опыта для уровня
         self.Level        = 1
-        self.MaxLevel     = 1
+        self.MaxLevel     = 100
         self.Plus         = 1
         self.Damage       = 5
-
-        self.Description  = ""
+        self.WasMaxLevel  = 1
+        self.LosedLevels  = 0    # Возможность набирать опыт дальше, но он не будет засчитыватся и куда либо использоватся, если не применить нужные вещи
         
-        self.Gold         = 0
+        self.Gold        = 0
         self.Messages     = 1
+        self.MaxGold      = 10000
 
         self.Strength     = 1.0
         self.Agility      = 1.0
@@ -255,6 +258,15 @@ class C_Player():
         self.Invincible               = Talants.Invincible(self)
         self.Annihilator              = Talants.Annihilator(self)
         self.Repair                   = Talants.Repair(self)
+        self.Both_hands_first         = Talants.Both_hands_first(self)
+        self.Both_hands_two           = Talants.Both_hands_two(self)
+        self.Both_hands_three         = Talants.Both_hands_three(self)
+        self.Both_hands_master        = Talants.Both_hands_master(self)
+
+
+
+        self.Mobe                     = Mobe.Training_dummy(self)
+        
 
 
 
@@ -578,7 +590,6 @@ class C_Player():
         with open(f"./Stats/{self.ID}.txt","wb") as file:
             pickle.dump(self,file)
     
-    
         
     def GetTalants(self):
         """Получить таланты. Использовать всего 1 раз"""
@@ -720,7 +731,7 @@ class C_Player():
             self.Edit(TalantPicked=TalantName)
         except:
             raise Error("Такого таланта не существует")
-    def LevelUp(self,mode,**fields):
+    def LevelUp(self,count : int = 1):
         """ Получить уровень. 
         Моды : (mode)
             mode.one : 
@@ -731,12 +742,6 @@ class C_Player():
                 требуется : count 
         """
         count = 1
-
-        if mode == self.mode.multiply:
-            try:
-                count = int(fields["count"])
-            except KeyError: 
-                raise self.mode.multiply.ErrorNoCount("Требуется указать count")
         
         self.Health += random.randint(55,100) * count
         self.MaxHealth += random.randint(55,100) * count
@@ -786,18 +791,7 @@ class C_Player():
         self.Intelligence -= lostIntelligence
         if self.Intelligence < 1.0:
             self.Intelligence = 1.0
-        self.Edit(
-            Edit="Main",
-            Health = self.Health,
-            MaxHealth = self.MaxHealth,
-            Damage = self.Damage,
-            Level = self.Level,
-            Exp = self.Exp,
-            Plus = self.Plus,
-            Strength = self.Strength,
-            Agility = self.Agility,
-            Intelligence = self.Intelligence
-        )
+        self.Save()
         LostStatus = {
             "Status" : "Dead",
             "Level" : lostLevel - self.Level,
@@ -810,74 +804,74 @@ class C_Player():
         return LostStatus
     def Profile(self):
         """ Показать профиль игрока """
-        try:
-            BackGround = Image.open(f"./Resurses/BackGround_{self.Name}.png")
-        except: BackGround = Image.open(f"./Resurses/BackGround_StandartBackGround.png")
-        Main = Image.open(f"./Resurses/Main.png")
-        Ava = Image.open(f"./Resurses/{self.Name}.png")
-        Ava = Ava.resize((264,264))
-        draw = ImageDraw.Draw(Main)
+
+
+        def WriteInCenter(content,Position : tuple,Draw : ImageDraw,Font,Fill):
+            offset = Draw.textsize(str(content),font=Font)
+            Draw.text(
+                (Position[0] - (offset[0] / 2), 
+                Position[1] - (offset[1] / 2)), 
+                str(content),fill=Fill,font=Font)
+
+        Main = Image.open("./Resurses/System/Profile.jpg")
+        Draw = ImageDraw.Draw(Main)
+
+
+        Font_Path = "./Resurses/System/FONT.otf"
+
+        Font = ImageFont.truetype(Font_Path,72)
         
-        font = ImageFont.truetype("arial.ttf",50)
-        Level = ReplaceNumber(self.Level)
-        _writeInPicture((163,309),Level,font,draw,"black")
 
-        font = ImageFont.truetype("arial.ttf",100)
-        _writeInPicture((370,155),self.Name,font,draw,(200,210,255))
+        Draw.text((86,31),self.Name,font=Font,fill=(138,166,255))
 
-        font = ImageFont.truetype("arial.ttf",35)
-        Health = ReplaceNumber(self.Health)
-        MaxHealth = ReplaceNumber(self.MaxHealth)
+
+
+        Line = Image.open("./Resurses/System/Line.png")
+
+
+
+        Procent = float((self.Exp * 100) / (self.ExpRequest * self.Level)) / 100
+        EndPoint = 1015 * Procent
+        if Procent < 0.1: EndPoint = 88
+        Draw.line((83,276,EndPoint,276),fill=(255,248,149),width=48)
+
+        Procent = float((self.Gold * 100) / self.MaxGold) / 100
+        EndPoint = 645 * Procent
+        if Procent < 0.1: EndPoint = 88
+        Draw.line((88,451,EndPoint,451),fill=(255,248,149),width=29)
+
+
+
+
+
+
+        WriteInCenter(round(self.Strength),(400,554),Draw,Font,(255,255,255))
+
+        WriteInCenter(round(self.Agility),(571,650),Draw,Font,(255,255,255))
+
+        WriteInCenter(round(self.Intelligence),(577,794),Draw,Font,(255,255,255))
+
+        
+        WriteInCenter(round(self.Level),(822,627),Draw,ImageFont.truetype(Font_Path,200),(255,255,255))
+
+        WriteInCenter(round(self.Health),(177,1275),Draw,ImageFont.truetype(Font_Path,125),(255,255,255))
+
+        WriteInCenter(round(self.Mana),(521,1275),Draw,ImageFont.truetype(Font_Path,125),(255,255,255))
+
+        WriteInCenter(round(self.Damage),(869,1275),Draw,ImageFont.truetype(Font_Path,125),(255,255,255))
+
+        WriteInCenter(f"{ReplaceNumber(self.Gold)} / {ReplaceNumber(self.MaxGold)}",(365, 451),Draw,ImageFont.truetype(Font_Path,50),(0,255,255))
+        WriteInCenter(f"{ReplaceNumber(self.Exp)} / {ReplaceNumber(self.ExpRequest * self.Level)}",(549, 278),Draw,ImageFont.truetype(Font_Path,50),(0,255,255))
+
+
         Protect = self.MaxProtect()
-        Protect = ReplaceNumber(Protect)
-        _writeInPicture((550,276),f"Здоровье : {Health} ед./ {MaxHealth} ({Protect})",font,draw,"black")
-
-        font = ImageFont.truetype("arial.ttf",35)
-        Damage = ReplaceNumber(self.MaxDamage())
-        _writeInPicture((550,328),f"Урон : {Damage}",font,draw,"black")
-
-        font = ImageFont.truetype("arial.ttf",35)
-        LevelNeed = self.Level * 500
-        LevelNeed = ReplaceNumber(LevelNeed)
-        _writeInPicture((380,743),f"Опыт : {self.Exp} / {LevelNeed}",font,draw,"black")
-
-        font = ImageFont.truetype("arial.ttf",30)
-        Plus = ReplaceNumber(self.Plus)
-        _writeInPicture((700,700),f"Талант очки : {Plus}",font,draw,"black")
-
-        font = ImageFont.truetype("arial.ttf",50)
-        Strength = round(self.Strength)
-        Strength = ReplaceNumber(Strength)
-        _writeInPicture((38,393),f"Сила : \n{Strength}",font,draw,(255,100,0))
-
-        font = ImageFont.truetype("arial.ttf",50)
-        Agility = round(self.Agility)
-        Agility = ReplaceNumber(Agility)
-        _writeInPicture((38,471),f"Ловкость : \n{Agility}",font,draw,(0,255,0))
-
-        font = ImageFont.truetype("arial.ttf",50)
-        Intelligence = round(self.Intelligence)
-        Intelligence = ReplaceNumber(Intelligence)
-        _writeInPicture((38,570),f"Интеллект : \n{Intelligence}",font,draw,(0,255,255))
-
-        font = ImageFont.truetype("arial.ttf",35)
-        Gold = ReplaceNumber(self.Gold)
-        _writeInPicture((550,380),f"Золота : {Gold} / {self.Messages}",font,draw,"black")
-
-        font = ImageFont.truetype("arial.ttf",60)
-        _writeInPicture((380,500),self.Description,font,draw,"black")
-
-        font = ImageFont.truetype("arial.ttf",35)
-        _writeInPicture((380,470),"О себе : \n",font,draw,"black")
-
-        Main.paste(Ava,(46,8))
-        BackGround = BackGround.resize((1000,1450))
-        BackGround.paste(Main.convert("RGB"),(0,550),Main)
         
+        WriteInCenter(f"{ReplaceNumber(Protect)}",(265, 1051),Draw,ImageFont.truetype(Font_Path,50),(0,255,255))
 
 
 
-        BackGround.save("StatsPl.png")
+
+        Main.save("StatsPl.png")
         df = discord.File("StatsPl.png","StatsPl.png")
 
         return df
@@ -904,7 +898,7 @@ class C_Player():
         except: pass
         
         if Target.Health <= 0:
-            Count = int(Target.Level / 5)
+            Count = int(Target.Level * 5)
             LostStatus = {
                     "Status"       : "Dead",
                     "Level"        : Target.Level,
@@ -915,19 +909,10 @@ class C_Player():
                     "Strength"     : Target.Strength,
                     "GetDamage"    : GetDamage
                 }
-            self.LevelUp(self.mode.multiply,count=Count)
+            self.LevelUp(Count)
             return LostStatus
-        else:
-            Target.Edit(
-                Edit="Main",
-                Health = Target.Health
-                )
-            AttackStatus = {
-                "Status" : "Attack",
-                "GetDamage" : GetDamage,
-                "Health" : Target.Health
-            }
-            return AttackStatus
+        Target.Save()
+        self.Save()
     def CheckEquipItem(self,Where):
         for item in self.GetInventored:
             if item.ID == self.Left_hand.ID:
@@ -992,38 +977,28 @@ class C_Player():
         
         if self.Health <= 0:
             self.Death()
-        else:
-            self.Edit(
-                Edit="Main",
-                Health = self.Health)
 
         try:
-            self.Head.ArmorEdit(self.Head.Armor - 1)
-            self.RewriteItem(self.Head)
-            self.EquipmentItem(self.Head.ID,self.Head.Where)
+            self.Head.Break(1)
         except: pass
         try:
-            self.Body.ArmorEdit(self.Body.Armor - 1)
-            self.RewriteItem(self.Body)
-            self.EquipmentItem(self.Body.ID,self.Body.Where)
+            self.Body.Break(1)
         except: pass
         try:
-            self.Legs.ArmorEdit(self.Legs.Armor - 1)
-            self.RewriteItem(self.Legs)
-            self.EquipmentItem(self.Legs.ID,self.Legs.Where)
+            self.Legs.Break(1)
         except: pass
         try:
-            self.Boot.ArmorEdit(self.Boot.Armor - 1)
-            self.RewriteItem(self.Boot)
-            self.EquipmentItem(self.Boot.ID,self.Boot.Where)
+            self.Boot.ArmorEdit(Break)
         except: pass
+
+        self.Save()
     def Death(self):
         Count = int(self.Level / 5)
         self.LostLevel(Count)
     def GetExp(self,Amount : int):
         self.Exp += Amount
         if self.Exp >= self.Level * 500:
-            self.LevelUp(C_Player.mode.one)
+            self.LevelUp()
         else:
             self.Edit(Edit="Main",Exp=self.Exp)
     def PlusUpgrade(self,Count : int, Name : str):
@@ -1123,6 +1098,12 @@ class C_Player():
     def TalantUpdater(self):
         if self.TalantPicked is not Ellipsis:
             self.TalantPicked.Update(self,int(self.Intelligence))
+    def Gold_Add(self,value : int):
+        if self.Gold + value > self.MaxGold: self.Gold = self.MaxGold
+        else: self.Gold += value
+    def Exp_Add(self,value : int):
+        if self.Exp + value >= self.ExpRequest * self.Level: self.LevelUp()
+        else: self.Exp += value
     def __repr__(self):
         return f"""ID: {self.ID}        Name: `{self.Name}`\nStatictics:\nHealth: `{self.Health}`         MaxHealth: `{self.MaxHealth}`         Shield: `{self.Shield}`         MaxShield: `{self.MaxShield}`       Mana: `{self.Mana}`         MaxMana: `{self.MaxMana}`       Damage: `{self.Damage}`\nLeveling:\nLevel: `{self.Level}`           MaxLevel: `{self.MaxLevel}`         Exp: `{self.Exp}`           Plus: `{self.Plus}`\nEconomy:\nGold: `{self.Gold}`            Messages: `{self.Messages}`\nStatictics v2:\nStrength: `{self.Strength}`          Agility: `{self.Agility}`           Intelligence: `{self.Intelligence}`\nEquip:\nHead:[{self.Head}]\nBody:[{self.Body}]\nLegs:[{self.Legs}]\nBoots:[{self.Boot}]\nLeft hand:[{self.Left_hand}]\nRight hand:[{self.Right_hand}]\nRings:\n...1:[{self.Ring_1}]\n..2:[{self.Ring_2}]\n..3:[{self.Ring_3}]\n..4:[{self.Ring_4}]\n..5:[{self.Ring_5}]\nOther:\nQuests: `{self.Quests}`\nTalants: `{self.Talants}`\nTalant picked: `{self.TalantPicked}`\n\n"""
 
@@ -2666,7 +2647,7 @@ class Talant():
 
     def UpgradeTalant(self):
         if self.MainName == "Heroic Level":
-            self.Player.LevelUp(C_Player.mode.one)
+            self.Player.LevelUp()
             self.Player.Edit(
                 Edit="Main",
                 Strength = self.Player.Strength + 0.1,
@@ -2837,7 +2818,7 @@ class Shop():
                 Player.Edit(
                     Edit="Main",
                     Gold=Player.Gold)
-                Player.LevelUp(Player.mode.multiply,count=Count)
+                Player.LevelUp(Count)
                 Gold = ReplaceNumber(Player.Gold)
                 CostReplace = ReplaceNumber(Cost)
                 Embed.add_field(name="Золота осталось",value=Gold)
@@ -3108,13 +3089,18 @@ if __name__ == "__main__":
     try: Gab = C_Player.Open(656808327954825216)
     except: Gab = C_Player(656808327954825216,"Габриэль")
 
-    
-    Iam.TalantPicked = Iam.Berserk
+    Iam.Damage = Iam.Mobe.Protect + 1000000
+    print(Iam.mode.multiply)
 
-    # while Iam.TalantPicked.Level < Iam.TalantPicked.MaxLevel:
-    #     ClearConsole()
-    #     Iam.Intelligence = Iam.TalantPicked.NeedExp
-    #     Iam.TalantUpdater()
-    #     print(Iam.TalantPicked)
-    #     time.sleep(0.1)
+
+    # Iam.Mobe.Revive()
+    # Iam.Mobe = Mobe.Goblin(Iam)
+    # print(Iam.Mobe)
+    # print(Iam.Mobe.Hit(Iam.MaxDamage()))
+    # print(Iam.Health)
+    # print(f"Gold: {Iam.Gold}")
+    # print(f"Level: {Iam.Level}\nExp: {Iam.Exp} / {Iam.ExpRequest * Iam.Level}")
+
+    # time.sleep(2)
+    Gab.Save()
     Iam.Save()

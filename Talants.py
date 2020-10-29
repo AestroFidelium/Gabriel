@@ -390,3 +390,81 @@ class Repair(Talant):
             Lock=True,
             NeedAt=[TalantNeedAt(Spells,4),TalantNeedAt(Blacksmith,20)])
         self.Player = Player
+
+
+
+
+
+
+
+class Both_hands_first(Talant):
+    def __init__(self,Player):
+        super().__init__(
+            Name="Обе руки (Базовое)",
+            Description="Базовое владение обеими клинками (Изначальный урон второго оружие = 0%)",
+            PerLevel="Увеличивает урон второго оружие на 10%",
+            Level=0,
+            MaxLevel=10,
+            Exp=0,
+            NeedExp=2300,
+            Lock=True,
+            NeedAt=[TalantNeedAt(Heroic_Level,10)])
+        self.Player = Player
+
+
+class Both_hands_two(Talant):
+    def __init__(self,Player):
+        super().__init__(
+            Name="Обе руки (Продвинутое)",
+            Description="Более продвинутое владение клинками",
+            PerLevel="Увеличивает урон второго оружие на 25%",
+            Level=0,
+            MaxLevel=10,
+            Exp=0,
+            NeedExp=6000,
+            Lock=True,
+            NeedAt=[TalantNeedAt(Both_hands_first,10)])
+        self.Player = Player
+
+class Both_hands_three(Talant):
+    def __init__(self,Player):
+        super().__init__(
+            Name="Обе руки (Искусное)",
+            Description="Искусное владение клинками",
+            PerLevel="Увеличивает урон второго оружие на 50%",
+            Level=0,
+            MaxLevel=10,
+            Exp=0,
+            NeedExp=12000,
+            Lock=True,
+            NeedAt=[TalantNeedAt(Both_hands_two,10)])
+        self.Player = Player
+
+
+class Both_hands_master(Talant):
+    def __init__(self,Player):
+        super().__init__(
+            Name="Обе руки (Мастер)",
+            Description="Мастерское владение клинками",
+            PerLevel="Увеличивает урон второго оружие на 100%",
+            Level=0,
+            MaxLevel=10,
+            Exp=0,
+            NeedExp=350000,
+            Lock=True,
+            NeedAt=[TalantNeedAt(Both_hands_three,10)])
+        self.Player = Player
+
+
+
+
+
+
+
+
+
+
+
+
+
+

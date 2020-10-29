@@ -207,7 +207,7 @@ class MyClient(discord.Client):
         except: Player = C_Player(Message.author.id,Message.author.name)
 
         if Player.Exp >= Player.Level * 500:
-            Player.LevelUp(C_Player.mode.one)
+            Player.LevelUp()
 
         Player.Exp += 1 + Player.More_Exp.Level
         Player.Messages += 1
@@ -270,40 +270,44 @@ class MyClient(discord.Client):
                     raise BaseException("Такого пользователя не существует")
         elif Commands[0].upper() == "Attack".upper():
             await Message.delete()
+
             try: Player2 = Commands[1]
             except: raise BaseException("Нужно указать имя игрока")
-            Be = False
-            for _Player in Players:
-                if _Player.upper() == Player2.upper():
-                    Be = True
-                    # Target = C_Player(_Player)
-                    # AttackStatus = Player.Attack(Target)
-            if Be == True:
-                if AttackStatus["Status"] == "Dead":
-                    LostLevel = AttackStatus["Level"]
-                    LostLevel = ReplaceNumber(LostLevel)
 
-                    LostHealth = AttackStatus["Health"]
-                    LostHealth = ReplaceNumber(LostHealth)
-
-                    LostDamage = AttackStatus["Damage"]
-                    LostDamage = ReplaceNumber(LostDamage)
-
-                    LostAgility = AttackStatus["Agility"]
-                    LostAgility = ReplaceNumber(LostAgility)
-
-                    LostIntelligence = AttackStatus["Intelligence"]
-                    LostIntelligence = ReplaceNumber(LostIntelligence)
-
-                    LostStrength = AttackStatus["Strength"]
-                    LostStrength = ReplaceNumber(LostStrength)
-
-                    GetDamage = AttackStatus["GetDamage"]
-                    GetDamage = ReplaceNumber(GetDamage)
-
-                    await Channel.send(f"`{Player.Name}` вы убили `{Target.Name}`, нанеся {GetDamage}\nСтатистика `{Target.Name}` упала на : \nУровень : {LostLevel}\nЗдоровье : {LostHealth}\nУрон : {LostDamage}\nЛовкость : {LostAgility}\nИнтеллект : {LostIntelligence}\nСила : {LostStrength}")
+            if Player2.isnumeric():
+                Player2 = C_Player.Open(Player2)
+                AttackStatus = Player.Attack(Player2)
             else:
-                raise BaseException(f"{Player2} не существует")
+                Targets = self.Fetch_Players(Content)
+                if len(Targets) > 1:
+                    await Channel.send(f"Было найдено ({len(Targets)}) игроков с таким же ником. Используйте лучше ID вместо ника")
+                    AttackStatus = Player.Attack(Targets[0])
+                elif len(Targets) == 0:
+                    raise BaseException(f"{Player2} не существует")
+
+                # if AttackStatus["Status"] == "Dead":
+                #     LostLevel = AttackStatus["Level"]
+                #     LostLevel = ReplaceNumber(LostLevel)
+
+                #     LostHealth = AttackStatus["Health"]
+                #     LostHealth = ReplaceNumber(LostHealth)
+
+                #     LostDamage = AttackStatus["Damage"]
+                #     LostDamage = ReplaceNumber(LostDamage)
+
+                #     LostAgility = AttackStatus["Agility"]
+                #     LostAgility = ReplaceNumber(LostAgility)
+
+                #     LostIntelligence = AttackStatus["Intelligence"]
+                #     LostIntelligence = ReplaceNumber(LostIntelligence)
+
+                #     LostStrength = AttackStatus["Strength"]
+                #     LostStrength = ReplaceNumber(LostStrength)
+
+                #     GetDamage = AttackStatus["GetDamage"]
+                #     GetDamage = ReplaceNumber(GetDamage)
+
+                #     await Channel.send(f"`{Player.Name}` вы убили `{Target.Name}`, нанеся {GetDamage}\nСтатистика `{Target.Name}` упала на : \nУровень : {LostLevel}\nЗдоровье : {LostHealth}\nУрон : {LostDamage}\nЛовкость : {LostAgility}\nИнтеллект : {LostIntelligence}\nСила : {LostStrength}")
         elif Commands[0].upper() == "Event".upper():
             await Message.delete()
             if Commands[1].upper() == "Profile".upper():
@@ -921,7 +925,7 @@ class MyClient(discord.Client):
                     raise BaseException("Таких команд нет")
             elif Commands[0].upper() == "LevelUpMe".upper():
                 Level = int(Commands[1])
-                Player.LevelUp(C_Player.mode.multiply,count=Level)
+                Player.LevelUp(Level)
                 R_Level = ReplaceNumber(Level)
                 await Channel.send(embed=discord.Embed(title="Поздравляем",description=f"Вы получили {R_Level} уровней",colour=discord.Colour(6655214)))
             elif Commands[0].upper() == "Develop".upper():
@@ -1510,6 +1514,16 @@ class MyClient(discord.Client):
             if role.id in RolesID and role != Role:
                 await Member.remove_roles(role,reason="Убрана старая роль")
 
+    def Fetch_Players(self,Content : str):
+        """ Найти имя в тексте """
+        f = Content.split(" ")[0]
+        NickName = Content.replace(f"{f} ","").upper()
+        FoundList = list()
+        for player in self.Players:
+            if player.Name.upper() == NickName:
+                Player = player
+                FoundList.append(player)
+        return FoundList
 
     async def _TimeShow(self,Member,Channel):
         await asyncio.sleep(5000)

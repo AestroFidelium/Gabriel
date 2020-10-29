@@ -27,7 +27,8 @@ class Item():
             Unbreaking   : int  = 1,
             Damage       : int  = 0,
             Protect      : int  = 0,
-            Where               = Wheres.Empty):
+            Where               = Wheres.Empty,
+            Information  : str  = "Информация отсуствует"):
         self.ID = ID
         self.Name = Name
         self.Description = Description
@@ -42,6 +43,7 @@ class Item():
         self.Gold = 0
         self.MaxGold = 0
         self.AllGold = 0
+        self.Information = Information
 
     @property
     def Magic(self):
@@ -64,10 +66,10 @@ class Item():
         self._Unbreaking = self.Unbreaking - Value
           
     def __repr__(self):
-        return f"ID: {self.ID}\nName: {self.Name}\nDescription: {self.Description}\nType: {self.Type}\nClass: {self.Class}\nUnbreaking: {self.Unbreaking}\nDamage: {self.Damage}\nProtect: {self.Protect}\nWhere: {self.Where}\nGold: {self.Gold}"
+        return f"ID: {self.ID}\nName: {self.Name}\nDescription: {self.Description}\nType: {self.Type}\nClass: {self.Class}\nUnbreaking: {self.Unbreaking}\nDamage: {self.Damage}\nProtect: {self.Protect}\nWhere: {self.Where}\nGold: {self.Gold}\nInformation: {self.Information}"
 
     def __str__(self):
-        return f"ID: {self.ID}\nИмя: {self.Name}\nОписание: {self.Description}\nТип: {self.Type}\nКласс: {self.Class}\nПрочность: {self.Unbreaking}\nУран: {self.Damage}\nЗащита: {self.Protect}\nКуда экипируется: {self.Where}\nЗолото: {self.Gold}"
+        return f"ID: {self.ID}\nИмя: {self.Name}\nОписание: {self.Description}\nТип: {self.Type}\nКласс: {self.Class}\nПрочность: {self.Unbreaking}\nУран: {self.Damage}\nЗащита: {self.Protect}\nКуда экипируется: {self.Where}\nЗолото: {self.Gold}\nИнформация об предмете: {self.Information}"
 
 class Your_first_things(Item):
     """ Начальное снаряжение """
@@ -124,3 +126,64 @@ class Your_first_things(Item):
             Protect=random.randint(35,200),
             Where=Item.Wheres.Boots,
             Player=self.Player)
+
+
+class ItemFromGoblin(Item):
+    def __init__(self,Player):
+        self.Player = Player
+        super().__init__(
+            Name=f"Зазубренный клинок",
+            Description=f"Оружие изъятое от гоблинов",
+            Class="Обычное",
+            Type=Item.Types.Blade,
+            Unbreaking=random.randint(100,200),
+            Damage=random.randint(1000,1500),
+            Player=self.Player,
+            Information="Есть 10% шанс что вы атакуете 3-4 раза")
+    
+    @property
+    def Damage(self):
+        if random.randint(1,100) < 10:
+            return self._Damage * random.randint(3,4)
+        return self._Damage
+    
+
+
+class Fang(Item):
+    def __init__(self,Player):
+        self.Player = Player
+        super().__init__(
+            Name=f"Клык",
+            Description=f"Клык который вы взяли как трофей. Однако из него может выйти неплохое оружие",
+            Class="Необычное оружие",
+            Type=Item.Types.Blade,
+            Unbreaking=1,
+            Damage=100,
+            Player=self.Player,
+            Information="Нерушимое оружие / После каждой атаки его урон увеличивается на 1% / Не может нанести больше 32к урона / **Не имеется смысл прокачивать оружие**")
+    
+    @property
+    def Damage(self):
+        if self._Damage < 32000:
+            self._Damage += self._Damage * 0.01
+        elif self._Damage > 32000: self._Damage = 32000
+        return self._Damage
+
+    def Break(self,Value): pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
