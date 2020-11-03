@@ -24,7 +24,13 @@ import Items
 import Talants
 import threading
 import Mobe
+from Numbers import ReplaceNumber
+from Numbers import Readable
 
+def Readable(n):
+    s, *d = str(n).partition(".")
+    r = ".".join([s[x-3:x] for x in range(-3, -len(s), -3)][::-1] + [s[-3:]])
+    return "".join([r] + d)
 
 def GetFromMessage(message : str,Znak : str):
     """ Получить выбранный объект в знаках 
@@ -86,90 +92,6 @@ def randomBool(_min : int,_max : int,_need : int):
     else:
         return False
     pass
-def ReplaceNumber(Number : int):
-    """
-    Показывает цифры более компактно
-    
-    Пример : 
-        100 000 = 100К
-        1 000 000 = 1М
-        1 000 000 000 = 1B
-        1 000 000 000 000 = 1T
-        1 000 000 000 000 000 = 1P
-        1 000 000 000 000 000 000 = 1E
-        1 000 000 000 000 000 000 000 = 1Z
-        1 000 000 000 000 000 000 000 000 = 1Y
-        1 000 000 000 000 000 000 000 000 000 = 1Y2
-    """
-    Minus = False
-    if Number < 0:
-        Minus = True
-        Number *= -1
-    if Number >= 1000000000000000000000000000:
-        Count = str(Number)[26::].count("0")
-        Count = round(Count / 3)
-        Count += 1
-        Number = f"{str(Number)[:1:]}YY"
-        Number = f"{Number}{Count}"
-        if Minus == True:
-            Number = f"-{Number}"
-    elif Number >= 1000000000000000000000000:
-        NumberSplit = Number / 1000000000000000000000000
-        Number = int(NumberSplit)
-        if Minus == True:
-            Number = f"-{Number}Y"
-        else:
-            Number = f"{Number}Y"
-    elif Number >= 1000000000000000000000:
-        NumberSplit = Number / 1000000000000000000000
-        Number = int(NumberSplit)
-        if Minus == True:
-            Number = f"-{Number}z"
-        else:
-            Number = f"{Number}z"
-    elif Number >= 1000000000000000000:
-        NumberSplit = Number / 1000000000000000000
-        Number = int(NumberSplit)
-        if Minus == True:
-            Number = f"-{Number}E"
-        else:
-            Number = f"{Number}E"
-    elif Number >= 1000000000000000:
-        NumberSplit = Number / 1000000000000000
-        Number = int(NumberSplit)
-        if Minus == True:
-            Number = f"-{Number}P"
-        else:
-            Number = f"{Number}P"
-    elif Number >= 1000000000000:
-        NumberSplit = Number / 1000000000000
-        Number = int(NumberSplit)
-        if Minus == True:
-            Number = f"-{Number}T"
-        else:
-            Number = f"{Number}T"
-    elif Number >= 1000000000:
-        NumberSplit = Number / 1000000000
-        Number = int(NumberSplit)
-        if Minus == True:
-            Number = f"-{Number}B"
-        else:
-            Number = f"{Number}B"
-    elif Number >= 1000000:
-        NumberSplit = Number / 1000000
-        Number = int(NumberSplit)
-        if Minus == True:
-            Number = f"-{Number}M"
-        else:
-            Number = f"{Number}M"
-    elif Number >= 10000:
-        NumberSplit = Number / 1000
-        Number = int(NumberSplit)
-        if Minus == True:
-            Number = f"-{Number}K"
-        else:
-            Number = f"{Number}K"
-    return Number
 
 class C_Player():
     """ Игрок """
@@ -209,7 +131,7 @@ class C_Player():
         self.Intelligence = 1.0
 
         self.Class           = Ellipsis
-        self.Room            = Ellipsis
+        self.Room            = Room(self,0,Name)
 
 
         self.Everyday_bonus  = self.C_Everyday_bonus()
@@ -218,7 +140,7 @@ class C_Player():
 
         Your_first_things = Items.Your_first_things(self)
 
-        self.Head = Your_first_things.Blade()
+        self.Head = Your_first_things.Head()
         self.Body = Your_first_things.Body()
         self.Legs = Your_first_things.Legs()
         self.Boot = Your_first_things.Boots()
@@ -587,8 +509,14 @@ class C_Player():
     
     def Save(self):
         """ Сохранить информацию игрока """
-        with open(f"./Stats/{self.ID}.txt","wb") as file:
-            pickle.dump(self,file)
+        copy = self.Open(self.ID)
+        try:
+            with open(f"./Stats/{self.ID}.txt","wb") as file:
+                pickle.dump(self,file)
+        except BaseException as Err: 
+            with open(f"./Stats/{self.ID}.txt","wb") as file:
+                pickle.dump(copy,file)
+            print(f"Не удалось сохранить \n [{Err}]")
     
         
     def GetTalants(self):
@@ -741,8 +669,12 @@ class C_Player():
                 Множество уровней
                 требуется : count 
         """
-        count = 1
-        
+        PlanCount = count
+        if self.Level + count > self.MaxLevel: count = self.MaxLevel - self.Level
+        if count <= 0: 
+            self.LosedLevels += PlanCount
+            return "Повысить уровень не удалось"
+
         self.Health += random.randint(55,100) * count
         self.MaxHealth += random.randint(55,100) * count
         if self.Health > self.MaxHealth:
@@ -859,7 +791,7 @@ class C_Player():
         WriteInCenter(round(self.Mana),(521,1275),Draw,ImageFont.truetype(Font_Path,125),(255,255,255))
 
         WriteInCenter(round(self.Damage),(869,1275),Draw,ImageFont.truetype(Font_Path,125),(255,255,255))
-
+        
         WriteInCenter(f"{ReplaceNumber(self.Gold)} / {ReplaceNumber(self.MaxGold)}",(365, 451),Draw,ImageFont.truetype(Font_Path,50),(0,255,255))
         WriteInCenter(f"{ReplaceNumber(self.Exp)} / {ReplaceNumber(self.ExpRequest * self.Level)}",(549, 278),Draw,ImageFont.truetype(Font_Path,50),(0,255,255))
 
@@ -952,7 +884,6 @@ class C_Player():
         Procent = (self.Health * 100) / self.MaxHealth
         Procent -= 100
         Procent *= -1
-        print(int(Procent))
         GetDamage += GetDamage * ((Procent * self.Berserk.Level) / 100)
 
 
@@ -1106,6 +1037,19 @@ class C_Player():
         else: self.Exp += value
     def __repr__(self):
         return f"""ID: {self.ID}        Name: `{self.Name}`\nStatictics:\nHealth: `{self.Health}`         MaxHealth: `{self.MaxHealth}`         Shield: `{self.Shield}`         MaxShield: `{self.MaxShield}`       Mana: `{self.Mana}`         MaxMana: `{self.MaxMana}`       Damage: `{self.Damage}`\nLeveling:\nLevel: `{self.Level}`           MaxLevel: `{self.MaxLevel}`         Exp: `{self.Exp}`           Plus: `{self.Plus}`\nEconomy:\nGold: `{self.Gold}`            Messages: `{self.Messages}`\nStatictics v2:\nStrength: `{self.Strength}`          Agility: `{self.Agility}`           Intelligence: `{self.Intelligence}`\nEquip:\nHead:[{self.Head}]\nBody:[{self.Body}]\nLegs:[{self.Legs}]\nBoots:[{self.Boot}]\nLeft hand:[{self.Left_hand}]\nRight hand:[{self.Right_hand}]\nRings:\n...1:[{self.Ring_1}]\n..2:[{self.Ring_2}]\n..3:[{self.Ring_3}]\n..4:[{self.Ring_4}]\n..5:[{self.Ring_5}]\nOther:\nQuests: `{self.Quests}`\nTalants: `{self.Talants}`\nTalant picked: `{self.TalantPicked}`\n\n"""
+
+
+class Room(discord.Client):
+    def __init__(self,
+            Player     : C_Player,
+            ID         : int, 
+            Name       : str,
+            Overwrites = Ellipsis):
+        self.ID         = ID
+        self.Name       = Name
+        self.Overwrites = Overwrites
+        self.Channel    = Ellipsis
+
 
 # class Item():
 #     """
@@ -3089,15 +3033,25 @@ if __name__ == "__main__":
     try: Gab = C_Player.Open(656808327954825216)
     except: Gab = C_Player(656808327954825216,"Габриэль")
 
-    Iam.Damage = Iam.Mobe.Protect + 1000000
-    print(Iam.mode.multiply)
+    print(Iam.Room.Overwrites)
 
+    # Iam.Damage = Iam.Mobe.Protect + 1000000
+    # print(Iam)
 
     # Iam.Mobe.Revive()
-    # Iam.Mobe = Mobe.Goblin(Iam)
-    # print(Iam.Mobe)
+    # print(Iam.LevelUp(99))
+    # Iam.Right_hand = Items.Fang(Iam)
+    # counter = 0
+    # while Iam.Right_hand.Damage != 320000:
+    # Iam.Right_hand.Upgrade(5)
+    # for _ in range(10):
+    #     ClearConsole()
+    #     Iam.Right_hand.Damage
+    #     print(Iam.Right_hand)
+    # print(counter)
     # print(Iam.Mobe.Hit(Iam.MaxDamage()))
-    # print(Iam.Health)
+    # print(Iam.Mobe)
+    # print(f"Мое здоровье: [{Iam.Health}/{Iam.MaxHealth}]        Мой уровень: [{Iam.Level}/{Iam.MaxLevel}({Iam.Mobe.LevelRequests})]\nМой урон: [{Iam.MaxDamage()}]")
     # print(f"Gold: {Iam.Gold}")
     # print(f"Level: {Iam.Level}\nExp: {Iam.Exp} / {Iam.ExpRequest * Iam.Level}")
 

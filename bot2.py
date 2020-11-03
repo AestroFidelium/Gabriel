@@ -1006,67 +1006,98 @@ class MyClient(discord.Client):
         except: pass
         # self.Gabriel.
 
-    async def on_voice_state_update(self,_Player_ : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
-        OurServer = await self.fetch_guild(_Player_.guild.id)
-        EveryOne = OurServer.roles[0]
-        Roles = OurServer.get_role(623063847497891840)
-        return
-        PlayerName = ""
-        for part in str(_Player_.name).split(" "):
-            PlayerName += part
-        Player = C_Player(PlayerName)
-        try:
-            Player.GetGuild(after.channel.guild.id)
-            if after.channel.name == "Создать комнату":
-                try:
-                    if Player.RoomPermissions == None:
-                        overwrites = {
-                            _Player_: discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True)
-                        }
-                    else:
-                        SavedOverwrites = Player.RoomPermissions
-                        overwrites = dict()
-                        for overwrite in SavedOverwrites:
-                            _Member = await OurServer.fetch_member(overwrite)
-                            overwrite = SavedOverwrites[overwrite]
-                            overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
+    async def on_voice_state_update(self,Member : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
+        try: Player = C_Player.Open(Member._user.id)
+        except: Player = C_Player(Member._user.id, Member._user.name)
 
-                    NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната", overwrites=overwrites)
-                    
-                    await _Player_.move_to(NewGroup,reason="Новая комната")
-                except:
-                    NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
-                    
-                    await _Player_.move_to(NewGroup,reason="Новая комната")
-            elif after.channel.name == "Создать комнату (Истинный чат)":
+        if after.channel.name == "Создать комнату":
+            Guild = after.channel.guild
+            if Player.Room.Overwrites is Ellipsis:
+                Player.Room.Overwrites = {Member._user.id: discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True)}
+
+            try: 
+                Channel = await self.fetch_channel(Player.Room.Channel)
+                await Member.move_to(Channel,reason="Вы создаете точно такую же комнату")
+            except:
                 try:
-                    if Player.RoomPermissions == None:
-                        overwrites = {
-                            _Player_ : discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True),
-                            Roles : discord.PermissionOverwrite(connect=True),
-                            EveryOne : discord.PermissionOverwrite(connect=False)
-                        }
-                    else:
-                        SavedOverwrites = Player.RoomPermissions
-                        overwrites = dict()
-                        for overwrite in SavedOverwrites:
-                            _Member = await OurServer.fetch_member(overwrite)
-                            overwrite = SavedOverwrites[overwrite]
-                            overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
-                    overwrites.update({Roles : discord.PermissionOverwrite(connect=True)})
-                    NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",overwrites=overwrites,reason="Новая комната")
-                    await _Player_.move_to(NewGroup,reason="Новая комната")
-                except:
-                    NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
-                    await _Player_.move_to(NewGroup,reason="Новая комната")
-        except Exception: pass
-        try:
-            CurGroup = await self.fetch_channel(before.channel.id)
-            Members = CurGroup.members
-            NotDeleteChannels = ["Создать комнату","Резерв","Музыка","Создать комнату (Истинный чат)"]
-            if len(Members) == 0 and str(CurGroup.name) not in NotDeleteChannels:
-                await CurGroup.delete(reason="В комнате никого нет")
-        except Exception: pass
+                    overwrites = {}
+                    for ID in Player.Room.Overwrites:
+                        overwrite = Player.Room.Overwrites[ID]
+                        User = await Guild.fetch_member(ID)
+                        overwrites.update({User:overwrite})
+                except: 
+                    overwrites = {Member._user.id: discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True)}
+                    Player.Room.Overwrites = overwrites
+                NewChannel = await Guild.create_voice_channel(f"{Player.Room.Name}",reason="Новая комната", overwrites=overwrites)
+                Player.Room.Channel = int(NewChannel.id)
+                await Member.move_to(NewChannel,reason="Новая комната")
+        else:
+            for _Player in self.Players:
+                if before.channel.name == _Player.Room.Name:
+                    if len(before.channel.members) <= 0:
+                        await before.channel.delete(reason="Комната пустая")
+        Player.Save()
+
+        # OurServer = await self.fetch_guild(_Player_.guild.id)
+        # EveryOne = OurServer.roles[0]
+        # Roles = OurServer.get_role(623063847497891840)
+        # return
+        # PlayerName = ""
+        # for part in str(_Player_.name).split(" "):
+        #     PlayerName += part
+        # Player = C_Player(PlayerName)
+        # try:
+        #     Player.GetGuild(after.channel.guild.id)
+        #     if after.channel.name == "Создать комнату":
+        #         try:
+        #             if Player.RoomPermissions == None:
+        #                 overwrites = {
+        #                     _Player_: discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True)
+        #                 }
+        #             else:
+        #                 SavedOverwrites = Player.RoomPermissions
+        #                 overwrites = dict()
+        #                 for overwrite in SavedOverwrites:
+        #                     _Member = await OurServer.fetch_member(overwrite)
+        #                     overwrite = SavedOverwrites[overwrite]
+        #                     overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
+
+        #             NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната", overwrites=overwrites)
+                    
+        #             await _Player_.move_to(NewGroup,reason="Новая комната")
+        #         except:
+        #             NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
+                    
+        #             await _Player_.move_to(NewGroup,reason="Новая комната")
+        #     elif after.channel.name == "Создать комнату (Истинный чат)":
+        #         try:
+        #             if Player.RoomPermissions == None:
+        #                 overwrites = {
+        #                     _Player_ : discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True),
+        #                     Roles : discord.PermissionOverwrite(connect=True),
+        #                     EveryOne : discord.PermissionOverwrite(connect=False)
+        #                 }
+        #             else:
+        #                 SavedOverwrites = Player.RoomPermissions
+        #                 overwrites = dict()
+        #                 for overwrite in SavedOverwrites:
+        #                     _Member = await OurServer.fetch_member(overwrite)
+        #                     overwrite = SavedOverwrites[overwrite]
+        #                     overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
+        #             overwrites.update({Roles : discord.PermissionOverwrite(connect=True)})
+        #             NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",overwrites=overwrites,reason="Новая комната")
+        #             await _Player_.move_to(NewGroup,reason="Новая комната")
+        #         except:
+        #             NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
+        #             await _Player_.move_to(NewGroup,reason="Новая комната")
+        # except Exception: pass
+        # try:
+        #     CurGroup = await self.fetch_channel(before.channel.id)
+        #     Members = CurGroup.members
+        #     NotDeleteChannels = ["Создать комнату","Резерв","Музыка","Создать комнату (Истинный чат)"]
+        #     if len(Members) == 0 and str(CurGroup.name) not in NotDeleteChannels:
+        #         await CurGroup.delete(reason="В комнате никого нет")
+        # except Exception: pass
     
     async def on_member_join(self,Member : discord.member.Member):
         try:
@@ -1076,28 +1107,40 @@ class MyClient(discord.Client):
         except: pass
 
     async def on_guild_channel_update(self,before,after):
-        overwrites = before.overwrites
-        PermissionsAll = dict()
-        Maines = list()
-        
-        for overwrite in overwrites:
-            try:
-                permissions = overwrite.permissions
-            except AttributeError:
-                permissions = overwrite.permissions_in(before)
-                
-                _Permissions = dict()
-                for Permission in permissions:
-                    _Permissions.update({Permission[0]:Permission[1]})
-                PermissionsAll.update({overwrite.id:_Permissions})
-    
-                if permissions.manage_channels == True:
-                    
 
-                    PlayerName = ""
-                    for part in str(overwrite.name).split(" "):
-                        PlayerName += part
-                    Maines.append(PlayerName)
+        for Player in self.Players:
+            if Player.Room.Name == before.name:
+                Player.Room.Name = str(after.name)
+                overwrites = after.overwrites
+                for member in overwrites:
+                    Permissions = overwrites[member]
+                    Player.Room.Overwrites.update({member.id:Permissions})
+                print(overwrites)
+                print(Player.Room.Overwrites)
+                Player.Save()
+
+
+        # overwrites = before.overwrites
+        # PermissionsAll = dict()
+        # Maines = list()
+        
+        # for overwrite in overwrites:
+        #     try:
+        #         permissions = overwrite.permissions
+        #     except AttributeError:
+        #         permissions = overwrite.permissions_in(before)
+                
+        #         _Permissions = dict()
+        #         for Permission in permissions:
+        #             _Permissions.update({Permission[0]:Permission[1]})
+        #         PermissionsAll.update({overwrite.id:_Permissions})
+    
+        #         if permissions.manage_channels == True:
+                    
+        #             PlayerName = ""
+        #             for part in str(overwrite.name).split(" "):
+        #                 PlayerName += part
+        #             Maines.append(PlayerName)
         # for _PlayerName in Maines:
             # Player = C_Player(_PlayerName)
             # Player.SaveRoom(after.guild.id,after.name,PermissionsAll)

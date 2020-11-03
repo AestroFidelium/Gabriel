@@ -3,6 +3,7 @@ import time
 import threading
 import random
 import datetime
+import asyncio
 
 class Loot():
     def __init__(self, Item, Chance : float):
@@ -46,6 +47,7 @@ class Mob():
         self.LevelRequests        = LevelRequests
         self.Player               = self.__getattribute__("Player")
         self.Information          = Information
+        self.LastDamage           = 0
         self.on_spawn()
 
 
@@ -62,14 +64,15 @@ class Mob():
                 return "Нельзя атаковать мертвую цель"
             else:
                 return "Целей больше нет"
-        if self.SpawnLimite < 0: return f"Все цели были зачищены" 
+        if self.SpawnLimite <= 0: return f"Все цели были зачищены" 
         if self.Player.Level < self.LevelRequests: return "Минимальный уровень моба сильнее вашего максимального"
         self.on_hit(Damage)
         Damage -= self.Protect
-        if Damage < 0: Damage = 1
+        if Damage <= 0: Damage = 1
         self.Health -= Damage
-        if self.Health < 0: 
-            threading.Thread(target=self.Death,args=()).start()
+        self.LastDamage = Damage
+        if self.Health <= 0: 
+            return threading.Thread(target=self.Death,args=()).start()
         else: self.Attack()
 
     def Death(self):
@@ -110,7 +113,7 @@ class Mob():
         pass
 
     def __repr__(self):
-        return f"Name: [{self.Name}]            Description: [{self.Description}]            DropLoot_Description: [{self.DropLoot_Description}]\nDropLoot: [{self.DropLoot}]            Health: [{self.Health}]            MaxHealth: [{self.MaxHealth}]\nDamage: [{self.Damage}]            Protect: [{self.Protect}]            Breaks_the_equipment: [{self.Breaks_the_equipment}]            \nSpawnRate: [{self.SpawnRate}]            SpawnLimite: [{self.SpawnLimite}]            DeathList: [{self.DeathList}]            \nStatus: [{self.Status}]            NextMob: [{self.NextMob}]            Information: [{self.Information}]"
+        return f"Name: [{self.Name}]            Description: [{self.Description}]            DropLoot_Description: [{self.DropLoot_Description}]\nLevel: [{self.Level}]            LevelRequest: [{self.LevelRequests}]\nDropLoot: [{self.DropLoot}]            Health: [{self.Health}]            MaxHealth: [{self.MaxHealth}]\nDamage: [{self.Damage}]            Protect: [{self.Protect}]            Breaks_the_equipment: [{self.Breaks_the_equipment}]            \nSpawnRate: [{self.SpawnRate}]            SpawnLimite: [{self.SpawnLimite}]            DeathList: [{self.DeathList}]            \nStatus: [{self.Status}]            NextMob: [{self.NextMob}]            Information: [{self.Information}]"
 
 
 
@@ -312,9 +315,9 @@ class SlimeOfKing(Mob):
     def Death(self):
         """ Смерть """ 
         if self.MaxHealth > 100:
-            self.MaxHealth /= 2
-            self.Damage /= 2
-            self.Protect /= 2
+            self.MaxHealth = round(self.MaxHealth / 2)
+            self.Damage = round(self.Damage / 2)
+            self.Protect = round(self.Protect / 2)
             if self.Damage <= 0: self.Damage = 1
             if self.Protect <= 0: self.Protect = 1
             self.Health = self.MaxHealth
@@ -327,8 +330,6 @@ class SlimeOfKing(Mob):
         self.SpawnLimite -= 1
         time.sleep(self.SpawnRate)
         self.Revive()
-    
-
 
     def on_death(self):
         if self.Player.Level < 100:
