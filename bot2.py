@@ -134,7 +134,7 @@ class MyClient(discord.Client):
         #         Tasks.append(asyncio.create_task(self.WannaSpeak(Guild)))
         #         print(f"{GuildName} загружена")
         
-        # print("работает все да")
+        print("работает все да")
     async def CreateColor(self,Color : tuple,Name : str):
         _Color = C_Color(Color)
         Emodji = _Color.Create()
@@ -190,7 +190,6 @@ class MyClient(discord.Client):
                 await message.channel.send(f"Добрый день, извините, но я не работаю в личных сообщениях. Если вам нужна помощь то пожалуйста обратитесь за помощью к Гильдии **Боги и Кот**. \n{Reference.mention} : Канал где можно прочитать основную информацию об Гильдии\n{GeneralChannel.mention} : Канал где можно спросить что либо у участников. \n{GameChannel.mention} : Канал где нужно вводить все игровые команды\nУдачного вам дня.")
             return
 
-        # IamMember = await Guild.fetch_member(414150542017953793)
         IamUser = await self.fetch_user(414150542017953793)
 
         Content = str(Message.content)
@@ -284,30 +283,6 @@ class MyClient(discord.Client):
                     AttackStatus = Player.Attack(Targets[0])
                 elif len(Targets) == 0:
                     raise BaseException(f"{Player2} не существует")
-
-                # if AttackStatus["Status"] == "Dead":
-                #     LostLevel = AttackStatus["Level"]
-                #     LostLevel = ReplaceNumber(LostLevel)
-
-                #     LostHealth = AttackStatus["Health"]
-                #     LostHealth = ReplaceNumber(LostHealth)
-
-                #     LostDamage = AttackStatus["Damage"]
-                #     LostDamage = ReplaceNumber(LostDamage)
-
-                #     LostAgility = AttackStatus["Agility"]
-                #     LostAgility = ReplaceNumber(LostAgility)
-
-                #     LostIntelligence = AttackStatus["Intelligence"]
-                #     LostIntelligence = ReplaceNumber(LostIntelligence)
-
-                #     LostStrength = AttackStatus["Strength"]
-                #     LostStrength = ReplaceNumber(LostStrength)
-
-                #     GetDamage = AttackStatus["GetDamage"]
-                #     GetDamage = ReplaceNumber(GetDamage)
-
-                #     await Channel.send(f"`{Player.Name}` вы убили `{Target.Name}`, нанеся {GetDamage}\nСтатистика `{Target.Name}` упала на : \nУровень : {LostLevel}\nЗдоровье : {LostHealth}\nУрон : {LostDamage}\nЛовкость : {LostAgility}\nИнтеллект : {LostIntelligence}\nСила : {LostStrength}")
         elif Commands[0].upper() == "Event".upper():
             await Message.delete()
             if Commands[1].upper() == "Profile".upper():
@@ -1004,7 +979,6 @@ class MyClient(discord.Client):
             Delete = {author:content}
             self.Gabriel.DeleteCur(Delete,server)
         except: pass
-        # self.Gabriel.
 
     async def on_voice_state_update(self,Member : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
         try: Player = C_Player.Open(Member._user.id)
@@ -1037,67 +1011,6 @@ class MyClient(discord.Client):
                     if len(before.channel.members) <= 0:
                         await before.channel.delete(reason="Комната пустая")
         Player.Save()
-
-        # OurServer = await self.fetch_guild(_Player_.guild.id)
-        # EveryOne = OurServer.roles[0]
-        # Roles = OurServer.get_role(623063847497891840)
-        # return
-        # PlayerName = ""
-        # for part in str(_Player_.name).split(" "):
-        #     PlayerName += part
-        # Player = C_Player(PlayerName)
-        # try:
-        #     Player.GetGuild(after.channel.guild.id)
-        #     if after.channel.name == "Создать комнату":
-        #         try:
-        #             if Player.RoomPermissions == None:
-        #                 overwrites = {
-        #                     _Player_: discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True)
-        #                 }
-        #             else:
-        #                 SavedOverwrites = Player.RoomPermissions
-        #                 overwrites = dict()
-        #                 for overwrite in SavedOverwrites:
-        #                     _Member = await OurServer.fetch_member(overwrite)
-        #                     overwrite = SavedOverwrites[overwrite]
-        #                     overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
-
-        #             NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната", overwrites=overwrites)
-                    
-        #             await _Player_.move_to(NewGroup,reason="Новая комната")
-        #         except:
-        #             NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
-                    
-        #             await _Player_.move_to(NewGroup,reason="Новая комната")
-        #     elif after.channel.name == "Создать комнату (Истинный чат)":
-        #         try:
-        #             if Player.RoomPermissions == None:
-        #                 overwrites = {
-        #                     _Player_ : discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True),
-        #                     Roles : discord.PermissionOverwrite(connect=True),
-        #                     EveryOne : discord.PermissionOverwrite(connect=False)
-        #                 }
-        #             else:
-        #                 SavedOverwrites = Player.RoomPermissions
-        #                 overwrites = dict()
-        #                 for overwrite in SavedOverwrites:
-        #                     _Member = await OurServer.fetch_member(overwrite)
-        #                     overwrite = SavedOverwrites[overwrite]
-        #                     overwrites.update({_Member : discord.PermissionOverwrite(**overwrite)})
-        #             overwrites.update({Roles : discord.PermissionOverwrite(connect=True)})
-        #             NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",overwrites=overwrites,reason="Новая комната")
-        #             await _Player_.move_to(NewGroup,reason="Новая комната")
-        #         except:
-        #             NewGroup = await OurServer.create_voice_channel(f"{Player.RoomName}",reason="Новая комната")
-        #             await _Player_.move_to(NewGroup,reason="Новая комната")
-        # except Exception: pass
-        # try:
-        #     CurGroup = await self.fetch_channel(before.channel.id)
-        #     Members = CurGroup.members
-        #     NotDeleteChannels = ["Создать комнату","Резерв","Музыка","Создать комнату (Истинный чат)"]
-        #     if len(Members) == 0 and str(CurGroup.name) not in NotDeleteChannels:
-        #         await CurGroup.delete(reason="В комнате никого нет")
-        # except Exception: pass
     
     async def on_member_join(self,Member : discord.member.Member):
         try:
@@ -1107,7 +1020,6 @@ class MyClient(discord.Client):
         except: pass
 
     async def on_guild_channel_update(self,before,after):
-
         for Player in self.Players:
             if Player.Room.Name == before.name:
                 Player.Room.Name = str(after.name)
@@ -1115,35 +1027,7 @@ class MyClient(discord.Client):
                 for member in overwrites:
                     Permissions = overwrites[member]
                     Player.Room.Overwrites.update({member.id:Permissions})
-                print(overwrites)
-                print(Player.Room.Overwrites)
                 Player.Save()
-
-
-        # overwrites = before.overwrites
-        # PermissionsAll = dict()
-        # Maines = list()
-        
-        # for overwrite in overwrites:
-        #     try:
-        #         permissions = overwrite.permissions
-        #     except AttributeError:
-        #         permissions = overwrite.permissions_in(before)
-                
-        #         _Permissions = dict()
-        #         for Permission in permissions:
-        #             _Permissions.update({Permission[0]:Permission[1]})
-        #         PermissionsAll.update({overwrite.id:_Permissions})
-    
-        #         if permissions.manage_channels == True:
-                    
-        #             PlayerName = ""
-        #             for part in str(overwrite.name).split(" "):
-        #                 PlayerName += part
-        #             Maines.append(PlayerName)
-        # for _PlayerName in Maines:
-            # Player = C_Player(_PlayerName)
-            # Player.SaveRoom(after.guild.id,after.name,PermissionsAll)
     
     async def on_raw_reaction_add(self,payload):
         Channel = await self.fetch_channel(payload.channel_id)
@@ -1155,7 +1039,6 @@ class MyClient(discord.Client):
         for part in str(Player.name).split(" "):
             UserName_ += part
         DevelopGabriel = await self.fetch_guild(716945063351156736)
-        # EmodjsInDevelop = await DevelopGabriel.fetch_emojis()
         Emoji = payload.emoji
         MessageRoles = [714080637648240690,737503063409033247]
         if Message.id == 713880721709727754:

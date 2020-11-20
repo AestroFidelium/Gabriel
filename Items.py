@@ -174,7 +174,7 @@ class Item():
         self._Unbreaking = self.Unbreaking - Value
     
     def Attack(self, Target):
-        return self._Damage
+        return Target.GetDamage(random.randint(1,self.Player.MaxDamage()))
           
     def __repr__(self):
         return f"ID: {self.ID}\nName: {self.Name}\nDescription: {self.Description}\nType: {self.Type}\nClass: {self.Class}\nUnbreaking: {self.Unbreaking}\nDamage: {self.Damage}\nProtect: {self.Protect}\nWhere: {self.Where}\nGold: {self.Gold}\nInformation: {self.Information}"
@@ -320,3 +320,40 @@ class Fang(Item):
         self.Information = f"Нерушимое оружие / После каждой атаки его урон увеличивается на (1 + (Прочность оружия))% / Не может нанести больше {self.DamageInfo} урона / Прокачивание оружие увеличивают его максимальный придел урона"
         self.Level += 1
         self.MaxLevel = self.Level + 1
+
+
+
+
+class Sword_Of_The_Cosmos(Item):
+    def __init__(self,Player):
+        self.Player = Player
+        super().__init__(
+            Name=f"Sword Of The Cosmos",
+            Description=f"Оружие впитавшее энергию сверхновы",
+            Class=Classes.СвоеНазвание(Damage="Бесконечность",Protect="Бесконечность",Unbreaking="Бесконечность",Name="КОСМИЧЕСКАЯ СИЛА",Description="Оружие по силе космоса"),
+            Type=Item.Types.Blade,
+            Unbreaking=1,
+            Damage=1,
+            Player=self.Player,
+            Information=f"Отсутствует",
+            MaxLevel=1)
+        self.Gold = "Бесконечность"
+    
+
+    def Attack(self, Target):
+        self.Player.Level_UP_From_Kill(Target)
+        Target.Death()
+        Target.Save()
+        return Numbers.ReplaceNumber(Target.MaxHealth)
+
+    @property
+    def Damage(self):
+        return "Бесконечность"
+    
+    @property
+    def Unbreaking(self):
+        return "Бесконечность"
+
+    def Break(self,Value): pass
+
+    def Upgrade(self,Exp : float): pass

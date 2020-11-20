@@ -26,6 +26,7 @@ import threading
 import Mobe
 from Numbers import ReplaceNumber
 from Numbers import Readable
+import Effects
 
 def Readable(n):
     s, *d = str(n).partition(".")
@@ -133,7 +134,6 @@ class C_Player():
         self.Class           = Ellipsis
         self.Room            = Room(self,0,Name)
 
-
         self.Everyday_bonus  = self.C_Everyday_bonus()
 
         self.Inventor        = []
@@ -188,6 +188,9 @@ class C_Player():
 
 
         self.Mobe                     = Mobe.Training_dummy(self)
+
+
+        self.Effects = list()
         
 
 
@@ -499,11 +502,29 @@ class C_Player():
         with open(f"./Stats/{self.ID}.txt","wb") as file:
             pickle.dump(self,file)
     
+
+    def Update(self):
+        pass
+
+
+    def _Update(self):
+        while True:
+            self.Update()
+            time.sleep(1)
+
+    def Start(self):
+
+        for Effect in self.Effects:
+            Effect.Start()
+
+        threading.Thread(target=self._Update,args=()).start()
+
+
     @staticmethod
     def Open(ID : int):
         """ Прочитать информацию об игроке """
         try:
-            with open(f"./Stats/{ID}.txt","rb") as file:\
+            with open(f"./Stats/{ID}.txt","rb") as file:
                 return pickle.load(file)
         except: raise FileExistsError("Пользователь не найден.")
     
@@ -526,63 +547,6 @@ class C_Player():
             _Talant = self.Talants[_Talant_]
             self.GetTalanted.append(Talant(self,_Talant,_Talant_))
 
-    def AddInventor(self,**fields):
-        """
-            Записать в инвентарь.
-
-            `------------------- Обязательные -----------------`
-
-            `Type` : тип предмета  (TypeItem.$)
-
-            `Name` : имя предмета
-
-            `Class` : Класс предмета
-
-            `Классы` : Сломанный -> Первоначальный -> Обычный -> Редкий -> Эпический -> Легендарный -> Мифический -> Демонический = Божественный -> Уникальный -> Реликвия -> Запретный
-
-            `ID` : это персональный номер у предмета, к которому нужно будет отссылаться, дабы взаимодействовать с ним
-
-            `Gold` : Количество золотых, которые нужно потратить, для улучшения предмета
-
-            'MaxGold' : Максимальное количество золотых
-
-            `------------------- Для предметов ----------------`
-
-            `Duration` : длительность эффекта
-
-            `Magic` : особое свойство
-
-            `------------------- Для оружия -------------------`
-
-            `Armor` : прочность оружия
-
-            `Damage` : Урон от оружия
-
-            `Magic` : особое свойство
-
-            `------------------- Для экиперовки ---------------`
-
-            `Armor` : прочность брони
-
-            `Protect` : Уровень защиты
-
-            `Magic` : особое свойство
-            
-            """
-        self.Inventor.append(fields)
-        self.Edit(
-            Inventor=self.Inventor
-        )
-        return fields
-    def RemoveInventor(self,ID : int):
-        """ Удалить вещь из инвентаря """
-        for item in self.Inventor:
-            itemid = int(item["ID"])
-            if itemid == ID:
-                self.Inventor.remove(item)
-        self.Edit(
-            Inventor = self.Inventor
-        )
     class NotStandartEquip(Error): pass
     def EquipmentItem(self,ID,Where):
         """
@@ -622,12 +586,7 @@ class C_Player():
                                 )
         self._selfStats()
 
-    def UpdateTalant(self,**fields):
-        Updater = self.Talants[self.TalantPicked]
-        Updater.update(fields)
-        with codecs.open(f"{self.PATH_VERSION}/Stats/{self.Name}.txt","w",encoding="utf-8") as file:
-            file.write(str(self.Stats))
-        self._selfStats()
+
     class mode():
         class one(): pass
         class multiply(): 
@@ -815,36 +774,22 @@ class C_Player():
             self.GetInventored.append(item)
     def Attack(self,Target):
         """Атаковать указанную цель"""
-        GetDamage = random.randint(1,self.MaxDamage())
-        Target.GetDamage(GetDamage)
-        
-        try:
-            self.Left_hand.ArmorEdit(self.Left_hand.Armor - 1)
-            self.RewriteItem(self.Left_hand)
-            self.EquipmentItem(self.Left_hand.ID,"Left_hand")
-        except: pass
-        try:
-            self.Right_hand.ArmorEdit(self.Right_hand.Armor - 1)
-            self.RewriteItem(self.Right_hand)
-            self.EquipmentItem(self.Right_hand.ID,"Right_hand")
-        except: pass
+
+        Count = int(Target.Level * 5)
+
+        try: L_Damage = self.Left_hand.Attack(Target)
+        except: L_Damage = None
+
+
+        try: R_Damage = self.Right_hand.Attack(Target)
+        except: R_Damage = None
+
         
         if Target.Health <= 0:
-            Count = int(Target.Level * 5)
-            LostStatus = {
-                    "Status"       : "Dead",
-                    "Level"        : Target.Level,
-                    "Damage"       : Target.Damage,
-                    "Health"       : Target.Health,
-                    "Agility"      : Target.Agility,
-                    "Intelligence" : Target.Intelligence,
-                    "Strength"     : Target.Strength,
-                    "GetDamage"    : GetDamage
-                }
-            self.LevelUp(Count)
-            return LostStatus
+            self.Level_UP_From_Kill(Target)
         Target.Save()
         self.Save()
+        return L_Damage , R_Damage
     def CheckEquipItem(self,Where):
         for item in self.GetInventored:
             if item.ID == self.Left_hand.ID:
@@ -863,28 +808,27 @@ class C_Player():
                 Magic=_Item.Magic
                 )
         except: raise Error("Нет предмета")
-    def MaxDamage(self):
+    def MaxDamage(self, Target = None):
         """ Урон который наносит герой. """
 
         GetDamage = 1 + self.Damage
-        try: GetDamage += self.Left_hand.Damage
-        except: pass
-        try: GetDamage += self.Right_hand.Damage
-        except: pass
+        # try: GetDamage += self.Left_hand.Attack(Target)
+        # except: pass
+        # GetDamage += self.Right_hand.Attack(Target)
         
-        GetDamage += GetDamage * ((5 * self.More_Damage.Level) / 100)
+        # GetDamage += GetDamage * ((5 * self.More_Damage.Level) / 100)
 
-        GetDamage *= self.Strength
+        # GetDamage *= self.Strength
 
-        GetDamage = round(GetDamage)
+        # GetDamage = round(GetDamage)
         
-        if random.randint(0,1000) <= self.Annihilator.Level:
-            GetDamage *= 5
+        # if random.randint(0,1000) <= self.Annihilator.Level:
+        #     GetDamage *= 5
 
-        Procent = (self.Health * 100) / self.MaxHealth
-        Procent -= 100
-        Procent *= -1
-        GetDamage += GetDamage * ((Procent * self.Berserk.Level) / 100)
+        # Procent = (self.Health * 100) / self.MaxHealth
+        # Procent -= 100
+        # Procent *= -1
+        # GetDamage += GetDamage * ((Procent * self.Berserk.Level) / 100)
 
 
         return round(GetDamage)
@@ -901,6 +845,10 @@ class C_Player():
 
         self.Edit(Edit="Main",Health=self.Health)
     def GetDamage(self,Amount : int):
+        if getattr(self,"Invulnerability",None) is not None:
+            if self.Invulnerability.Status:
+                return 0
+            
         Amount -= self.MaxProtect()
         if Amount < 0: Amount = 1
     
@@ -919,10 +867,11 @@ class C_Player():
             self.Legs.Break(1)
         except: pass
         try:
-            self.Boot.ArmorEdit(Break)
+            self.Boot.Break(1)
         except: pass
 
         self.Save()
+        return Amount
     def Death(self):
         Count = int(self.Level / 5)
         self.LostLevel(Count)
@@ -930,8 +879,6 @@ class C_Player():
         self.Exp += Amount
         if self.Exp >= self.Level * 500:
             self.LevelUp()
-        else:
-            self.Edit(Edit="Main",Exp=self.Exp)
     def PlusUpgrade(self,Count : int, Name : str):
         if Name == "Сила":
             self.Plus -= Count
@@ -1035,11 +982,15 @@ class C_Player():
     def Exp_Add(self,value : int):
         if self.Exp + value >= self.ExpRequest * self.Level: self.LevelUp()
         else: self.Exp += value
+    def Level_UP_From_Kill(self,Target):
+        Value = round(Target.Level / 5)
+        if Value > 0:
+            self.LevelUp(Value)
     def __repr__(self):
         return f"""ID: {self.ID}        Name: `{self.Name}`\nStatictics:\nHealth: `{self.Health}`         MaxHealth: `{self.MaxHealth}`         Shield: `{self.Shield}`         MaxShield: `{self.MaxShield}`       Mana: `{self.Mana}`         MaxMana: `{self.MaxMana}`       Damage: `{self.Damage}`\nLeveling:\nLevel: `{self.Level}`           MaxLevel: `{self.MaxLevel}`         Exp: `{self.Exp}`           Plus: `{self.Plus}`\nEconomy:\nGold: `{self.Gold}`            Messages: `{self.Messages}`\nStatictics v2:\nStrength: `{self.Strength}`          Agility: `{self.Agility}`           Intelligence: `{self.Intelligence}`\nEquip:\nHead:[{self.Head}]\nBody:[{self.Body}]\nLegs:[{self.Legs}]\nBoots:[{self.Boot}]\nLeft hand:[{self.Left_hand}]\nRight hand:[{self.Right_hand}]\nRings:\n...1:[{self.Ring_1}]\n..2:[{self.Ring_2}]\n..3:[{self.Ring_3}]\n..4:[{self.Ring_4}]\n..5:[{self.Ring_5}]\nOther:\nQuests: `{self.Quests}`\nTalants: `{self.Talants}`\nTalant picked: `{self.TalantPicked}`\n\n"""
 
 
-class Room(discord.Client):
+class Room():
     def __init__(self,
             Player     : C_Player,
             ID         : int, 
@@ -1050,299 +1001,6 @@ class Room(discord.Client):
         self.Overwrites = Overwrites
         self.Channel    = Ellipsis
 
-
-# class Item():
-#     """
-#     Предмет
-#     """
-#     def __init__(self,Player : C_Player,Stats):
-#         self.Player = Player
-#         self.Stats = Stats
-#         self.Damage = 0
-#         self.Protect = 0
-#         self.Armor = 0
-#         self.Where = "Неопознано"
-        
-#         try:
-#             _Name = self.Stats["Name"]
-#             self.Name = str(_Name["Name"])
-#             self.Description = str(_Name["Description"])
-#         except:
-#             self.Name = "Неопознанный"
-#             self.Description = "Отсутствует"
-        
-#         try: self.Magic = self.Stats["Magic"]
-#         except: self.Magic = None
-        
-#         try: self.Class = str(self.Stats["Class"])
-#         except: self.Class = "Отсутствует"
-
-#         try: self.ID = int(self.Stats["ID"])
-#         except: self.ID = 0
-
-#         try: self.Gold = int(self.Stats["Gold"])
-#         except: self.Gold = 0
-
-#         try: self.MaxGold = int(self.Stats["MaxGold"])
-#         except: self.MaxGold = 1
-
-        
-#         try: self.AllGold = int(self.Stats["AllGold"])
-#         except: self.AllGold = 0
-#         self.TypeKey = "None"
-#         try:
-#             self.Type = self.Stats["Type"]
-
-#             Keys = self.Type.keys()
-            
-#             for key in Keys:
-#                 self.TypeKey = key
-#                 if key == "Weapon":
-#                     Stats = self.Type[key]
-#                     self.Damage = Stats["Damage"]
-#                     self.Armor = Stats["Armor"]
-#                     self.Magic = Stats["Magic"]
-#                     self.Where = "Left_hand / Right_hand"
-#                 elif key == "Equipment":
-#                     Stats = self.Type[key]
-#                     self.Protect = Stats["Protect"]
-#                     self.Armor = Stats["Armor"]
-#                     self.Magic = Stats["Magic"]
-#                     self.Where = Stats["Where"]
-#                 elif key == "Ring":
-#                     Stats = self.Type[key]
-#                     self.Magic = Stats["Magic"]
-#                     self.Where = "Ring_"
-#         except TypeError:
-#             pass
-#     def ArmorEdit(self,Armor : int):
-#         if self.TypeKey == "Weapon":
-#             self.Type = Item.Types.Weapon(self.Damage,Armor,self.Magic)
-#         elif self.TypeKey == "Equipment":
-#             self.Type = Item.Types.Equipment(self.Protect,Armor,self.Where,self.Magic)
-#         self.Armor = Armor
-#     async def Upgrade(self,Gold,Client,GodsAndCat,MemberID : int):
-#         Evil = [721144024676827167,721144836199284848,691209621968519188,721145114558332938]
-#         Good = [721145686414065664,721145861341446285,721146089369108511,578514024782626837]
-#         self.Player.Gold -= Gold
-#         if self.Player.Gold < 0: 
-#             self.Player.Gold == 0
-#         else:
-#             self.Gold += Gold
-#             self.AllGold += Gold
-#             if self.Gold >= self.MaxGold:
-#                 self.Gold = 0
-#                 if self.Class == self.Classes.Первоначальный():
-#                     self.Damage += random.randint(2000,5000)
-#                     self.Protect += random.randint(2200,4800)
-#                     self.Armor += random.randint(400,1000)
-#                     self.MaxGold += random.randint(100,1000)
-#                     self.Class = self.Classes.Редкий()
-#                 elif self.Class == self.Classes.Редкий():
-#                     self.Damage += random.randint(6000,10000)
-#                     self.Protect += random.randint(6000,9000)
-#                     self.Armor += random.randint(2000,4000)
-#                     self.MaxGold += random.randint(2000,3000)
-#                     self.Class = self.Classes.Эпический()
-#                 elif self.Class == self.Classes.Эпический():
-#                     self.Damage += random.randint(25000,35000)
-#                     self.Protect += random.randint(20000,40000)
-#                     self.Armor += random.randint(6000,8000)
-#                     self.MaxGold += random.randint(6000,9000)
-#                     self.Class = self.Classes.Легендарный()
-#                 elif self.Class == self.Classes.Легендарный():
-#                     self.Damage += random.randint(50000,80000)
-#                     self.Protect += random.randint(50000,100000)
-#                     self.Armor += random.randint(8000,9000)
-#                     self.MaxGold += random.randint(15000,35000)
-#                     self.Class = self.Classes.Мифический()
-#                 elif self.Class == self.Classes.Мифический():
-#                     self.Damage += random.randint(10,13180000)
-#                     self.Protect += random.randint(10,131800000)
-#                     self.Armor += random.randint(10,900000)
-#                     self.MaxGold += random.randint(990000,2990000)
-#                     try:
-#                         Member = await GodsAndCat.fetch_member(MemberID)
-#                         for role in Member.roles:
-#                             if int(role.id) in Evil:
-#                                 self.Class = self.Classes.Демонический()
-#                             elif int(role.id) in Good:
-#                                 self.Class = self.Classes.Божественный()
-#                     except: pass
-#                 elif self.Class == self.Classes.Демонический():
-#                     self.Damage += random.randint(500000000,900000000)
-#                     self.Protect += random.randint(100000000,400000000)
-#                     self.Armor += random.randint(700000,900000)
-#                     self.MaxGold += 10000000
-#                     self.Class = self.Classes.Демонический()
-#                 elif self.Class == self.Classes.Божественный():
-#                     self.Damage += random.randint(700000000,835000000)
-#                     self.Protect += random.randint(200000000,335000000)
-#                     self.Armor += random.randint(800000,850000)
-#                     self.MaxGold += 10000000
-#                     self.Class = self.Classes.Божественный()
-#                 else:
-#                     self.MaxGold = 10000000000000000
-#                 if self.TypeKey == "Weapon":
-#                     Blacksmith = self.Player.GetTalant('Blacksmith')
-#                     self.Damage += self.Damage * (2 * Blacksmith.Level) / 100
-#                     self.Armor += self.Armor * (2 * Blacksmith.Level) / 100
-#                     self.Type = self.Types.Weapon(self.Damage,self.Armor,self.Magic)
-#                 elif self.TypeKey == "Equipment":
-#                     Blacksmith = self.Player.GetTalant('Blacksmith')
-#                     self.Protect += self.Protect * (2 * Blacksmith.Level) / 100
-#                     self.Armor += self.Armor * (2 * Blacksmith.Level) / 100
-#                     self.Type = self.Types.Equipment(self.Protect,self.Armor,self.Where,self.Magic)
-#             self.Player.RemoveInventor(self.ID)
-#             self.Player.AddInventor(
-#                 Type=self.Type,
-#                 Name = self.CreateName(self.Name,self.Description),
-#                 Class = self.Class,
-#                 ID = self.ID,
-#                 Gold = self.Gold,
-#                 MaxGold = self.MaxGold,
-#                 AllGold = self.AllGold
-#                 )
-#             self.Player.CheckEquipItem("Left_hand")
-#             self.Player.CheckEquipItem("Right_hand")
-#         self.Player.Edit(Edit="Main",Gold=self.Player.Gold)
-#     def Profile(self):
-#         """ Открыть профиль предмета. Выход : discord.File """
-#         Main = Image.open(f"./Resurses/System/Item/Main.png")
-#         Draw = ImageDraw.Draw(Main)
-
-#         font = ImageFont.truetype("./Resurses/System/AlienEncounter.otf",30)
-#         Name = self.Name.replace(f"({self.Player.Name})","")
-#         Draw.text((65,1),Name,font=font,fill=(255,222,0))
-
-#         font = ImageFont.truetype("./Resurses/System/AlienEncounter.otf",14)
-#         Draw.text((45,50),self.Description,font=font,fill=(217,201,190))
-        
-#         font = ImageFont.truetype("./Resurses/System/AlienEncounter.otf",30)
-#         Damage = str(ReplaceNumber(self.Damage))
-#         Draw.text((185,83),Damage,font=font,fill=(227,141,77))
-
-#         Protect = str(ReplaceNumber(self.Protect))
-#         Draw.text((420,83),Protect,font=font,fill=(84,214,200))
-
-#         Armor = str(ReplaceNumber(self.Armor))
-#         Draw.text((343,118),Armor,font=font,fill=(255,255,255))
-
-#         Gold = str(ReplaceNumber(self.Gold))
-#         MaxGold = str(ReplaceNumber(self.MaxGold))
-#         Draw.text((232,211),str(f"{Gold} из {MaxGold}"),font=font,fill=(252,255,0))
-
-#         Draw.text((96,272),str(self.ID),font=font,fill=(212,115,227))
-
-
-#         font = ImageFont.truetype("arial.ttf",15)
-#         Draw.text((280,165),self.Where,font=font,fill=(255,255,255))
-
-#         Main.save("SendItem.png")
-#         return discord.File("SendItem.png","SendItem.png")
-#     def Return(self):
-#         return 
-#     def Sell(self):
-#         Money = self.AllGold
-#         if self.Class == Item.Classes.Первоначальный():
-#             return "Невозможно продать первоначальную экипировку"
-#         elif self.Class == Item.Classes.Обычный():
-#             Money += 10000
-#         elif self.Class == Item.Classes.Редкий():
-#             Money += 20000
-#         elif self.Class == Item.Classes.Эпический():
-#             Money += 60000
-#         elif self.Class == Item.Classes.Легендарный():
-#             Money += 120000
-#         elif self.Class == Item.Classes.Мифический():
-#             Money += 360000
-#         elif self.Class == Item.Classes.Демонический() or self.Class == Item.Classes.Божественный():
-#             Money += 10000000
-#         elif self.Class == Item.Classes.Лоли:
-#             Money += 10000000 ** 10
-#         self.Player.Gold += Money
-#         self.Player.Edit(Edit="Main",Gold=self.Player.Gold)
-#         self.Player.RemoveInventor(self.ID)
-#         return f"Успешно продали предмет, за {Money} золотых"
-#     @staticmethod
-#     def Find(ID : int,Player : C_Player):
-#         Player.GetInventor()
-#         for _Item in Player.Inventor:
-#             _ItemID = _Item["ID"]
-#             if _ItemID == ID:
-#                 return Item(Player,_Item)
-
-
-#     @staticmethod
-#     def CreateName(Name,Description): return {"Name":Name,"Description":Description}
-#     class Types():
-#         @staticmethod
-#         def Item(): return "Item"
-
-#         @staticmethod
-#         def Ring(Magic): return {"Ring":{"Magic":Magic}}
-
-#         @staticmethod
-#         def Weapon(Damage : int,Armor : int,Magic):
-#             """Оружие"""
-#             return {"Weapon":{"Damage":Damage,"Armor":Armor,"Magic":Magic}}
-
-#         @staticmethod
-#         def Equipment(Protect : int,Armor : int,Where : str,Magic):
-#             """Экипировка"""
-#             return {"Equipment":{"Where":Where,"Protect":Protect,"Armor":Armor,"Magic":Magic}}
-
-#         @staticmethod
-#         def Ingredient(): return "Ingredient"
-#     class Classes():
-
-#         @staticmethod
-#         def Сломанный(): return "Сломанный"
-        
-#         @staticmethod
-#         def Первоначальный(): return "Первоначальный"
-        
-#         @staticmethod
-#         def Обычный(): return "Обычный"
-        
-#         @staticmethod
-#         def Редкий(): return "Редкий"
-        
-#         @staticmethod
-#         def Эпический(): return "Эпический"
-        
-#         @staticmethod
-#         def Легендарный(): return "Легендарный"
-        
-#         @staticmethod
-#         def Мифический(): return "Мифический"
-        
-#         @staticmethod
-#         def Демонический(): return "Демонический"
-        
-#         @staticmethod
-#         def Божественный(): return "Божественный"
-        
-#         @staticmethod
-#         def Уникальный(): return "Уникальный"
-        
-#         @staticmethod
-#         def Реликвия(): return "Реликвия"
-
-#         @staticmethod
-#         def Запретный(): return "Запретный"
-
-#         @staticmethod
-#         def Лоли(): return "Лоли"
-
-#         @staticmethod
-#         def GetList():
-#             List = [
-#                 "Сломанный","Первоначальный","Обычный","Сломанный",
-#                 "Редкий","Эпический","Легендарный","Мифический",
-#                 "Демонический","Божественный","Уникальный","Реликвия",
-#                 "Запретный","Лоли"]
-#             return List
 
 class Gabriel():
     """ Габриэль """
@@ -3026,6 +2684,7 @@ def SoMuchSpaces(Message : str) -> str:
 
 if __name__ == "__main__":
     ClearConsole()
+    lll = "- - - - " * 10
     try:
         Iam = C_Player.Open(414150542017953793)
     except: Iam = C_Player(414150542017953793,"Aestro Fidelium")
@@ -3033,28 +2692,31 @@ if __name__ == "__main__":
     try: Gab = C_Player.Open(656808327954825216)
     except: Gab = C_Player(656808327954825216,"Габриэль")
 
-    print(Iam.Room.Overwrites)
+    Iam.Start()
+    Gab.Start()
 
-    # Iam.Damage = Iam.Mobe.Protect + 1000000
-    # print(Iam)
+    print(lll)
 
-    # Iam.Mobe.Revive()
-    # print(Iam.LevelUp(99))
-    # Iam.Right_hand = Items.Fang(Iam)
-    # counter = 0
-    # while Iam.Right_hand.Damage != 320000:
-    # Iam.Right_hand.Upgrade(5)
-    # for _ in range(10):
+    print(Iam.Effects)
+
+    # for _ in range(1000):
     #     ClearConsole()
-    #     Iam.Right_hand.Damage
-    #     print(Iam.Right_hand)
-    # print(counter)
-    # print(Iam.Mobe.Hit(Iam.MaxDamage()))
-    # print(Iam.Mobe)
-    # print(f"Мое здоровье: [{Iam.Health}/{Iam.MaxHealth}]        Мой уровень: [{Iam.Level}/{Iam.MaxLevel}({Iam.Mobe.LevelRequests})]\nМой урон: [{Iam.MaxDamage()}]")
-    # print(f"Gold: {Iam.Gold}")
-    # print(f"Level: {Iam.Level}\nExp: {Iam.Exp} / {Iam.ExpRequest * Iam.Level}")
+    #     print(Iam.GetDamage(1000))
+    #     print(Iam.Health)
+    #     print(Iam.Effects)
+    #     time.sleep(1)
+    
+    
 
-    # time.sleep(2)
+
+    if getattr(Iam,"Invulnerability",None) is None:
+        Ef = Effects.Invulnerability(Iam)
+        Iam.Effects.append(Ef)
+        Iam.Invulnerability = Ef
+    else:
+        Iam.__getattribute__("Invulnerability").Status = True
+    
+
+
     Gab.Save()
     Iam.Save()
