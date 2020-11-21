@@ -27,6 +27,7 @@ import Mobe
 from Numbers import ReplaceNumber
 from Numbers import Readable
 import Effects
+import C_Gabriel
 
 def Readable(n):
     s, *d = str(n).partition(".")
