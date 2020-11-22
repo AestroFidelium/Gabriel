@@ -32,3 +32,40 @@ def ReplaceNumber(index):
     if type(index) is int:
         return ReplaceNumber(Readable(index))
     else: raise ValueError("Ожидалось получить int")
+
+
+def To_Int_From_Suffics(Value : str):
+    """ Пример 
+    Value == "100K" 
+    Выход == 100000 """
+
+    Suffics = re.sub(r"\d","",Value)[0::]
+    Numbers = int(Value.split(Suffics)[0])
+    
+    class _type():
+        def __init__(self,Suffics : str,Counter : int):
+            self.Suffics = Suffics
+            self.Counter = Counter
+
+    Types = [
+            _type("K",10 ** 3),
+            _type("M",10 ** 6),
+            _type("B",10 ** 9),
+            _type('T',10 ** 12),
+            _type('P',10 ** 15),
+            _type('E',10 ** 18),
+            _type('Z',10 ** 21),
+            _type('Y',10 ** 24)]
+
+    
+    try: Numbers *= [i for i in Types if i.Suffics == Suffics][0].Counter
+    except: 
+        if Suffics == ".YY":
+            Counter = int(Value.split("YY")[-1])
+            Numbers = int(Value.split("YY")[0].replace(".",""))
+            Multiple = 10 ** (26 + (3 * Counter))
+
+            return Numbers * Multiple
+        else:
+            return Numbers
+    return Numbers

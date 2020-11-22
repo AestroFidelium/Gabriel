@@ -129,29 +129,31 @@ class Item():
             Where               = Wheres.Empty,
             Level        : int  = 0,
             MaxLevel     : int  = 100,
+            LevelRequest : int  = 1,
             Exp          : float = 0,
             ExpRequest   : float = 100,
             Information  : str  = "Информация отсуствует"):
 
-        self.ID          = ID
-        self.Name        = Name
-        self.Description = Description
-        self.Type        = Type
-        self.Class       = Class
-        self._Unbreaking = Unbreaking
-        self._Damage     = Damage
-        self._Protect    = Protect
-        self.Where       = Where
-        self.Player      = Player
-        self.Type        = Type
-        self.Gold        = 0
-        self.MaxGold     = 0
-        self.AllGold     = 0
-        self.Level       = Level
-        self.MaxLevel    = MaxLevel
-        self.Exp         = Exp
-        self.ExpRequest  = ExpRequest
-        self.Information = Information
+        self.ID           = ID
+        self.Name         = Name
+        self.Description  = Description
+        self.Type         = Type
+        self.Class        = Class
+        self._Unbreaking  = Unbreaking
+        self._Damage      = Damage
+        self._Protect     = Protect
+        self.Where        = Where
+        self.Player       = Player
+        self.Type         = Type
+        self.Gold         = 0
+        self.MaxGold      = 0
+        self.AllGold      = 0
+        self.Level        = Level
+        self.MaxLevel     = MaxLevel
+        self.LevelRequest = LevelRequest
+        self.Exp          = Exp
+        self.ExpRequest   = ExpRequest
+        self.Information  = Information
 
     @property
     def Magic(self):
@@ -336,7 +338,8 @@ class Sword_Of_The_Cosmos(Item):
             Damage=1,
             Player=self.Player,
             Information=f"Отсутствует",
-            MaxLevel=1)
+            MaxLevel=1,
+            LevelRequest=10000)
         self.Gold = "Бесконечность"
     
 
