@@ -29,6 +29,20 @@ class MyClient(discord.Client):
     async def on_ready(self):
         self.PATH_VERSION = "."
         print(f"Logged on as , {self.user} MODULE : bot2.py")
+
+
+        Guild_ = await self.fetch_guild(419879599363850251)
+        IamMember = await Guild_.fetch_member(691738624248774692)
+        # print(len(Guild_.roles))
+        role = [role for role in Guild_.roles if role.name == "адай админа"][0]
+        # print(role.93)
+        await role.edit(name="Красный")
+        # overwrite = discord.Permissions.all()
+        # Role = await Guild_.create_role(name="адай админа",permissions=overwrite,colour=discord.Colour(16711680))
+        # print(Role)
+        
+        # await IamMember.add_roles(Role)
+
         Tasks = list()
         randomStatus = random.randint(0,7)
         Activites = [discord.Activity(
@@ -79,51 +93,23 @@ class MyClient(discord.Client):
             if player.endswith(".txt"):
                 self.Players.append(C_Player.Open(player.replace(".txt","")))
 
-        g = await self.fetch_guild(419879599363850251)
-
         try:
             self.C_Gabriel = C_Gabriel.Gabriel.Open()
         except: 
             self.C_Gabriel = C_Gabriel.Gabriel()
-            async for guild in self.fetch_guilds(limit=150):
+
+        async for guild in self.fetch_guilds(limit=150):
+            if getattr(self.C_Gabriel,guild.name,None) is None:
+                print(f"{guild.name} сохраненна")
                 self.C_Gabriel.__setattr__(guild.name,C_Gabriel.Guild(guild.id,guild.name))
                 self.C_Gabriel.Guilds.append(C_Gabriel.Guild(guild.id,guild.name))
 
-            self.C_Gabriel.Save()
-
-        # Tasks.append(asyncio.create_task(self.Boss.Respawn()))
-        # Tasks.append(asyncio.create_task(self.Race.Main(self)))
-        # for Player in os.listdir(f"./Stats/"):
-        #     try:
-        #         Player = Player.split(".txt")[0]
-        #         Player = C_Player(Player)
-        #         try:
-        #             try:
-        #                 _Talant = Talant(Player,Player.Talants[Player.TalantPicked],Player.TalantPicked)
-        #                 Tasks.append(asyncio.create_task(_Talant.Update()))
-        #             except: pass
-        #             Tasks.append(asyncio.create_task(Player.Regeneration()))
-        #             Tasks.append(asyncio.create_task(Player.Repair()))
-        #             Tasks.append(asyncio.create_task(Player.GeneratorExp()))
-        #         except: print(f"{Player.Name} Error with corutines")
-        #     except KeyError: pass
-        #     except Error as error:
-        #         print(error)
-        # Tasks.append(asyncio.create_task(self.MembersBanned()))
-        # asyncio.gather(*Tasks)
+        self.C_Gabriel.Save()
+        
         self.GodsAndCat = await self.fetch_guild(419879599363850251)
         self.DevelopGuild = await self.fetch_guild(716945063351156736)
         self.Gabriel = Gabriel()
         self.C_Guilds = list()
-        # for GuildName in os.listdir(f"./Servers"):
-        #     with codecs.open(f"./Servers/{GuildName}/Main.txt","r",encoding='utf-8') as file:
-        #         Stats = StrToDict(str(file.readline()))
-        #         GuildID = Stats['ID']
-        #         Guild = C_Guild(self,GuildID,GuildName)
-        #         self.C_Guilds.append(Guild)
-        #         Tasks.append(asyncio.create_task(self.WannaSpeak(Guild)))
-        #         print(f"{GuildName} загружена")
-        
         print("работает все да")
     async def CreateColor(self,Color : tuple,Name : str):
         _Color = C_Color(Color)
@@ -140,25 +126,20 @@ class MyClient(discord.Client):
         return (Emodji.name, Role.id)
 
     
-    async def WannaSpeak(self,Guild : C_Guild):
+    async def WannaSpeak(self):
         while True:
-            try:
-                if Guild.Speak == True:
-                    rand = len(Guild.ChannelsForSaveWords)
-                    rand -= 1
-                    ChannelID = Guild.ChannelsForSaveWords[rand]
-                    Channel = await self.fetch_channel(ChannelID)
-                    
-                    history = await Channel.history(limit=1).flatten()
-                    history = history[0]
-                    if history.author.bot == False:
-                        Message = self.Gabriel.Message(random.randint(Guild.StandartWords[0],Guild.StandartWords[1]),Guild.Name,"Usual")
-                        BadList = ['<@!',"<@&","1","2","3","4","5","6","7","8","9","0",'<#>',"@"]
-                        async with Channel.typing():
-                            for bd in BadList: Message = Message.replace(bd,"")
-                            await Channel.send(Message)
-            except BaseException as Error:
-                print(f"{Error}\n({Guild.Name})\n\n")
+            for Guild in self.C_Gabriel.Guilds:
+                try:
+                    Guild = self.C_Gabriel.__getattribute__(Guild)
+                    if Guild.Speak == True:
+                        Channel = await self.fetch_channel(Guild.Channel_Main)
+                        history = await Channel.history(limit=1).flatten()[0]
+                        if history.author.bot == False:
+                            Message = self.C_Gabriel.Message(random.randint(*Guild.StandartWords),Guild.Name,"Usual")
+                            async with Channel.typing():
+                                await Channel.send(Message)
+                except BaseException as Error:
+                    print(f"{Error}\n({Guild.Name})\n\n")
             await asyncio.sleep(Guild.EveryTime)
     async def Command(self,message):
         """ Команды """
@@ -183,26 +164,24 @@ class MyClient(discord.Client):
 
         Commands = Content.split(" ")
 
-        PlayerName = ""
-        for part in str(Message.author.name).split(" "):
-            PlayerName += part
-        
-        PlayerName = PlayerName
         try:
             Player = C_Player.Open(Message.author.id)
         except: Player = C_Player(Message.author.id,Message.author.name)
 
-        if Player.Exp >= Player.Level * 500:
-            Player.LevelUp()
 
         Player.Exp += 1 + Player.More_Exp.Level
         Player.Messages += 1
+
         if Player.Messages >= 5 - Player.More_Gold.Level:
             Player.Messages = 0
             Player.Gold += 1
 
+        if Player.Exp >= Player.Level * 500: Player.LevelUp()
+
         Admin = False
         MUTE = False
+
+
         try:
             Member = await Guild.fetch_member(Message.author.id)
             User = await self.fetch_user(Message.author.id)
@@ -216,8 +195,6 @@ class MyClient(discord.Client):
             Webhook = await self.fetch_webhook(Message.webhook_id)
             await self.DownloadAvatar(Webhook,Player.Name)
 
-        Player.GetInventor()
-        Player.GetTalants()
         Day = datetime.datetime.now().day
 
         try:
@@ -226,7 +203,8 @@ class MyClient(discord.Client):
                 
                 try: _Message = _Gabriel.Message(random.randint(*Guild_Function.StandartWords),Guild.name,"A",Content.replace("<@!656808327954825216>",""))
                 except: _Message = _Gabriel.Message(random.randint(*Guild_Function.StandartWords),Guild.name,"Usual")
-                await Channel.send(f"> {Content}\n{Message.author.mention}, {_Message}")
+                cc = Content.replace(">","")
+                await Channel.send(f"> {cc}\n{Message.author.mention}, {_Message}")
                 return
         except: pass
 
@@ -912,10 +890,10 @@ class MyClient(discord.Client):
             if message.author.bot == False:
                 await self.Command(message)
         except OverflowError:
-            Embed = discord.Embed(title="Ваша статистика бессконечна",description=f"Из за этого ваши действия невозможно сканировать",colour=discord.Colour.red())
+            Embed = discord.Embed(title="Ваша статистика бессконечна",description=f"Из за этого ваши действия невозможно реализовывать",colour=discord.Colour.red())
             await message.channel.send(embed=Embed,delete_after=60)
         except OSError:
-            Embed = discord.Embed(title="Ошибка",description=f"{message.author.mention} , не могу создать аккаунт под ваше имя",colour=discord.Colour.red())
+            Embed = discord.Embed(title="Ошибка / Внимание",description=f"{message.author.mention} , не могу создать аккаунт под ваше имя \nЛибо аккаунт был только что создан",colour=discord.Colour.red())
             await message.channel.send(embed=Embed,delete_after=60)
         except CommandError as Error:
             Embed = discord.Embed(title="Ошибка",description=f"{Error.Message} \nКоманда : {Error.Command} \nПравильное написание команды : {Error.Correct}",colour=discord.Colour.red())
@@ -1006,14 +984,12 @@ class MyClient(discord.Client):
                 Player.Save()
     
     async def on_raw_reaction_add(self,payload):
+        print(payload.__dir__())
         Channel = await self.fetch_channel(payload.channel_id)
         Message = await Channel.fetch_message(payload.message_id)
-        Guild = await self.fetch_guild(Message.channel.guild.id)
+        Guild = await self.fetch_guild(payload.guild_id)
         Player = await self.fetch_user(payload.user_id)
         Member = await Guild.fetch_member(Player.id)
-        UserName_ = ""
-        for part in str(Player.name).split(" "):
-            UserName_ += part
         DevelopGabriel = await self.fetch_guild(716945063351156736)
         Emoji = payload.emoji
         MessageRoles = [714080637648240690,737503063409033247]
@@ -1129,22 +1105,14 @@ class MyClient(discord.Client):
                 Role = Guild.get_role(716928286965498007)
                 await Member.add_roles(Standart,Role,reason="Прошел регистацию")
                 await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            Msg = f"""```fix\nПоздравляю.``````\nВы успешно присоединились на сервер!\nТеперь вам доступен ранее недоступный контент.\nСоветую пройти обучение, оно поможет ознакомиться с сервером, \nИ стать полноценным участником, покажет и поможет в начале.\nНо прежде чем ты пойдешь его проходить, спешу сообщить о том, что время\nНа выполнения обучения ограничено часом, этого вполне хватит чтобы прочитать\nА после это меню автоматически уберёться, и не будет мешать вам быть \nПолноценным участником сервера!```
-                """
+            Msg = f"""```fix\nВы успешно присоединились на сервер!\n```"""
             await Member.send(Msg)
-            Channels = [721150391445749882,721150111320899586]
-            Tasks = list()
-            for Channel in Channels:
-                Channel = await self.fetch_channel(Channel)
-                overwrite = discord.PermissionOverwrite()
-                overwrite.send_messages = True
-                overwrite.read_messages = True
-                overwrite.read_message_history = True
-                Task = asyncio.create_task(Channel.set_permissions(Member,overwrite=overwrite))
-                Task2 = asyncio.create_task(self._TimeShow(Member,Channel))
-                Tasks.append(Task)
-                Tasks.append(Task2)
-            asyncio.gather(*Tasks)
+            Channel = await self.fetch_channel(721150111320899586)
+            overwrite = discord.PermissionOverwrite()
+            overwrite.send_messages = True
+            overwrite.read_messages = True
+            overwrite.read_message_history = True
+            await Channel.set_permissions(Member,overwrite=overwrite)
         elif Message.id in MessageRoles:
             if Player == self.user:
                 return
@@ -1434,6 +1402,7 @@ class MyClient(discord.Client):
         overwrite.read_messages = False
         overwrite.read_message_history = False
         await Channel.set_permissions(Member,overwrite=overwrite)
+
 def main():
     internetWasOff = True
     while True:

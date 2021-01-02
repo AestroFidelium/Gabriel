@@ -1,6 +1,6 @@
 import random
 import Numbers
-
+from Bosses import Date
 
 class ItemClass():
     def __init__(self,
@@ -176,7 +176,7 @@ class Item():
         self._Unbreaking = self.Unbreaking - Value
     
     def Attack(self, Target):
-        return Target.GetDamage(random.randint(1,self.Player.MaxDamage()))
+        return Target.GetDamage(random.randint(1,self.Player.MaxDamage() + self.Damage),Player=self.Player)
           
     def __repr__(self):
         return f"ID: {self.ID}\nName: {self.Name}\nDescription: {self.Description}\nType: {self.Type}\nClass: {self.Class}\nUnbreaking: {self.Unbreaking}\nDamage: {self.Damage}\nProtect: {self.Protect}\nWhere: {self.Where}\nGold: {self.Gold}\nInformation: {self.Information}"
@@ -344,9 +344,12 @@ class Sword_Of_The_Cosmos(Item):
     
 
     def Attack(self, Target):
-        self.Player.Level_UP_From_Kill(Target)
-        Target.Death()
-        Target.Save()
+        if Target is C_Player:
+            self.Player.Level_UP_From_Kill(Target)
+            Target.Death()
+            Target.Save()
+        elif Target.__repr__() == "Boss":
+            Target.GetDamage(Target.MaxHealth + Target.Protect,Player=self.Player)
         return Numbers.ReplaceNumber(Target.MaxHealth)
 
     @property

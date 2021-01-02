@@ -28,6 +28,7 @@ from Numbers import ReplaceNumber
 from Numbers import Readable
 import Effects
 import C_Gabriel
+import Bosses
 
 def Readable(n):
     s, *d = str(n).partition(".")
@@ -124,7 +125,7 @@ class C_Player():
         self.WasMaxLevel  = 1
         self.LosedLevels  = 0    # Возможность набирать опыт дальше, но он не будет засчитыватся и куда либо использоватся, если не применить нужные вещи
         
-        self.Gold        = 0
+        self._Gold        = 0
         self.Messages     = 1
         self.MaxGold      = 10000
 
@@ -504,6 +505,30 @@ class C_Player():
             pickle.dump(self,file)
     
 
+
+
+    @property
+    def Gold(self):
+        return self._Gold
+    
+    @Gold.setter
+    def Gold(self, Value):
+        self._Gold += Value
+        if self._Gold > self.MaxGold: self._Gold = self.MaxGold
+        if self._Gold < 0: self._Gold = 0
+
+
+
+
+
+
+
+
+
+
+
+
+
     def Update(self):
         pass
 
@@ -776,7 +801,8 @@ class C_Player():
     def Attack(self,Target):
         """Атаковать указанную цель"""
 
-        Count = int(Target.Level * 5)
+        if Target is C_Player:
+            Count = int(Target.Level * 5)
 
         try: L_Damage = self.Left_hand.Attack(Target)
         except: L_Damage = None
@@ -785,10 +811,10 @@ class C_Player():
         try: R_Damage = self.Right_hand.Attack(Target)
         except: R_Damage = None
 
-        
-        if Target.Health <= 0:
-            self.Level_UP_From_Kill(Target)
-        Target.Save()
+        if Target is C_Player:
+            if Target.Health <= 0:
+                self.Level_UP_From_Kill(Target)
+            Target.Save()
         self.Save()
         return L_Damage , R_Damage
     def CheckEquipItem(self,Where):
@@ -845,7 +871,7 @@ class C_Player():
             self.Health = self.MaxHealth
 
         self.Edit(Edit="Main",Health=self.Health)
-    def GetDamage(self,Amount : int):
+    def GetDamage(self,Amount : int,**fields):
         if getattr(self,"Invulnerability",None) is not None:
             if self.Invulnerability.Status:
                 return 0
@@ -977,9 +1003,6 @@ class C_Player():
     def TalantUpdater(self):
         if self.TalantPicked is not Ellipsis:
             self.TalantPicked.Update(self,int(self.Intelligence))
-    def Gold_Add(self,value : int):
-        if self.Gold + value > self.MaxGold: self.Gold = self.MaxGold
-        else: self.Gold += value
     def Exp_Add(self,value : int):
         if self.Exp + value >= self.ExpRequest * self.Level: self.LevelUp()
         else: self.Exp += value
@@ -2693,31 +2716,28 @@ if __name__ == "__main__":
     try: Gab = C_Player.Open(656808327954825216)
     except: Gab = C_Player(656808327954825216,"Габриэль")
 
+    try: Gabriel = C_Gabriel.Gabriel.Open()
+    except: Gabriel = C_Gabriel.Gabriel()
+
     Iam.Start()
     Gab.Start()
 
     print(lll)
 
-    print(Iam.Effects)
+    Iam.Right_hand = Items.Sword_Of_The_Cosmos(Iam)
 
-    # for _ in range(1000):
-    #     ClearConsole()
-    #     print(Iam.GetDamage(1000))
-    #     print(Iam.Health)
-    #     print(Iam.Effects)
-    #     time.sleep(1)
-    
-    
+    Guild = Gabriel.__getattribute__("Разработка Габриэль")
 
+    Guild.Boss = Bosses.Gnoll(Guild)
 
-    if getattr(Iam,"Invulnerability",None) is None:
-        Ef = Effects.Invulnerability(Iam)
-        Iam.Effects.append(Ef)
-        Iam.Invulnerability = Ef
-    else:
-        Iam.__getattribute__("Invulnerability").Status = True
-    
-
+    while Guild.Boss.Status == True:
+        ClearConsole()
+        Gab.Attack(Guild.Boss)
+        print(Iam.Attack(Guild.Boss))
+        print(Guild.Boss.Status)
+        print(Guild.Boss)
+        time.sleep(0.2)
 
     Gab.Save()
+    Gabriel.Save()
     Iam.Save()
