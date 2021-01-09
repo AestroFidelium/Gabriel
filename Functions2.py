@@ -29,6 +29,7 @@ from Numbers import Readable
 import Effects
 import C_Gabriel
 import Bosses
+from io import StringIO
 
 def Readable(n):
     s, *d = str(n).partition(".")
@@ -1026,7 +1027,7 @@ class Room():
         self.Channel    = Ellipsis
 
 
-class Gabriel():
+class _Gabriel():
     """ Габриэль """
 
     def __init__(self):
@@ -2682,7 +2683,7 @@ def Debuger(arg,Correct : "Класс ожидаемого объекта"):
         return f"Получен неверный аргумент{arg_type}. Ожидался аргумент{Correct_type}"
 
 
-def rgbToColor(r, g, b):
+def rgbToColor(r, g, b) -> int:
     return (r << 16) + (g << 8) + b
 
 def colorToRGB(c):
@@ -2706,38 +2707,94 @@ def SoMuchSpaces(Message : str) -> str:
         if Mess != "": Return += f"{Mess} "
     return Return[:-1:]
 
+
+class GuildRooms():
+    def __init__(self, Name : str, Overwrites):
+        self.Name       = Name
+        self.Overwrites = Overwrites
+
+
+class C_User():
+    def __init__(self, 
+            Name : str = "Имя пользователя",
+            ID   : int = "ID пользователя"):
+
+        self.Name        = Name
+        self.ID          = ID
+        self.Messages    = 0
+        self.Guilds      = []
+        self.LastMessage = datetime.datetime.now()
+        self.Lolilies    = 0
+        self.YourRoom    = 0
+
+    def Add(self):
+        offset = self.offset()
+        multiply = 1440 * offset[0]
+        multiply += 60 * offset[1]
+        multiply += 1 * offset[2]
+        self.Lolilies += multiply
+    
+    def Remove(self, Value : int):
+        self.Lolilies -= Value
+        if self.Lolilies < 0: self.Lolilies = 0
+
+    def offset(self):
+        now = datetime.datetime.now()
+        days = now.day - self.LastMessage.day
+        if days < 0: days = 0
+        hours = now.hour - self.LastMessage.hour
+        if hours < 0: hours = 0
+        minute = now.minute - self.LastMessage.minute
+        if minute < 0: minute = 0
+        return (days, hours, minute)
+
+
+    @staticmethod
+    def Open(ID : int, Name = None):
+        """ Прочитать информацию пользователя """
+        try:
+            with open(f"./Stats/{ID}.txt","rb") as file:
+                return pickle.load(file)
+        except: 
+            print(f"[{Name}] Не был найден. Создан новый аккаунт")
+            User = C_User(Name=Name,ID=ID)
+            User.Save()
+            return User 
+    
+    def Save(self):
+        """ Сохранить информацию пользователя """
+        copy = self.Open(self.ID)
+        try:
+            with open(f"./Stats/{self.ID}.txt","wb") as file:
+                pickle.dump(self,file)
+        except BaseException as Err: 
+            with open(f"./Stats/{self.ID}.txt","wb") as file:
+                pickle.dump(copy,file)
+            print(f"[{self.Name}]. Ошибка в сохранении: \n {Err}")
+
+
+    def __repr__(self):
+        return f"{self.Name}#{self.ID}"
+class C_Command():
+    def __init__(self, Name : str, *args):
+        self.Name = Name
+        self.args = args
+
+
+def Download_Image2(url : str, output : str):
+    r = requests.get(url)
+    i = Image.open(StringIO(r.content))
+    i.save(output)
+
+def Download_Image(url : str, output : str):
+    r = requests.get(url, stream=True)
+    with open(output, 'wb') as f:
+        for chunk in r.iter_content():
+            f.write(chunk)
+
+
+
 if __name__ == "__main__":
     ClearConsole()
-    lll = "- - - - " * 10
-    try:
-        Iam = C_Player.Open(414150542017953793)
-    except: Iam = C_Player(414150542017953793,"Aestro Fidelium")
 
-    try: Gab = C_Player.Open(656808327954825216)
-    except: Gab = C_Player(656808327954825216,"Габриэль")
-
-    try: Gabriel = C_Gabriel.Gabriel.Open()
-    except: Gabriel = C_Gabriel.Gabriel()
-
-    Iam.Start()
-    Gab.Start()
-
-    print(lll)
-
-    Iam.Right_hand = Items.Sword_Of_The_Cosmos(Iam)
-
-    Guild = Gabriel.__getattribute__("Разработка Габриэль")
-
-    Guild.Boss = Bosses.Gnoll(Guild)
-
-    while Guild.Boss.Status == True:
-        ClearConsole()
-        Gab.Attack(Guild.Boss)
-        print(Iam.Attack(Guild.Boss))
-        print(Guild.Boss.Status)
-        print(Guild.Boss)
-        time.sleep(0.2)
-
-    Gab.Save()
-    Gabriel.Save()
-    Iam.Save()
+    print(rgbToColor(255,255,255))

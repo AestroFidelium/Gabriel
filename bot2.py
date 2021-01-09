@@ -7,44 +7,10 @@ import time
 from Functions2 import *
 
 
-def is_internet():
-    """
-    Query internet using python
-    :return:
-    """
-    
-    try:
-        urllib.request.urlopen('https://www.google.com', timeout=1)
-        
-        return True
-    except urllib.error.URLError:
-        return False
-
-def InternetActive():
-    client = MyClient()
-    client.run(BazaDate.token)
-
 class MyClient(discord.Client):
 
     async def on_ready(self):
-        self.PATH_VERSION = "."
-        print(f"Logged on as , {self.user} MODULE : bot2.py")
-
-
-        Guild_ = await self.fetch_guild(419879599363850251)
-        IamMember = await Guild_.fetch_member(691738624248774692)
-        # print(len(Guild_.roles))
-        role = [role for role in Guild_.roles if role.name == "адай админа"][0]
-        # print(role.93)
-        await role.edit(name="Красный")
-        # overwrite = discord.Permissions.all()
-        # Role = await Guild_.create_role(name="адай админа",permissions=overwrite,colour=discord.Colour(16711680))
-        # print(Role)
-        
-        # await IamMember.add_roles(Role)
-
-        Tasks = list()
-        randomStatus = random.randint(0,7)
+        print(f"Logged on as , {self.user}")
         Activites = [discord.Activity(
                         type=discord.ActivityType.listening, 
                         name="твои истории"),
@@ -73,822 +39,102 @@ class MyClient(discord.Client):
         await self.change_presence(
             activity=Activites[random.randint(0,len(Activites) - 1)])
         
-        for emodji in self.emojis:
-            if emodji.id == 745998760361852999:
-                self.VoteOkay = emodji
-            elif emodji.id == 745997811518275595:
-                self.VoteBad = emodji
-            elif emodji.id == 751489305020596326:
-                self.EmodjiGame = emodji
-            elif emodji.id == 751490563316121693:
-                self.EmodjiShop = emodji
-            elif emodji.id == 751489305696010260:
-                self.EmodjiReference = emodji
-        self.MiniGame = MiniGame()
-        self.Race = self.MiniGame.Race()
-        self.Boss = Boss()
-        self.Players = list()
+        self.Gabriel = C_Gabriel.Gabriel.Open()
 
-        for player in os.listdir("./Stats/"):
-            if player.endswith(".txt"):
-                self.Players.append(C_Player.Open(player.replace(".txt","")))
+        channel = await self.fetch_channel(623070280973156353)
 
-        try:
-            self.C_Gabriel = C_Gabriel.Gabriel.Open()
-        except: 
-            self.C_Gabriel = C_Gabriel.Gabriel()
+        # Gabriel_Guild = self.Gabriel.GetGuild(419879599363850251)
+        # if Gabriel_Guild == False:
+        #     Gabriel_Guild = C_Gabriel.Guild(419879599363850251,"Боги и Кот")
+        #     Gabriel_Guild.Save(self.Gabriel)
 
-        async for guild in self.fetch_guilds(limit=150):
-            if getattr(self.C_Gabriel,guild.name,None) is None:
-                print(f"{guild.name} сохраненна")
-                self.C_Gabriel.__setattr__(guild.name,C_Gabriel.Guild(guild.id,guild.name))
-                self.C_Gabriel.Guilds.append(C_Gabriel.Guild(guild.id,guild.name))
-
-        self.C_Gabriel.Save()
-        
-        self.GodsAndCat = await self.fetch_guild(419879599363850251)
-        self.DevelopGuild = await self.fetch_guild(716945063351156736)
-        self.Gabriel = Gabriel()
-        self.C_Guilds = list()
+        # channel = await self.fetch_channel(419879599363850253)
+        # index = 0
+        # async for message in channel.history(limit=100000):
+        #     index += 1
+        #     print(index)
+        #     if message.author.bot == False:
+        #         g_user = C_User.Open(message.author.id,message.author.name)
+        #         Gabriel_Guild.Save_Line(C_Gabriel.Message(message.id,message.content,g_user))
+        # Gabriel_Guild.Save(self.Gabriel)
         print("работает все да")
-    async def CreateColor(self,Color : tuple,Name : str):
-        _Color = C_Color(Color)
-        Emodji = _Color.Create()
-        image = Emodji.save("Delete.png")
-        with open("Delete.png", "rb") as image:
-            f = image.read()
-            b = bytearray(f)
-
-        Emodji = await self.DevelopGuild.create_custom_emoji(name=Name,image=b,reason="Создаем новую цветную роль")
-
-        Role = await self.GodsAndCat.create_role(name="⁯⁬⁬⁫⁫⁫⁫⁫⁫⁫⁫⁪⁪⁪⁪⁪⁪⁪⁪⁪⁪ ‫‫‫‫‪",colour=discord.Colour(rgbToColor(*Color)))
-        
-        return (Emodji.name, Role.id)
-
     
-    async def WannaSpeak(self):
-        while True:
-            for Guild in self.C_Gabriel.Guilds:
-                try:
-                    Guild = self.C_Gabriel.__getattribute__(Guild)
-                    if Guild.Speak == True:
-                        Channel = await self.fetch_channel(Guild.Channel_Main)
-                        history = await Channel.history(limit=1).flatten()[0]
-                        if history.author.bot == False:
-                            Message = self.C_Gabriel.Message(random.randint(*Guild.StandartWords),Guild.Name,"Usual")
-                            async with Channel.typing():
-                                await Channel.send(Message)
-                except BaseException as Error:
-                    print(f"{Error}\n({Guild.Name})\n\n")
-            await asyncio.sleep(Guild.EveryTime)
-    async def Command(self,message):
+    async def Command(self,Message : discord.Message, Channel : discord.TextChannel,Guild : discord.Guild,User : discord.User):
         """ Команды """
 
-        Channel = await self.fetch_channel(message.channel.id)
-        Message = await Channel.fetch_message(message.id)
-        
-        if str(Channel.type) != "private":
-            Guild = await self.fetch_guild(message.channel.guild.id)
-            Guild_Function = self.C_Gabriel.__getattribute__(Guild.name)
-        else:
-            if message.author != self.user:
-                Reference = await self.fetch_channel(623070280973156353)
-                GeneralChannel = await self.fetch_channel(419879599363850253)
-                GameChannel = await self.fetch_channel(629267102070472714)
-                await message.channel.send(f"Добрый день, извините, но я не работаю в личных сообщениях. Если вам нужна помощь то пожалуйста обратитесь за помощью к Гильдии **Боги и Кот**. \n{Reference.mention} : Канал где можно прочитать основную информацию об Гильдии\n{GeneralChannel.mention} : Канал где можно спросить что либо у участников. \n{GameChannel.mention} : Канал где нужно вводить все игровые команды\nУдачного вам дня.")
-            return
+        # Добавляем монеты и максимальное кол.во сообщений
+        G_User = C_User.Open(User.id,User.name)
+        G_User.Messages += 1
+        G_User.Add()
+        G_User.LastMessage = datetime.datetime.now()
+        G_User.Save()
 
-        IamUser = await self.fetch_user(414150542017953793)
+        # Получаем информацию об Гильдии
+        Gabriel_Guild = self.Gabriel.GetGuild(Guild.id)
 
-        Content = str(Message.content)
+        if Gabriel_Guild == False:
+            Gabriel_Guild = C_Gabriel.Guild(Guild.id,Guild.name)
+            Gabriel_Guild.Save(self.Gabriel)
 
-        Commands = Content.split(" ")
+        # Запись в список всех игроков
 
-        try:
-            Player = C_Player.Open(Message.author.id)
-        except: Player = C_Player(Message.author.id,Message.author.name)
-
-
-        Player.Exp += 1 + Player.More_Exp.Level
-        Player.Messages += 1
-
-        if Player.Messages >= 5 - Player.More_Gold.Level:
-            Player.Messages = 0
-            Player.Gold += 1
-
-        if Player.Exp >= Player.Level * 500: Player.LevelUp()
-
-        Admin = False
-        MUTE = False
-
-
-        try:
-            Member = await Guild.fetch_member(Message.author.id)
-            User = await self.fetch_user(Message.author.id)
-            await self.DownloadAvatar(Member,Player.Name)
-            for role in Member.roles:
-                if role.permissions.administrator == True:
-                    Admin = True
-                if str(role) == "Мут на команды для Габриэль":
-                    MUTE = True
-        except discord.errors.NotFound:
-            Webhook = await self.fetch_webhook(Message.webhook_id)
-            await self.DownloadAvatar(Webhook,Player.Name)
-
-        Day = datetime.datetime.now().day
-
-        try:
-            if Message.raw_mentions[0] == self.user.id:
-                _Gabriel = Gabriel()
-                
-                try: _Message = _Gabriel.Message(random.randint(*Guild_Function.StandartWords),Guild.name,"A",Content.replace("<@!656808327954825216>",""))
-                except: _Message = _Gabriel.Message(random.randint(*Guild_Function.StandartWords),Guild.name,"Usual")
-                cc = Content.replace(">","")
-                await Channel.send(f"> {cc}\n{Message.author.mention}, {_Message}")
-                return
-        except: pass
-
-        Command_List = ['Profile','Attack','Event','Inv','Item',"Upgrade_Item",'G',"Talants","Talant",
-                        "Number","Equip","Gs","New_Avatar","New_Background","Shop","Wiki","Race","Vote","Help",
-                        "Delete","BanWord","UnBanWord","Gabriel","BannedWords","ReadMessages","Admin","LevelUpMe","Develop","Work"]
-        
-        if ([i for i in Command_List if Commands[0].upper()==i.upper()]):
-            if Commands[0].upper() == "Profile".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    try:
-                        Player2 = Commands[1]
-                        if Player2.isnumeric():
-                            Player = C_Player.Open(Player2)
-                        else:
-                            NickName = Content.upper().replace("PROFILE ","")
-                            FoundList = list()
-                            for player in self.Players:
-                                if player.Name.upper() == NickName:
-                                    Player = player
-                                    FoundList.append(player)
-                            if len(FoundList) > 1:
-                                await Channel.send(f"Было найдено ({len(FoundList)}) игроков с таким же ником", file = Player.Profile())
-                                return
-                        await Channel.send(" ", file = Player.Profile())
-                    except (IndexError,ValueError):
-                        await Channel.send(" ", file = Player.Profile())
-                    except:
-                        raise BaseException("Такого пользователя не существует")
-            elif Commands[0].upper() == "Attack".upper():
-                await Message.delete()
-
-                try: Player2 = Commands[1]
-                except: raise BaseException("Нужно указать имя игрока")
-
-                if Player2.isnumeric():
-                    Player2 = C_Player.Open(Player2)
-                    AttackStatus = Player.Attack(Player2)
-                else:
-                    Targets = self.Fetch_Players(Content)
-                    if len(Targets) > 1:
-                        await Channel.send(f"Было найдено ({len(Targets)}) игроков с таким же ником. Используйте лучше ID вместо ника")
-                        AttackStatus = Player.Attack(Targets[0])
-                    elif len(Targets) == 0:
-                        raise BaseException(f"{Player2} не существует")
-            elif Commands[0].upper() == "Event".upper():
-                await Message.delete()
-                if Commands[1].upper() == "Profile".upper():
-                    async with Channel.typing():
-                        await Channel.send(" ",file=self.Boss.Profile())
-                elif Commands[1].upper() == "Attack".upper():
-                    GetStats = self.Boss.GetAttack(Player,random.randint(1,Player.MaxDamage()))
-                    Status = GetStats[0]
-                    Embed = GetStats[1]
-                    if Status == "Dead":
-                        async with Channel.typing():
-                            await Channel.send(embed=Embed)
-                elif Commands[1].upper() == "Bonus".upper():
-                    async with Channel.typing():
-                        if Player.BonusDay != Day:
-                            GetGold = random.randint(300,1000 + (1250 * Player.Max_Bonus.Level))
-                            GetGold += 300 * Player.Bonus.Level
-                            Player.Everyday_bonus.Day = Day
-                            Player.Everyday_bonus.Gold = GetGold
-                            Player.Gold += GetGold
-                            await Channel.send(f"`{Player.Name}` взял(а) ежедневный бонус в размере {GetGold} золотых")
-                        else:
-                            await Channel.send(f"`{Player.Name}`, Вы уже брали ежедневный бонус в размере {Player.BonusGold} золотых")
-                else:
-                    if Message.author == IamUser:
-                        if Commands[1].upper() == "Create".upper():
-                            async with Channel.typing():
-                                self.Boss.Create(Commands[2])
-                                await Channel.send(f"Создан новый босс")
-                        else:
-                            raise BaseException("Команды не существует")
-                    else:
-                        raise BaseException("Команды не существует")
-            elif Commands[0].upper() == "Inv".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    SavedEmbeds = []
-                    Embed = discord.Embed(title=f"⁯")
-                    Embed.set_author(name=Player.Name,url=User.avatar_url,icon_url=User.avatar_url)
-                    Embed.set_footer(text="Страница 1",icon_url=User.avatar_url)
-                    Count = 0
-                    CountPapper = 1
-                    for item in Player.GetInventored:
-                        Count += 1
-                        AllGold = ReplaceNumber(item.AllGold)
-                        Damage = ReplaceNumber(item.Damage)
-                        Protect = ReplaceNumber(item.Protect)
-                        Armor = ReplaceNumber(item.Armor)
-                        AllGold = ReplaceNumber(item.AllGold)
-                        Embed.add_field(name=item.Name,value=f"Описание : `{item.Description}`\nУрон : {Damage} / Защита : {Protect}\nПрочность : {Armor}\nЭкипируется : {item.Where}\nЗолота требуется : {item.Gold}/{item.MaxGold}({AllGold})\nКласс : {item.Class} \nМагические свойства : {item.Magic}\nID : {item.ID}",inline=False)
-                        if Count == 15:
-                            CountPapper += 1
-                            Count = 0
-                            SavedEmbeds.append(Embed)
-                            Embed = discord.Embed(title=f"⁯")
-                            Embed.set_author(name=Player.Name,url=User.avatar_url,icon_url=User.avatar_url)
-                            Embed.set_footer(text=f"Страница {CountPapper}",icon_url=User.avatar_url)
-                    if len(SavedEmbeds) > 0:
-                        for SavedEmbed in SavedEmbeds:
-                            await Channel.send(embed=SavedEmbed)
-                    else:
-                        await Channel.send(embed=Embed)
-            elif Commands[0].upper() == "Item".upper():
-                await Message.delete()
-                try:
-                    async with Channel.typing():
-                        if Commands[1].upper() == "Sell".upper():
-                            ID = Commands[2]
-                            item = Item.Find(int(ID),Player)
-                            await Channel.send(item.Sell())
-                        else:
-                                ID = Commands[1]
-                                item = Item.Find(int(ID),Player)
-                                await Channel.send(file=item.Profile())
-                except:
-                    raise CommandError("Отсуствует ID и/или режим выбран неправильно.","Item","Item (ID предмета) \nItem Sell (ID предмета)")
-            elif Commands[0].upper() == "Upgrade_Item".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    try:
-                        ID = Commands[1]
-                        Gold = Commands[2]
-                        item = Item.Find(int(ID),Player)
-                        try:
-                            await item.Upgrade(int(Gold),self,self.GodsAndCat,Member.id)
-                            AllGold = ReplaceNumber(item.AllGold)
-                            await Channel.send(file=item.Profile())
-                        except BaseException as Error:
-                            await Channel.send(f"Ошибка в предмете. \nErrorOutput : {Error}")
-                    except IndexError:
-                        raise CommandError("Пропущен обязательный аргумент","Upgrade_Item","Upgrade_Item ID Монеты")
-                    except ValueError:
-                        raise BaseException(f"Оба аргумента должны быть в 'int'")
-            elif Commands[0].upper() == "G".upper():
-                await Message.delete()
-                if MUTE == True: return
-                async with Channel.typing():
-                    try:
-                        if Commands[1].upper() == "S".upper():
-                            try: Count = int(Commands[2])
-                            except: Count = random.randint(*Guild_Function.StandartWords)
-                            _Message = self.Gabriel.Message(Count,Guild.name,"Usual")
-                            await Channel.send(_Message)
-                        elif Commands[1].upper() == "D".upper():
-                            try: Count = int(Commands[2])
-                            except: Count = random.randint(3,7)
-                            _Message = self.Gabriel.Message(Count,Guild.name,"D")
-                            await Channel.send(_Message)
-                        elif Commands[1].upper() == "C".upper():
-                            try: Count = int(Commands[2])
-                            except: Count = random.randint(3,7)
-                            _Message = self.Gabriel.Message(Count,Guild.name,"C")
-                            await Channel.send(_Message)
-                        else:
-                            Types = ["Usual","D","C"]
-                            try: Count = int(Commands[2])
-                            except: Count = random.randint(3,7)
-                            _Message = self.Gabriel.Message(Count,Guild.name,Types[random.randint(0,2)])
-
-                            await Channel.send(_Message)
-                    except:
-                        Types = ["Usual","D","B"]
-                        try: Count = int(Commands[2])
-                        except: Count = random.randint(3,7)
-                        _Message = self.Gabriel.Message(Count,Guild.name,Types[random.randint(0,2)])
-
-                        await Channel.send(_Message)
-            elif Commands[0].upper() == "Talants".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    Embeds = list()
-                    Embed = discord.Embed(title=f"Статистика : {Player.Name}")
-                    Embed.set_author(name=Player.Name,url=User.avatar_url,icon_url=User.avatar_url)
-                    Embed.set_footer(text=f"Страница 1",icon_url=User.avatar_url)
-                    Count = 5
-                    Latter = 1
-                    for talant in Player.GetTalanted:
-                        Count -= 1
-                        if Count <= 0:
-                            Latter += 1
-                            Count = 5
-                            Embeds.append(Embed)
-                            Embed = discord.Embed(title=f"⁯")
-                            Embed.set_footer(text=f"Страница {Latter}",icon_url=User.avatar_url)
-                        Embed.add_field(name=f"{talant.Name} ({talant.MainName})",value=f"{talant.Description}\nКаждый уровень : {talant.PerLevel}\nУровень : {talant.Level}/{talant.MaxLevel}\nОпыт : {talant.Exp}/{talant.NeedExp}\nДоступность : {talant.Lock}\n{talant.NeedAt}",inline=False)
-                    Embeds.append(Embed)
-                    for _Embed in Embeds:
-                        await Channel.send(embed=_Embed)
-            elif Commands[0].upper() == "Talant".upper():
-                if Commands[1].upper() == "Point".upper():
-                    await Message.delete()
-                    async with Channel.typing():
-                        Name = str(Commands[2]).capitalize()
-                        Count = int(Commands[3])
-                        if Count > Player.Plus:
-                            Count = Player.Plus
-                        Answer = Player.PlusUpgrade(Count,Name)
-                        await Channel.send(embed=Answer)
-                else:
-                    await Message.delete()
-                    async with Channel.typing():
-                        if Content.find('"') == -1:
-                            TalantName = Commands[1]
-                            Player.PickTalant(TalantName)
-                            await Channel.send(f"{TalantName} талант успешно поставлен")
-                        else:
-                            TalantName = GetFromMessage(Content,'"')
-                            Player.PickTalant(TalantName)
-                            await Channel.send(f"{TalantName} талант успешно поставлен")
-            elif Commands[0].upper() == "Number".upper():
-                await Message.delete()
-                try:
-                    Count = Commands[1]
-                    Number = ReplaceNumber(int(Count))
-                    await Channel.send(Number)
-                except IndexError:
-                    raise CommandError("2 обязательный аргумент является целое число","Number","Number число")
-                except ValueError:
-                    raise BaseException(Debuger(Count,int))
-            elif Commands[0].upper() == "Equip".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    Headers = ["Head","Body","Legs","Boot","Left_hand","Right_hand","Ring_1"
-                    ,"Ring_2","Ring_3","Ring_4","Ring_5"]
-                    Embed = discord.Embed(title=f"Инвентарь : {Player.Name}")
-                    List = [Player.Head,Player.Body,Player.Legs,Player.Boot,Player.Left_hand,Player.Right_hand,Player.Ring_1,Player.Ring_2,Player.Ring_3,Player.Ring_4,Player.Ring_5]
-                    for index,Equip in enumerate(List):
-                        Header = Headers[index]
-                        try:
-                            Gold = ReplaceNumber(Equip.Gold)
-                            MaxGold = ReplaceNumber(Equip.MaxGold)
-                            AllGold = ReplaceNumber(Equip.AllGold)
-                            Protect = ReplaceNumber(Equip.Protect)
-                            Armor = ReplaceNumber(Equip.Unbreaking)
-                            Damage = ReplaceNumber(Equip.Damage)
-                            Embed.add_field(name=Header,value=f"Название : {Equip.Name}\nОписание : {Equip.Description}\nID : {Equip.ID}\nУрон : {Damage} / Защита : {Protect}\nПрочность : {Armor}\nЗолото : {Gold}/{MaxGold} ({AllGold})\nМагические свойства : {Equip.Magic}",inline=False)
-                        except: Embed.add_field(name=Header,value="Ничего не экипировано",inline=False)
-                        
-                    await Channel.send(embed=Embed)
-            elif Commands[0].upper() == "Gs".upper():
-                await Message.delete()
-                try: 
-                    _channel = int(Commands[1])
-                    _ChannelVoice_ = await self.fetch_channel(_channel)
-                except: _ChannelVoice_ = await self.fetch_channel(Message.author.voice.channel.id)
-                try:
-                    if self.VoiceClient.is_connected == False:
-                        self.Sounds = os.listdir(f"./Resurses/JoinVoice/")
-                        self.VoiceClient = await _ChannelVoice_.connect()
-                except:
-                    self.Sounds = os.listdir(f"./Resurses/JoinVoice/")
-                    self.VoiceClient = await _ChannelVoice_.connect()
-                try:
-                    RandomInt = random.randint(0,len(self.Sounds) - 1)
-                except: 
-                    self.Sounds = os.listdir(f"./Resurses/JoinVoice/")
-                    RandomInt = random.randint(0,len(self.Sounds) - 1)
-                RandomSound = self.Sounds[RandomInt]
-                self.Sounds.remove(RandomSound)
-                print(f"Сыграла {RandomSound} трек")
-                self.VoiceClient.play(discord.FFmpegPCMAudio(
-                    executable="C:/ffmpeg/bin/ffmpeg.exe", 
-                    source=f"./Resurses/JoinVoice/{RandomSound}"))
-            elif Commands[0].upper() == "Nev_Avatar".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    try:
-                        url = Commands[1]
-                        DownloadFile = requests.get(url, stream=True)
-                        with open(f"./Resurses/{Player.Name}.png","bw") as file:
-                            for chunk in DownloadFile.iter_content(12288):
-                                file.write(chunk)
-                        await Channel.send("Новый аватар поставлен",delete_after=30)
-                    except:
-                        raise BaseException("Поставить новый аватар не удалось")
-            elif Commands[0].upper() == "New_Background".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    try:
-                        url = Commands[1]
-                        DownloadFile = requests.get(url, stream=True)
-                        with open(f"./Resurses/BackGround_{Player.Name}.png","bw") as file:
-                            for chunk in DownloadFile.iter_content(12288):
-                                file.write(chunk)
-                        await Channel.send("Новый фон поставлен",delete_after=30)
-                    except:
-                        raise BaseException("Поставить новый фон не удалось")
-            elif Commands[0].upper() == "Shop".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    try:
-                        Product = Commands[1]
-                        Count = Commands[2]
-                        Embed = Shop().Buy(Player,Product,int(Count))
-                        Embed.set_author(name=Player.Name,url=User.avatar_url,icon_url=User.avatar_url)
-                        await Channel.send(embed=Embed)
-                    except IndexError:
-                        raise CommandError("Пропущен обязательный аргумент","Shop","Shop Товар Количество")
-                    except ValueError:
-                        raise BaseException(f"2 Аргумент {Debuger(Count,int)}")
-            elif Commands[0].upper() == "Wiki".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    if Content.find('"') == -1:
-                        NeedFind = Commands[1]
-                    else:
-                        NeedFind = GetFromMessage(Content,'"')
-                    Embed = self.Gabriel.SearchInfo(NeedFind)
-                    Embed.set_author(name=Player.Name,url=User.avatar_url,icon_url=User.avatar_url)
-                    await Channel.send(embed=Embed)
-            elif Commands[0].upper() == "Wear".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    try: ID = int(Commands[1])
-                    except: raise BaseException("Не указан ID предмета")
-                    Item_ = Item.Find(ID,Player)
-                    if Item_.TypeKey.upper() == "Equipment".upper():
-                        Player.EquipmentItem(ID,Item_.Where)
-                    else:
-                        try: Where = Commands[2]
-                        except: raise BaseException("Не указано куда следует экипировать предмет")
-                        
-                        Player.EquipmentItem(ID,Where)
-                    await Channel.send("Вы успешно экипировали предмет")
-            elif Commands[0].upper() == "Race".upper():
-                await Message.delete()
-                async with Channel.typing():
-                    try: ID = int(Commands[1])
-                    except: raise BaseException("Не указана лошадь. От 1 до 5")
-                    try: Gold = int(Commands[2])
-                    except: raise BaseException("Не указана цена")
-
-                    Embed = self.Race.AddRate(Player,ID,Gold)
-                    
-                    await Channel.send(embed=Embed)
-            elif Commands[0].upper() == "Vote".upper():
-                replaces = list()
-                replaces.append(Commands[0])
-                Title = GetFromMessage(Content,'"')
-                replaces.append(f'"{Title}"')
-
-                _Content = MessageReplaces(Content,replaces)
-                try:
-                    Description = GetFromMessage(_Content,'"')
-                    replaces.append(f'"{Description}"')
-                    Embed = discord.Embed(title=Title,description=Description)
-                except: Embed = discord.Embed(title=Title)
-
-                Embed.set_author(name=Member.name,icon_url=User.avatar_url)
-                Embed.set_footer(text="Для выбора ответа, нажмите на реакцию")
-                _Content = MessageReplaces(Content,replaces)
-                try:
-                    Image = GetFromMessage(_Content,'"')
-                    if Image.find("https://") == -1:
-                        raise BaseException("Ожидалась ссылка")
-                    Embed.set_image(url=Image)
-                except: pass
-                await Message.delete()
-                _Message = await Channel.send(embed=Embed)
-                await _Message.add_reaction(self.VoteOkay)
-                await _Message.add_reaction(self.VoteBad)
-            elif Commands[0].upper() == "Help".upper():
-                Embed = discord.Embed(title="Габриэль помощь",colour=discord.Colour(6828997))
-                Embed.set_image(url="https://media.discordapp.net/attachments/730683862836838430/751463545903906816/HelpINFO.png")
-                _Message = await Channel.send(embed=Embed)
-                await _Message.add_reaction(self.EmodjiGame)
-                await _Message.add_reaction(self.EmodjiReference)
-                await _Message.add_reaction(self.EmodjiShop)
-            elif Commands[0].upper() == "Delete".upper()       and Admin:
-                await Message.delete()
-                async with Channel.typing():
-                    Count = int(Commands[1])
-                    Embed = self.Gabriel.Delete(Count,Guild.name)
-                    await Channel.send(embed=Embed,delete_after=1)
-            elif Commands[0].upper() == "BanWord".upper()      and Admin:
-                await Message.delete()
-                async with Channel.typing():
-                    Word = Commands[1]
-                    Guild_Function.Blocked_Words.append(Word)
-                    Embed = discord.Embed(title=f"{Guild.name}",description=f"Отныне слово [{Word}] шифруется")
-                    await Channel.send(embed=Embed)
-            elif Commands[0].upper() == "UnBanWord".upper()    and Admin:
-                await Message.delete()
-                async with Channel.typing():
-                    Word = Commands[1]
-                    Guild_Function.Blocked_Words.remove(Word)
-                    Embed = discord.Embed(title=f"{Guild.name}",description=f"Отныне слово [{Word}] перестает шифроватся")
-                    await Channel.send(embed=Embed)
-            elif Commands[0].upper() == "BannedWords".upper()  and Admin:
-                await Message.delete()
-                async with Channel.typing():
-                    await Channel.send(Guild_Function.Blocked_Words)
-            elif Commands[0].upper() == "Gabriel".upper()      and Admin:
-                if Commands[1].upper() == "Setup".upper():
-                    Guild_Function.Channel_Main = Channel.id
-                elif Commands[1].upper() == "AddChannel".upper():
-                    Guild_Function.Channels.append(Channel.id)
-                    await Channel.send(f"Добавлен канал, где я общаюсь с вами `{Channel.id}`")
-                elif Commands[1].upper() == "RemoveChannel".upper():
-                    try:
-                        Guild_Function.Channels.remove(Channel.id)
-                        await Channel.send(f"Убран канал, где я общаюсь с вами `{Channel.id}`")
-                    except: raise BaseException("Канал не найден")
-                elif Commands[1].upper() == "BanAddChannel".upper():
-                    try:
-                        ChannelID = int(Commands[2])
-                        if ChannelID not in Guild_Function.Channels_Ignoted:
-                            Guild_Function.Channels_Ignoted.append(ChannelID)
-                            await Channel.send(f"Этот канал стал быть противным `{ChannelID}`")
-                        else:
-                            await Channel.send(f"Этот канал и так противен мне`{ChannelID}`")
-                    except: raise BaseException("Канал не найден")
-                elif Commands[1].upper() == "BanRemoveChannel".upper():
-                    try:
-                        ChannelID = int(Commands[2])
-                        Guild_Function.Channels_Ignoted.remove(ChannelID)
-                        await Channel.send(f"Этот канал перестал быть противным `{ChannelID}`")
-                    except: raise BaseException("Канал не найден")
-                elif Commands[1].upper() == "Channels".upper():
-                    Embed = discord.Embed(title='Каналы')
-                    Embed.add_field(
-                        name="Каналы где я общаюсь с вами",
-                        value=f"{Guild_Function.Channels}",
-                        inline=False)
-                    Embed.add_field(
-                        name="Каналы где меня нет",
-                        value=f"{Guild_Function.Channels_Ignoted}",
-                        inline=False)
-                    await Channel.send(embed=Embed)
-                elif Commands[1].upper() == "Info".upper():
-                    Embed = discord.Embed(title='Информация о Гильдии')
-                    Embed.add_field(
-                        name="Каналы где я могу разговаривать",
-                        value=f"{Guild_Function.Channels}",
-                        inline=False)
-                    Embed.add_field(
-                        name="Каналы которые мне не интересны",
-                        value=f"{Guild_Function.Channels_Ignoted}",
-                        inline=False)
-                    Embed.add_field(
-                        name="С каким шансом мне стоит отвечать?",
-                        value=f"{Guild_Function.ChanceSays}%",
-                        inline=False)
-                    Embed.add_field(
-                        name="Сколько слов я могу использовать? от мин. до макс.",
-                        value=f"{Guild_Function.StandartWords}",
-                        inline=False)
-                    Embed.add_field(
-                        name="Эти личности мне не интересны",
-                        value=f"{Guild_Function.IgnoreMembers}",
-                        inline=False)
-                    Embed.add_field(
-                        name="Главный канал",
-                        value=f"{Guild_Function.Channel_Main}",
-                        inline=False)
-                    Embed.add_field(
-                        name="Могу ли я сама разговаривать?",
-                        value=f"{Guild_Function.Speak} \nКаждые {Guild_Function.EveryTime}с. Если последнее сообщение не от ботов, то я скажу что нибудь",
-                        inline=False)
-                    Embed.add_field(
-                        name="Как часто я могу разговаривать?",
-                        value=f"{Guild_Function.EveryTime}с.",
-                        inline=False)
-                                                
-                    await Channel.send(embed=Embed)
-                elif Commands[1].upper() == "Chance".upper():
-                    try: 
-                        Count = Commands[2]
-                        Count = int(Count)
-                    except: raise BaseException(Debuger(Count,int))
-
-                    if Count > 75:
-                        Count = 75
-                        await Channel.send("Не могу установить шанс больше чем `75%`")
-
-                    Guild_Function.ChanceSays = Count
-                    await Channel.send(f"Теперь я реагирую в `{Count}%`")
-                elif Commands[1].upper() == "Words".upper():
-                    try: 
-                        Count1 = Commands[2]
-                        Count1 = int(Count1)
-                    except: raise BaseException(Debuger(Count1,int))
-
-                    try: 
-                        Count2 = Commands[3]
-                        Count2 = int(Count2)
-                    except: raise BaseException(Debuger(Count2,int))
-
-
-                    if Count1 <= 0:
-                        Count1 = 1
-                        await Channel.send("Не могу установить минимальное количество слов меньше 1")
-                    if Count2 <= 0:
-                        Count2 = 1
-                        await Channel.send("Не могу установить максимальное количество слов меньше 0")
-                    if Count1 >= Count2:
-                        Count1 = Count2 - 1
-                        await Channel.send("Не могу установить количество слов, больше чем максимальное")
-                    if Count2 > 500:
-                        Count2 = 500
-                        await Channel.send("Не могу установить количество слов больше 500")
-                    
-                    Guild_Function.StandartWords = (Count1,Count2)
-                    await Channel.send(f"Теперь я использую с {Count1} слов до {Count2}")
-                elif Commands[1].upper() == "Speak".upper():
-                    try:
-                        Say = bool(int(Commands[2]))
-                        Guild_Function.Speak = Say
-                        if Say:
-                            await Channel.send(f"Спасибо что разрешаете мне разговаривать")
-                        else:
-                            await Channel.send(f":C")
-                    except: raise CommandError("Следует отправлять в аргументе 1 либо 0","Gabriel Speak","Gabriel Speak 1")
-                elif Commands[1].upper() == "EveryTime".upper():
-                    Count = Commands[2]
-                    try: Count = int(Count)
-                    except: raise BaseException(Debuger(Count,int))
-                    if Count < 30:
-                        Count = 30
-                        await Channel.send("Не могу установить скорость ниже 30 секунд.")
-                    Guild_Function.EveryTime = Count
-                    await Channel.send(f"Теперь я разговариваю сама, каждые {Count}с.")
-                elif Commands[1].upper() == "Help".upper():
-                    Embed = discord.Embed(title='Команды для Габриэль',description="Для того чтобы ими воспользоваться, вам нужны права админа")
-                    Embed.add_field(
-                        name="Setup",
-                        value=f"Устанавливает этот канал главным",
-                        inline=False)
-                    Embed.add_field(
-                        name="AddChannel",
-                        value=f"Добавить канал в список общения",
-                        inline=False)
-                    Embed.add_field(
-                        name="RemoveChannel",
-                        value=f"Убрать канал из списка общения",
-                        inline=False)
-                    Embed.add_field(
-                        name="BanAddChannel",
-                        value=f"Буду игнорировать канал",
-                        inline=False)
-                    Embed.add_field(
-                        name="BanRemoveChannel",
-                        value=f"Не буду игнорировать канал",
-                        inline=False)
-                    Embed.add_field(
-                        name="Chance",
-                        value=f"Изменить шанс, при котором я общаюсь с вами",
-                        inline=False)
-                    Embed.add_field(
-                        name="Words",
-                        value=f"Изменить минимальное и максимальное количество слов, которые я использую",
-                        inline=False)
-                    Embed.add_field(
-                        name="Speak",
-                        value=f"Разрешить мне общаться без команд",
-                        inline=False)
-                    Embed.add_field(
-                        name="EveryTime",
-                        value=f"Каждые {Guild_Function.EveryTime} секунд я буду общаться с вами",
-                        inline=False)
-                    Embed.add_field(
-                        name="Help",
-                        value=f"Помощь по этому списку команд",
-                        inline=False)
-                    Embed.add_field(
-                        name="Info",
-                        value=f"Узнать текущую информацию об Гильдии",
-                        inline=False)
-                    await Channel.send(embed=Embed)
-                else:
-                    Embed = discord.Embed(title='Команды для Габриэль',description="Вероятно вы где то ошиблись, попробуйте прочитать `Gabriel Help`")
-                    
-                    await Channel.send(embed=Embed)
-            elif Commands[0].upper() == "ReadMessages".upper() and Admin:
-                    Count = int(Commands[1])
-                    if Count > 700:
-                        Count = 700
-                    try:
-                        ChannelID = int(Commands[2])
-                        Channel = await self.fetch_channel(ChannelID)
-                    except: pass
-                    async for message in Channel.history(limit=Count):
-                        if message.author != self.user:
-                            Content = message.content
-                            PlayerName = message.author.name
-                            Content = Content.replace('░',"")
-                            self.Gabriel.Save(Content,PlayerName,Guild.name)
-            elif Commands[0].upper() == "Admin".upper()        and Message.author == IamUser:
-                if Commands[1].upper() == "Debug".upper():
-                    async with Channel.typing():
-                        Commands.pop(0)
-                        Commands.pop(0)
-                        Command = ""
-                        for _command in Commands:
-                            Command += f"{_command} "
-                        print(f"Использована команда \n{Command}")
-                        Answer = eval(Command)
-                        print(f"Получен ответ : \n{Answer}")
-                        if Answer == None:
-                            Embed = discord.Embed(title="Админ меню",description="Команда выполненна успешно",colour=discord.Colour(9471))
-                            await Channel.send(embed=Embed)
-                        else:
-                            Embed = discord.Embed(title="Админ меню",description=f"Команда вывела : \n{Answer}",colour=discord.Colour(65520))
-                            await Channel.send(embed=Embed)
-                elif Commands[1].upper() == "Create".upper():
-                    async with Channel.typing():
-                        Commands.pop(0)
-                        Commands.pop(0)
-                        Command = ""
-                        for _command in Commands:
-                            Command += f"{_command} "
-                        print(f"Использована команда \n{Command}")
-                        Answer = exec(Command)
-                        print(f"Получен ответ : \n{Answer}")
-                        if Answer == None:
-                            Embed = discord.Embed(title="Админ меню",description="Программа выполненна успешно",colour=discord.Colour(9471))
-                            await Channel.send(embed=Embed)
-                        else:
-                            Embed = discord.Embed(title="Админ меню",description=f"Программа вывела : \n{Answer}",colour=discord.Colour(65520))
-                            await Channel.send(embed=Embed)
-                else:
-                    raise BaseException("Таких команд нет")
-            elif Commands[0].upper() == "LevelUpMe".upper()    and Message.author == IamUser:
-                Level = int(Commands[1])
-                Player.LevelUp(Level)
-                R_Level = ReplaceNumber(Level)
-                await Channel.send(embed=discord.Embed(title="Поздравляем",description=f"Вы получили {R_Level} уровней",colour=discord.Colour(6655214)))
-            elif Commands[0].upper() == "Develop".upper()      and Message.author == IamUser:
-                Title = GetFromMessage(Content.replace(Commands[0],""),'"')
-                await self.change_presence(
-                    status=discord.Status.dnd,
-                    activity=discord.Activity(
-                        type=discord.ActivityType.playing, 
-                        name=Title))
-            elif Commands[0].upper() == "Work".upper()         and Message.author == IamUser:
-                await self.change_presence(
-                    activity=discord.Activity(
-                        type=discord.ActivityType.watching, 
-                        name="новое обновление"))
-        else:
-            if random.randint(1,100) <= Guild_Function.ChanceSays:
-                try:
-                    Count = random.randint(*Guild_Function.StandartWords)
-                    _Message = self.Gabriel.Message(Count,Guild.name,"A",Content)
-                    await Channel.send(_Message)
-                except: pass
-            else:
-                await Guild_Function.CheckMessage(Message,Content,Member,self)
-                if Channel.id in Guild_Function.Channels:
-                    Guild_Function.Words.append(C_Gabriel.Message(Message.id,Content,Player))
-            
-            if Content.count(")") > 0:
-                if Message.author != self.user:
-                    async with Channel.typing():
-                        Count = Content.count(")")
-                        if Count < 100:
-                            await Channel.send(")" * Count)
-        Player.Save()
-        self.C_Gabriel.Save()
-    async def DownloadAvatar(self,Downloader,PlayerName):
-        try:
-            with codecs.open(f"./Resurses/{PlayerName}.png","r"
-            ,encoding='utf-8', errors='ignore') as file:
-                pass
-        except:
-            DownloadFile = requests.get(Downloader.avatar_url, stream=True)
-            with open(f"./Resurses/{PlayerName}.png","bw") as file:
-                for chunk in DownloadFile.iter_content(12288):
-                    file.write(chunk)
-            print(f"{PlayerName} Не было аватарки, она скачалась")
+        if G_User.ID not in self.Gabriel.Users:
+            self.Gabriel.Users.append(G_User.ID)
     
-    async def on_message(self,message):
-        # if message.author != self.user:
-        #     await self.Command(message)
-        #     return
+
+        # Тестовое поле
+
+
+
+        # --------------
+
+        IsCommand = Message.content.lower().startswith(Gabriel_Guild.StartsWith.lower())
+
+        if IsCommand:
+            _splited = Message.content.split(Gabriel_Guild.StartsWith.lower())[-1].split(" ")
+            Command = C_Command(_splited.pop(0),_splited)
+
+
+            if Command.Name.lower() == "profile":
+                embed = discord.Embed(title=G_User.Name,colour=User.colour)
+                embed.set_thumbnail(url=User.avatar_url)
+                embed.add_field(name="Сообщений",value=ReplaceNumber(G_User.Messages),inline=False)
+                embed.add_field(name="Лолилиес",value=ReplaceNumber(G_User.Lolilies),inline=False)
+                await Channel.send(" ",embed=embed,delete_after=300)
+        elif [True for mention in Message.mentions if mention == self.user] or [True for Reaction_on in Gabriel_Guild.Gabriel_Reaction_on if Message.content.startswith(Reaction_on)]:
+            try: 
+                await Channel.send(Gabriel_Guild.Answer(random.randint(*Gabriel_Guild.StandartWords),GetMessage=Message.content))
+            except: 
+                embed = discord.Embed(title="Продолжайте общаться!",description='Извините, мне не удалось сгенерировать сообщение, скорее всего это связанно с тем что вы не общаетесь. Продолжайте общение, и эта ошибка пропадёт')
+                embed.set_footer(text="Сообщение удалиться через 35 секунд",icon_url="https://bit.ly/3nyxgx4")
+                await Channel.send(embed=embed,delete_after=35)
+        else:
+            if Gabriel_Guild.Speak:
+                if await Gabriel_Guild.CheckMessage(Message,Message.content,User,self) == False:
+                    Gabriel_Guild.Save_Line(C_Gabriel.Message(Message.id,Message.content,G_User))
+                    Gabriel_Guild.CurMessageEvery -= 1
+                    if Gabriel_Guild.CurMessageEvery <= 0:
+                        Gabriel_Guild.CurMessageEvery = Gabriel_Guild.MessageEvery
+                        try: await Channel.send(Gabriel_Guild.Answer(random.randint(*Gabriel_Guild.StandartWords),GetMessage=Message.content))
+                        except: pass
+                    Gabriel_Guild.Save(self.Gabriel)
+                else:
+                    G_User.Remove(1000)
+
+
+    async def on_message(self,message : discord.Message):
+        if message.author != self.user:
+            await self.Command(Message=message,
+                                    Channel=message.channel,
+                                    Guild=message.guild,
+                                    User=message.author)
+            return
         try:
             if message.author.bot == False:
-                await self.Command(message)
+                await self.Command(Message=message,
+                                    Channel=message.channel,
+                                    Guild=message.guild,
+                                    User=message.author)
         except OverflowError:
             Embed = discord.Embed(title="Ваша статистика бессконечна",description=f"Из за этого ваши действия невозможно реализовывать",colour=discord.Colour.red())
             await message.channel.send(embed=Embed,delete_after=60)
@@ -906,514 +152,103 @@ class MyClient(discord.Client):
                 Embed = discord.Embed(title="Ошибка",description=str(Error),colour=discord.Colour.red())
                 await message.channel.send(embed=Embed,delete_after=60)
     
-    async def on_message_edit(self,before,after):
-        try:
-            content = before.content
-            author = before.author.name
-            server = before.channel.guild.name
-            Delete = {author:content}
-            self.Gabriel.DeleteCur(Delete,server)
-            content = after.content
-            author = after.author.name
-            server = after.channel.guild.name
-            self.Gabriel.Save(content,author,server)
-        except: pass
-    async def on_message_delete(self,message):
-        try:
-            content = message.content
-            author = message.author.name
-            server = message.channel.guild.name
-            Delete = {author:content}
-            self.Gabriel.DeleteCur(Delete,server)
-        except: pass
+    async def on_voice_state_update(self,Member : discord.member.Member, _before : discord.member.VoiceState, _after : discord.member.VoiceState):
+        """ Вход и выход в голосовых каналах """
 
-    async def on_voice_state_update(self,Member : discord.member.Member, before : discord.member.VoiceState, after : discord.member.VoiceState):
-        try: Player = C_Player.Open(Member._user.id)
-        except: Player = C_Player(Member._user.id, Member._user.name)
-        Create = False
-        try: 
-            if after.channel.name == "Создать комнату": Create = True
-        except: Create = False
-
-        if Create:
-            Guild = after.channel.guild
-            if Player.Room.Overwrites is Ellipsis:
-                Player.Room.Overwrites = {Member._user.id: discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True)}
-
-            try: 
-                Channel = await self.fetch_channel(Player.Room.Channel)
-                await Member.move_to(Channel,reason="Вы создаете точно такую же комнату")
-            except:
-                try:
-                    overwrites = {}
-                    for ID in Player.Room.Overwrites:
-                        overwrite = Player.Room.Overwrites[ID]
-                        User = await Guild.fetch_member(ID)
-                        overwrites.update({User:overwrite})
-                except: 
-                    overwrites = {Member._user.id: discord.PermissionOverwrite(manage_channels=True,move_members=True,manage_roles=True)}
-                    Player.Room.Overwrites = overwrites
-                NewChannel = await Guild.create_voice_channel(f"{Player.Room.Name}",reason="Новая комната", overwrites=overwrites)
-                Player.Room.Channel = int(NewChannel.id)
-                await Member.move_to(NewChannel,reason="Новая комната")
-        else:
-            for _Player in self.Players:
-                try: 
-                    if before.channel.name == _Player.Room.Name:
-                        if len(before.channel.members) <= 0:
-                            await before.channel.delete(reason="Комната пустая")
-                except: pass
-                
-        Player.Save()
+        # Переменные
+        User = C_User.Open(Member.id,Member.name)
+        before = _before.channel
+        after = _after.channel
     
-    async def on_member_join(self,Member : discord.member.Member):
-        try:
-            OurServer = await self.fetch_guild(419879599363850251)
-            StartRole = OurServer.get_role(691735620346970123)
-            await Member.add_roles(StartRole,reason="Впервые зашел на сервер")
-        except: pass
+        # Есть следующий голосовой канал
+        if after:
+            Guild = after.guild
 
-    async def on_guild_channel_update(self,before,after):
-        for Player in self.Players:
-            if Player.Room.Name == before.name:
-                Player.Room.Name = str(after.name)
-                overwrites = after.overwrites
-                for member in overwrites:
-                    Permissions = overwrites[member]
-                    Player.Room.Overwrites.update({member.id:Permissions})
-                Player.Save()
+            Gabriel_Guild = self.Gabriel.GetGuild(after.guild.id)
+            if Gabriel_Guild == False:
+                Gabriel_Guild = C_Gabriel.Guild(after.guild.id,after.guild.name)
+                Gabriel_Guild.Save(self.Gabriel)
+
+            if after.name == Gabriel_Guild.Name_rooms_create:
+                try:
+                    Channel = await self.fetch_channel(User.YourRoom)
+                    await Member.move_to(Channel,reason="Вы создаете точно такую же комнату")
+                except:
+                    RoomName = User.Name
+                    Overwrites = None
+
+                    guildRoom = getattr(User,after.guild.name,False)
+                    if guildRoom:
+                        RoomName = guildRoom.Name
+                        Overwrites = guildRoom.Overwrites
+
+                    channel = await Guild.create_voice_channel(RoomName,reason="Новая комната",overwrites=Overwrites)
+                    await Member.move_to(channel,reason="Новая комната")
+                    User.YourRoom = channel.id
+                    User.Save()
+
+        # Есть прошлый голосовой канал
+        if before:
+            Guild = before.guild
+            if len(before.members) <= 0:
+                for ID in self.Gabriel.Users:
+                    User = C_User.Open(ID)
+                    if User.YourRoom == before.id:
+                        await before.delete(reason="Комната пустая")
+
+    async def on_guild_channel_update(self,before : discord.channel.VoiceChannel,after : discord.channel.VoiceChannel):
+        """ Обновление в голосовых каналах """
+        
+        # Проверка смены название канала
+        if after.name != before.name:
+            for ID in self.Gabriel.Users:
+                User = C_User.Open(ID)
+                if User.YourRoom == before.id:
+                    User.__setattr__(before.guild.name,GuildRooms(after.name,after.overwrites))
+                    User.Save()
     
     async def on_raw_reaction_add(self,payload):
-        print(payload.__dir__())
         Channel = await self.fetch_channel(payload.channel_id)
-        Message = await Channel.fetch_message(payload.message_id)
-        Guild = await self.fetch_guild(payload.guild_id)
-        Player = await self.fetch_user(payload.user_id)
-        Member = await Guild.fetch_member(Player.id)
-        DevelopGabriel = await self.fetch_guild(716945063351156736)
+        Guild = await self.fetch_guild(419879599363850251)
+        Member = await Guild.fetch_member(payload.user_id)
         Emoji = payload.emoji
-        MessageRoles = [714080637648240690,737503063409033247]
-        if Message.id == 713880721709727754:
-            if Player == self.user:
-                return
-            await Message.remove_reaction(Emoji,Player)
-            Standart = Guild.get_role(610078093260095488)
-            StartRole = Guild.get_role(691735620346970123)
-            MainChannel = self.get_channel(419879599363850253)
-            await MainChannel.send(f"{Player.mention} присоединился на сервер")
-            if str(Emoji.name) == "⚫":
-                Role = Guild.get_role(713477362058002535)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "🔵": 
-                Role = Guild.get_role(713477367061938180)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "🟤": 
-                Role = Guild.get_role(713681425056006154)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "🟢": 
-                Role = Guild.get_role(713477377644167288)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "🟠": 
-                Role = Guild.get_role(713477369045712932)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "🟣": 
-                Role = Guild.get_role(713477376910032897)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "🔴": 
-                Role = Guild.get_role(713477364977500220)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "⚪": 
-                Role = Guild.get_role(713477210446757900)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "🟡": 
-                Role = Guild.get_role(713477378214592603)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Laim_circle": 
-                Role = Guild.get_role(716928278988062831)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Green_circle": 
-                Role = Guild.get_role(716928278988062831)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Grass_circle": 
-                Role = Guild.get_role(716928284453109772)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "DarkGreen_circle": 
-                Role = Guild.get_role(716928283123384382)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Untitled_circle": 
-                Role = Guild.get_role(716928281747914792)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "DarkBlue_circle": 
-                Role = Guild.get_role(716928284641853461)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "LightRed_circle": 
-                Role = Guild.get_role(716928286759845899)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "LightPink_circle": 
-                Role = Guild.get_role(716928283089829951)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "DarkRed_circle": 
-                Role = Guild.get_role(716928286776754178)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "LightBlue_circle": 
-                Role = Guild.get_role(716928278988062831)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Orange_circle": 
-                Role = Guild.get_role(716928283542945792)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Cyan_circle": 
-                Role = Guild.get_role(716928286097408040)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Untitled1_circle": 
-                Role = Guild.get_role(716928281966018631)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "LightPurpure_circle": 
-                Role = Guild.get_role(716928284830728262)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Untitled3_circle": 
-                Role = Guild.get_role(716391509502722060)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "DarkGreen2_circle": 
-                Role = Guild.get_role(716928278988062831)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            elif str(Emoji.name) == "Blue2_circle": 
-                Role = Guild.get_role(716928286965498007)
-                await Member.add_roles(Standart,Role,reason="Прошел регистацию")
-                await Member.remove_roles(StartRole,reason="Прошел регистрацию")
-            Msg = f"""```fix\nВы успешно присоединились на сервер!\n```"""
-            await Member.send(Msg)
-            Channel = await self.fetch_channel(721150111320899586)
-            overwrite = discord.PermissionOverwrite()
-            overwrite.send_messages = True
-            overwrite.read_messages = True
-            overwrite.read_message_history = True
-            await Channel.set_permissions(Member,overwrite=overwrite)
-        elif Message.id in MessageRoles:
-            if Player == self.user:
-                return
-            await Message.remove_reaction(Emoji,Player)
+        
+
+        if Member == self.user: return
+
+        # Справка
+        if Channel.id == 623070280973156353:
+            Message = await Channel.fetch_message(payload.message_id)
+            await Message.remove_reaction(Emoji,Member)
+
+            class Role_In_Emodji():
+                def __init__(self, Emodji : str, Role : int):
+                    self.Emodji = Emodji
+                    self.Role   = Role
+
+            LLl = [Role_In_Emodji("black_circle",713477362058002535)]
+
+            URL = str(Emoji.url)
             
-            RolesID = [
-                713477210446757900, 713477362058002535, 713477364977500220,
-                713477367061938180, 713477369045712932, 713477376910032897,
-                713477377644167288, 713477378214592603, 713681425056006154,
-                716391511708794951, 716390741475196969, 716391516137848863,
-                716391507980189726, 716391501772488748, 716391505425858641,
-                716390742012199024, 716391505073274920,
+            if URL.startswith("http"):
+                Emoji_name = str(Emoji.name)
+                if Emoji_name not in os.listdir("./Resurses/Colours"):
+                    Download_Image(URL,f"./Resurses/Colours/{Emoji_name}.png")
+                Emoji_Image = Image.open(f"./Resurses/Colours/{Emoji_name}.png")
+                PixelColor = Emoji_Image.getpixel((Emoji_Image.size[0] / 2, Emoji_Image.size[1] / 2))
+                Colour = rgbToColor(PixelColor[0],PixelColor[1],PixelColor[2])
 
-                716928278988062831, 716928279751295076, 716928280153817178,
-                716928281630474261, 716928281747914792, 716928281798246470,
-                716928281966018631, 716928283089829951, 716928283123384382,
-                716928283542945792, 716928284453109772, 716928284641853461,
-                716928284830728262, 716928286097408040, 716928286759845899,
-                716928286776754178, 716928286965498007
-
-                    ]
-            if str(Emoji.name) == "⚫": await self.AddOneRole(713477362058002535,Member,Guild,RolesID)
-            elif str(Emoji.name) == "🔵": await self.AddOneRole(713477367061938180,Member,Guild,RolesID)
-            elif str(Emoji.name) == "🟤": await self.AddOneRole(713681425056006154,Member,Guild,RolesID)
-            elif str(Emoji.name) == "🟢": await self.AddOneRole(713477377644167288,Member,Guild,RolesID)
-            elif str(Emoji.name) == "🟠": await self.AddOneRole(713477369045712932,Member,Guild,RolesID)
-            elif str(Emoji.name) == "🟣": await self.AddOneRole(713477376910032897,Member,Guild,RolesID)
-            elif str(Emoji.name) == "🔴": await self.AddOneRole(713477364977500220,Member,Guild,RolesID)
-            elif str(Emoji.name) == "⚪": await self.AddOneRole(713477210446757900,Member,Guild,RolesID)
-            elif str(Emoji.name) == "🟡": await self.AddOneRole(713477378214592603,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Turquoise_circle": await self.AddOneRole(716391511708794951,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Darkpurple_circle": await self.AddOneRole(716390741475196969,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Darkgreen_circle": await self.AddOneRole(716391516137848863,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Brown_circle": await self.AddOneRole(716391507980189726,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Blue_circle": await self.AddOneRole(716391501772488748,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Pink_circle": await self.AddOneRole(716390742012199024,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Scarlet_circle": await self.AddOneRole(716391505425858641,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Golden_circle": await self.AddOneRole(716391505073274920,Member,Guild,RolesID)
-
-            elif str(Emoji.name) == "Green_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)                              
-            elif str(Emoji.name) == "Laim_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Grass_circle": await self.AddOneRole(716928284453109772,Member,Guild,RolesID)
-            elif str(Emoji.name) == "DarkGreen_circle": await self.AddOneRole(716928283123384382,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Untitled_circle": await self.AddOneRole(716928281747914792,Member,Guild,RolesID)
-            elif str(Emoji.name) == "DarkBlue_circle": await self.AddOneRole(716928284641853461,Member,Guild,RolesID)
-            elif str(Emoji.name) == "LightRed_circle": await self.AddOneRole(716928286759845899,Member,Guild,RolesID)
-            elif str(Emoji.name) == "LightPink_circle": await self.AddOneRole(716928283089829951,Member,Guild,RolesID)
-            elif str(Emoji.name) == "DarkRed_circle": await self.AddOneRole(716928286776754178,Member,Guild,RolesID)
-            elif str(Emoji.name) == "LightBlue_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Orange_circle": await self.AddOneRole(716928283542945792,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Cyan_circle": await self.AddOneRole(716928286097408040,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Untitled1_circle": await self.AddOneRole(716928281966018631,Member,Guild,RolesID)
-            elif str(Emoji.name) == "LightPurpure_circle": await self.AddOneRole(716928284830728262,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Untitled3_circle": await self.AddOneRole(716391509502722060,Member,Guild,RolesID)
-            elif str(Emoji.name) == "DarkGreen2_circle": await self.AddOneRole(716928278988062831,Member,Guild,RolesID)
-            elif str(Emoji.name) == "Blue2_circle": await self.AddOneRole(716928286965498007,Member,Guild,RolesID)
-        elif Emoji == self.VoteOkay:
-            if Player != self.user:
-                await Message.remove_reaction(self.VoteBad,Member)
-        elif Emoji == self.VoteBad:
-            if Player != self.user:
-                await Message.remove_reaction(self.VoteOkay,Member)
-        elif Emoji == self.VoteBad:
-            if Player != self.user:
-                await Message.remove_reaction(self.VoteOkay,Member)
-        elif Emoji == self.EmodjiGame:
-            if Player != self.user:
-                await Message.clear_reactions()
-                Embed = discord.Embed(
-                    title="Габриэль помощь по игре",
-                    description="Ниже указаны все команды связанные о игре. и их краткое содержание",
-                    colour=discord.Colour(5086956))
-                Embed.add_field(
-                    name="Profile (и/или ник другого игрока)",
-                    value="Открытие вашего(или другого игрока) профиля",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Attack (Имя игрока)",
-                    value="Вы атакуете выбранного вами игрока",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Event",
-                    value="Не является полноценной командой. Подробнее ниже",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Event Profile",
-                    value="Открыть профиль Босса",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Event Attack",
-                    value="Атаковать Босса",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Event Bonus",
-                    value="Взять ежедневную награду",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Event Create (Команда Администрации)",
-                    value="Создать босса. Аргумент : Сложность Босса",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Inv",
-                    value="Открытие вашего инвентаря",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Item (ID предмета)",
-                    value="Узнать информацию о предмете",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Upgrade_Item (ID предмета) (Золотых)",
-                    value="Прокачать предмет",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Talants",
-                    value="Открытие списка ваших талантов",
-                    inline=False
-                )
-                Embed.add_field(
-                    name='Talant "(Англ. название таланта)"',
-                    value="Поставить талант на прокачку",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Talant Point (Сила, Ловкость, Интеллект)",
-                    value="Потратить очки навыков на (см. выше)",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Number (Число)",
-                    value="Не является полноценной командой. Нужна чтобы сокращать цифры. Пример : Number 10000. Будет 10K",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Equip",
-                    value="Узнать что на вас сейчас экипированно",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Nev_Avatar (ссылка на аватар)",
-                    value="Изменить аватар в профиле",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="New_Background (ссылка на фон)",
-                    value="Изменить фон в профиле",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Wear (ID предмета) (Куда следует экипировать. Не обязательно для самой экипировки. Англ название. Пример : Left_hand)",
-                    value="Экипируете выбранный предмет, получая его характеристики, и/или дополнительные свойства",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Race (лошадь от 1 до 5) (ставка)",
-                    value="Поставить на X лошадь. в Случае победы ставка возрастет",
-                    inline=False
-                )
-                Embed.add_field(
-                    name="Item Sell (ID предмета)",
-                    value="Продать выбранный предмет",
-                    inline=False
-                )
-                Embed.set_image(url="https://media.discordapp.net/attachments/730683862836838430/751463545903906816/HelpINFO.png")
-                await Message.edit(embed=Embed)
-                await Message.add_reaction(self.EmodjiGame)
-                await Message.add_reaction(self.EmodjiReference)
-                await Message.add_reaction(self.EmodjiShop)
-        elif Emoji == self.EmodjiShop:
-            if Player != self.user:
-                await Message.clear_reactions()
-                Embed = discord.Embed(
-                    title="Габриэль помощь по магазину",
-                    description="Ниже указаны все ценники, и использование команды магазина",
-                    colour=discord.Colour(15394144))
-                Embed.add_field(
-                    name="Shop (Товар) (Количество)",
-                    value="Товары указаны ниже. И их стоимость",
-                    inline=False
-                    )
-                Embed.add_field(
-                    name="Лечение (15 золотых за штуку)",
-                    value="Лечит вашего персонажа на 3К за штуку",
-                    inline=False
-                    )
-                Embed.add_field(
-                    name="Здоровье (100 золотых за штуку)",
-                    value="Увеличивает вашему персонажу здоровье на 35 ед. за штуку",
-                    inline=False
-                    )
-                Embed.add_field(
-                    name="Урон (50 золотых за штуку)",
-                    value="Увеличивает урон от кулаков на 50 ед. за штуку",
-                    inline=False
-                    )
-                Embed.add_field(
-                    name="Уровень (300 золотых за штуку)",
-                    value="Увеличивает уровень вашего персонажа на 1 за штуку. (Является полноценным получением уровня. Означает вы получаете 100% из этого уровня)",
-                    inline=False
-                    )
-                Embed.set_image(url="https://media.discordapp.net/attachments/730683862836838430/751463545903906816/HelpINFO.png")
-                await Message.edit(embed=Embed)
-                await Message.add_reaction(self.EmodjiGame)
-                await Message.add_reaction(self.EmodjiReference)
-                await Message.add_reaction(self.EmodjiShop)
-        elif Emoji == self.EmodjiReference:
-            if Player != self.user:
-                await Message.clear_reactions()
-                Embed = discord.Embed(
-                    title="Габриэль справка",
-                    description="Справка по Габриэль. И все оставшиеся команды",
-                    colour=discord.Colour(15394144))
-                Embed.add_field(
-                    name="G (S/D/B - не обязательны) (Число - не обязательно)",
-                    value="Габриэль скажет что либо. Для того чтобы она говорила (см. ниже)",
-                    inline=False)
-                Embed.add_field(
-                    name="Gs (ID голосовой комнаты - не обязательно, если вы подключаете её в ту же комнату, где и вы)",
-                    value="Заставляет Габриэль зайти в вашу голосовую комнату, и произвести одно из заранее подготовленных аудио (Внимание, временно не работает)",
-                    inline=False)
-                Embed.add_field(
-                    name='Wiki "(Что следует найти в Википедии)"',
-                    value="Габриэль найдет это в Википедии. Если же нет, то покажет похожие",
-                    inline=False)
-                Embed.add_field(
-                    name='Vote "(Название)" "(Описание. Не обязательный аргумент)" "(URL картинка. Не обязательный аргумент)"',
-                    value="Запускает голосование, где вы выбираете название, описание, и картинку",
-                    inline=False)
-                Embed.add_field(
-                    name="Gabriel Help",
-                    value=f"Следующий список команд. Находиться в отдельном списке, так как он нужен для Администрации `{Guild.name}`",
-                    inline=False)
-                Embed.add_field(
-                    name="Вопросы и ответы",
-                    value="Далее ответ - вопрос",
-                    inline=False)
-                Embed.add_field(
-                    name="Почему Габриэль постоянно улыбается?",
-                    value="Габриэль поддерживает актив. Из за чего когда вы улыбаетесь, она улыбается тоже!",
-                    inline=False)
-                Embed.add_field(
-                    name="Почему Габриэль молчит?",
-                    value="Видимо установка прошла мимо вас. Чтобы исправить это, необходимо её установить. (см. команду Gabriel Help)",
-                    inline=False)
-                Embed.add_field(
-                    name="Почему Габриэль разговаривает сама по себе?",
-                    value="Изначально если Габриэль видит что последнее сообщение не от лица бота, она понимает что актив упал. И возможно если она напишет что либо, актив вернется. \n`Чтобы это убрать, смотрите команду Gabriel Help`",
-                    inline=False)
-                
-                Embed.set_image(url="https://media.discordapp.net/attachments/730683862836838430/751463545903906816/HelpINFO.png")
-                await Message.edit(embed=Embed)
-                await Message.add_reaction(self.EmodjiGame)
-                await Message.add_reaction(self.EmodjiReference)
-                await Message.add_reaction(self.EmodjiShop)
-
-    async def AddOneRole(self,ID,Member,Guild,RolesID):
-        Role = Guild.get_role(ID)
-        await Member.add_roles(Role,reason="Выбрал роль")
-        for role in Member.roles:
-            if role.id in RolesID and role != Role:
-                await Member.remove_roles(role,reason="Убрана старая роль")
-
-    def Fetch_Players(self,Content : str):
-        """ Найти имя в тексте """
-        f = Content.split(" ")[0]
-        NickName = Content.replace(f"{f} ","").upper()
-        FoundList = list()
-        for player in self.Players:
-            if player.Name.upper() == NickName:
-                Player = player
-                FoundList.append(player)
-        return FoundList
-
-    async def _TimeShow(self,Member,Channel):
-        await asyncio.sleep(5000)
-        overwrite = discord.PermissionOverwrite()
-        overwrite.send_messages = False
-        overwrite.read_messages = False
-        overwrite.read_message_history = False
-        await Channel.set_permissions(Member,overwrite=overwrite)
-
+                for role in Guild.roles:
+                    if role._colour == Colour:
+                        Standart = Guild.get_role(610078093260095488)
+                        StartRole = Guild.get_role(691735620346970123)
+                        await Member.add_roles(Standart,role,reason="Сменил цвет")
+                    elif str(role.name).find(" цвет") >= 0 and role._colour != Colour:
+                        if role in Member.roles:
+                            await Member.remove_roles(role,reason="Сменил цвет")
 def main():
-    internetWasOff = True
-    while True:
-        if is_internet():
-            if(internetWasOff == True):
-                print("Internet is active")
-                InternetActive()
-                internetWasOff = False
-        else:
-            internetWasOff = True
-        time.sleep(1)
+    client = MyClient()
+    client.run(BazaDate.token)
 
 if __name__ == "__main__":
     main()
