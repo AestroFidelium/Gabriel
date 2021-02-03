@@ -22,3 +22,10 @@ test2.py
 Version 6/Boss/Boss.txt
 SendItem.png
 Ready.txt
+gabriel/__pycache__/BazaDate.cpython-38.pyc
+*.pyc
+*.py
+*.gabriel
+*.pyc
+.vscode/settings.json
+.vscode/settings.json
