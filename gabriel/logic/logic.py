@@ -30,6 +30,10 @@ class GabrielUser():
         self._messages = 0
         self.ID        = ID
         self.Rooms     = []
+
+        self.likes     = 0
+        self.dislikes  = 0
+        self.Posts     = []
     
     def NewMessage(self):
         """Новое сообщение
@@ -109,6 +113,20 @@ class Gabriel():
                 print(f"Габриэль не удалось прочитать пустой файл")
             return GabrielUser()
 
+
+class Post():
+    def __init__(self, ID : int) -> None:
+        self.ID = ID
+
+
+        self.Likes = 0
+        self.Dislikes = 0
+
+        self.Likers = []
+        self.Dislikers = []
+    
+    def __repr__(self) -> str:
+        return f"Post#{self.ID}"
 
 class GabrielGuild():
     """Габриэль-гильдия
