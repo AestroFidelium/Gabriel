@@ -1,26 +1,63 @@
-{"editor.semanticTokenColorCustomizations": {
-    "enabled": true
-},
-"editor.tokenColorCustomizations": {
-    "textMateRules": [
-        {
-            "name": "variable",
-            "scope": ["variable.other.readwrite"],
-            "settings": {
-                "foreground": "#a06dff"
+{
+    "editor.semanticTokenColorCustomizations": {
+        "enabled": true
+    },
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "name": "variable",
+                "scope": [
+                    "variable.other.readwrite"
+                ],
+                "settings": {
+                    "foreground": "#a06dff"
+                }
+            },
+            {
+                "name": "variable",
+                "scope": [
+                    "variable.parameter.function.language.special.self.python"
+                ],
+                "settings": {
+                    "foreground": "#6a91fd"
+                }
             }
-        },
-
-        {
-            "name": "variable",
-            "scope": ["variable.parameter.function.language.special.self.python"],
-            "settings": {
-                "foreground": "#6a91fd"
+        ]
+    },
+    "highlight.regexes": {
+        "(\\[BUG\\]:)(.*)": [
+            {
+                "overviewRulerColor": "#ffcc00",
+                "backgroundColor": "#FF0000",
+                "color": "#000000",
+                "fontWeight": "bold"
+            },
+            {
+                "backgroundColor": "#AC1616",
+                "color": "#FFFFFF",
+                "fontWeight": "bold"
             }
-        }
-
-        
-
-        
-    ]
-    }}
+        ],
+        "(\\[CRUSHED\\]:)(.*)": [
+            {
+                "overviewRulerColor": "#ffcc00",
+                "backgroundColor": "#FF0000",
+                "color": "#000000",
+                "fontWeight": "bold"
+            },
+            {
+                "backgroundColor": "#AC1616",
+                "color": "#FFFFFF",
+                "fontWeight": "bold"
+            }
+        ],
+        "(\\[DEBUG\\]):(.*)": [
+            {
+                "color": "#345f82"
+            },
+            {
+                "color": "#585858"
+            }
+        ]
+    }
+}
